@@ -1,0 +1,96 @@
+baseURL: "https://pavelguzenfeld.com/"
+languageCode: en-us
+title: Pavel Guzenfeld
+theme: PaperMod
+
+paginate: 10
+enableRobotsTXT: true
+buildDrafts: false
+buildFuture: false
+buildExpired: false
+
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
+params:
+  env: production
+  title: Pavel Guzenfeld
+  description: "Drone Avionics Software Engineer — C++23, ROS 2, real-time systems, open-source"
+  keywords: [C++, Robotics, Drones, ROS2, PX4, Systems Programming, Open Source]
+  author: Pavel Guzenfeld
+
+  defaultTheme: dark
+  disableThemeToggle: false
+  ShowReadingTime: true
+  ShowShareButtons: false
+  ShowPostNavLinks: true
+  ShowBreadCrumbs: true
+  ShowCodeCopyButtons: true
+  ShowWordCount: false
+  ShowRssButtonInSectionTermList: true
+  UseHugoToc: true
+  disableSpecial1stPost: false
+
+  homeInfoParams:
+    Title: "Pavel Guzenfeld"
+    Content: >
+      Drone Avionics Software Engineer — building safety-critical systems for autonomous flight.
+
+      Designing software for UAV avionics, navigation, and computer vision pipelines.
+      Focused on code quality, zero-overhead abstractions, and deterministic behavior on edge computing.
+
+  socialIcons:
+    - name: github
+      url: "https://github.com/PavelGuzenfeld"
+    - name: linkedin
+      url: "https://linkedin.com/in/pavelguzenfeld"
+    - name: email
+      url: "mailto:hello@pavelguzenfeld.com"
+    - name: rss
+      url: "/index.xml"
+
+  cover:
+    hiddenInList: false
+    hiddenInSingle: true
+
+  fuseOpts:
+    isCaseSensitive: false
+    shouldSort: true
+    location: 0
+    distance: 1000
+    threshold: 0.4
+    minMatchCharLength: 0
+    keys: ["title", "permalink", "summary", "content"]
+
+menu:
+  main:
+    - identifier: projects
+      name: Projects
+      url: /projects/
+      weight: 10
+    - identifier: blog
+      name: Blog
+      url: /posts/
+      weight: 20
+    - identifier: about
+      name: About
+      url: /about/
+      weight: 30
+    - identifier: contact
+      name: Contact
+      url: /contact/
+      weight: 40
+    - identifier: search
+      name: Search
+      url: /search/
+      weight: 50
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+  highlight:
+    noClasses: false
