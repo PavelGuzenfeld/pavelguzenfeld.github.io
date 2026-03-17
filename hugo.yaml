@@ -34,13 +34,21 @@ params:
   UseHugoToc: true
   disableSpecial1stPost: false
 
-  homeInfoParams:
-    Title: "Pavel Guzenfeld"
-    Content: >
-      Drone Avionics Software Engineer — building safety-critical systems for autonomous flight.
-
-      Designing software for UAV avionics, navigation, and computer vision pipelines.
-      Focused on code quality, zero-overhead abstractions, and deterministic behavior on edge computing.
+  profileMode:
+    enabled: true
+    title: "Pavel Guzenfeld"
+    subtitle: "Drone Avionics Software Engineer"
+    imageUrl: "https://github.com/PavelGuzenfeld.png"
+    imageWidth: 160
+    imageHeight: 160
+    imageTitle: "Pavel Guzenfeld"
+    buttons:
+      - name: Projects
+        url: /projects/
+      - name: Blog
+        url: /posts/
+      - name: Contact
+        url: /contact/
 
   socialIcons:
     - name: github
