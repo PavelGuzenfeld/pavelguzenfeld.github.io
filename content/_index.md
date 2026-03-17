@@ -32,7 +32,7 @@ Full VTOL navigation simulation — PX4 + Gazebo + ROS 2. Test your flight code 
 
 I contribute upstream to the tools I depend on:
 
-- **Eigen** — 4 merge requests fixing vexing parse issues, 6 more on the roadmap
+- **Eigen** — 6 merge requests: bug fixes (vexing parse, `erf` NaN at ±inf, 128-bit division overflow, C++17 deprecation warnings) and a new modulus operator for `Array`
 - **XGBoost** — 5 PRs improving code quality
 - **OpenCV** — GAPI pipeline fixes
 - **Fast-DDS** — Build and documentation fixes

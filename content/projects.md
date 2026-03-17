@@ -39,9 +39,23 @@ TocOpen: true
 
 ## Upstream Contributions
 
+### Eigen
+
+Six merge requests submitted to the official [Eigen](https://gitlab.com/libeigen/eigen) linear algebra library — five bug fixes and one new feature:
+
+| MR | What it fixes |
+|----|--------------|
+| [!2298](https://gitlab.com/libeigen/eigen/-/merge_requests/2298) | Fix most vexing parse in `SparseSparseProductWithPruning.h` — replaced `()` init with `{}` |
+| [!2299](https://gitlab.com/libeigen/eigen/-/merge_requests/2299) | Guard redundant `constexpr` static member redeclarations for C++17+ in `BFloat16.h` / `Half.h` |
+| [!2300](https://gitlab.com/libeigen/eigen/-/merge_requests/2300) | Fix `TensorUInt128` division infinite loop when numerator exceeds 2^127 |
+| [!2301](https://gitlab.com/libeigen/eigen/-/merge_requests/2301) | Remove trailing semicolon from `EIGEN_UNUSED_VARIABLE` macro (23 files, ~50 callsites) |
+| [!2306](https://gitlab.com/libeigen/eigen/-/merge_requests/2306) | Fix vectorized `erf` returning NaN at ±inf instead of ±1 |
+| [!2307](https://gitlab.com/libeigen/eigen/-/merge_requests/2307) | Add coefficient-wise modulus operator (`%`) for `Array` — closes upstream issue #2837 |
+
+### Other Projects
+
 | Project | Contribution |
 |---------|-------------|
-| [Eigen](https://gitlab.com/libeigen/eigen) | Fixing vexing parse issues — 4 MRs merged, 6 more planned |
 | [XGBoost](https://github.com/dmlc/xgboost) | Code quality improvements — 5 PRs submitted |
 | [Fast-DDS](https://github.com/eProsima/Fast-DDS) | Build fixes and documentation — PRs #6332, #6333 |
 | [OpenCV](https://github.com/opencv/opencv) | GAPI fixes — PR #28660 |
