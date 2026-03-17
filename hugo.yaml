@@ -48,7 +48,7 @@ params:
     - name: linkedin
       url: "https://linkedin.com/in/pavelguzenfeld"
     - name: email
-      url: "mailto:hello@pavelguzenfeld.com"
+      url: "mailto:me@pavelguzenfeld.com"
     - name: rss
       url: "/index.xml"
 
