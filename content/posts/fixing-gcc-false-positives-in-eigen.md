@@ -1,6 +1,6 @@
 ---
 title: "Fixing GCC False-Positive Warnings in Eigen: A Deep Dive into -Warray-bounds at -O3"
-date: 2026-03-19
+date: 2026-03-18
 draft: false
 tags: ["C++", "Eigen", "GCC", "compilers", "open-source"]
 categories: ["deep-dive"]
