@@ -82,7 +82,7 @@ The ROCX CI doesn't use px4-ros2-interface-lib for flight control — it uses MA
 
 ## Research Interlude: How fiber-nav-sim Does It
 
-The `fiber-nav-sim` project (a VTOL navigation simulation) has a working PX4 + ROS 2 + Gazebo Harmonic setup. Key discoveries from reading its `CLAUDE.md` and `px4-sitl-entrypoint.sh`:
+The [`fiber-nav-sim`](https://github.com/PavelGuzenfeld/fiber-nav-sim) project (a VTOL navigation simulation) has a working PX4 + ROS 2 + Gazebo Harmonic setup. Key discoveries from reading its `CLAUDE.md` and `px4-sitl-entrypoint.sh`:
 
 1. **MicroXRCEAgent** bridges PX4's internal uXRCE-DDS client to standard DDS: `MicroXRCEAgent udp4 -p 8888`
 2. PX4 v1.14+ has a built-in `uxrce_dds_client` module that connects to the agent
