@@ -10,7 +10,7 @@ ShowToc: true
 
 ## The Goal
 
-Take a Unity 2019.4 simulation platform (codename "Sandbox") — originally built and run on Windows with a physical display — and make it run **headless inside a Docker container** on Linux with:
+Take a Unity 2019.4 drone simulation platform — originally built and run on Windows with a physical display — and make it run **headless inside a Docker container** on Linux with:
 
 - GPU-accelerated Vulkan rendering (no physical monitor)
 - Two RTSP camera streams (head camera + belly camera) at 1080p 30fps
@@ -21,9 +21,9 @@ This post documents every step, every dead end, and every workaround from start 
 
 ---
 
-## Starting Point: The Sandbox Project
+## Starting Point: The Simulation Project
 
-The Sandbox is a Unity 2019.4.14f1 simulation environment for autonomous drone operations. It was built for Windows, runs with a GUI, and streams camera feeds via FFmpeg to an external RTSP server. Key components:
+The project is a Unity 2019.4.14f1 simulation environment for autonomous drone operations. It was built for Windows, runs with a GUI, and streams camera feeds via FFmpeg to an external RTSP server. Key components:
 
 - **MAVLink integration** — connects to flight controllers (PX4, real hardware) via serial/TCP/UDP
 - **Camera system** — FFmpeg captures Unity camera output and pushes H264 to RTSP
@@ -71,7 +71,7 @@ E: The repository 'https://developer.download.nvidia.com/compute/cuda/repos/ubun
 
 ### RTSP Server: mediamtx
 
-The original Sandbox pushes FFmpeg RTSP streams to an **external** RTSP server. For a self-contained Docker setup, we bundle **mediamtx** (formerly rtsp-simple-server) inside the container.
+The original project pushes FFmpeg RTSP streams to an **external** RTSP server. For a self-contained Docker setup, we bundle **mediamtx** (formerly rtsp-simple-server) inside the container.
 
 ```dockerfile
 ARG MEDIAMTX_VERSION=1.9.3
@@ -252,7 +252,7 @@ With the Docker container running, both cameras streamed... solid gray. No terra
 
 ### Coordinate System
 
-The Sandbox uses a flat-earth approximation for GPS-to-Unity conversion (`ManagedCoordinateConverter.cs`):
+The simulation uses a flat-earth approximation for GPS-to-Unity conversion (`ManagedCoordinateConverter.cs`):
 
 ```
 Unity X = (lon_diff * π/180) * 6366707.02 * cos(home_lat)     // East
