@@ -378,6 +378,4 @@ Commits 2-3 were discovered by running the tests, not by code review. This is ex
 
 3. **Interface library version must match the PX4 message definitions.** The `px4-ros2-interface-lib` and PX4's `msg/` directory must be in sync. When they drift apart — whether by a single byte at runtime ([DDS silent data loss](/posts/px4-ros2-integration-testing-sitl-gazebo/#failure-4-px4_msgs-version-mismatch-the-subtle-one)) or by a missing message at compile time — things break. Pin the interface library version or build from the same commit.
 
-4. **Pre-existing CI failures on feature branches are common in large repos.** PX4-Autopilot has 60+ CI jobs. The `maetugr/sih-ci` base branch had pre-existing failures in nuttx linker, clang-tidy, and SITL vtol tests. Identifying which failures are yours vs. inherited from the base branch is a critical skill for contributing to large open-source projects.
-
-5. **`config.get()` vs `config[]` matters.** A Python `dict['missing_key']` raises `KeyError`; `dict.get('missing_key')` returns `None`. When a config field becomes optional (as `simulator` did when SIH was introduced), every accessor must be updated. The MAVSDK runner was fixed in PR #26032; the ROS runner was forgotten.
+4. **`config.get()` vs `config[]` matters.** A Python `dict['missing_key']` raises `KeyError`; `dict.get('missing_key')` returns `None`. When a config field becomes optional (as `simulator` did when SIH was introduced), every accessor must be updated. The MAVSDK runner was fixed in PR #26032; the ROS runner was forgotten.
