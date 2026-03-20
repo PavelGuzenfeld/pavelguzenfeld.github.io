@@ -96,6 +96,10 @@ menu:
       url: /search/
       weight: 50
 
+services:
+  googleAnalytics:
+    ID: G-TK9XE965GL
+
 markup:
   goldmark:
     renderer:
