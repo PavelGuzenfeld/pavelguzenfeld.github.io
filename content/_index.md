@@ -32,11 +32,11 @@ Full VTOL navigation simulation — PX4 + Gazebo + ROS 2. Test your flight code 
 
 I contribute upstream to the tools I depend on:
 
-- **Eigen** — 10 merge requests (3 merged): bug fixes, compiler warning fixes, and new operators
-- **dora-rs** — 8 PRs (3 merged): building full C++ API parity
-- **XGBoost** — 7 PRs (3 merged): bug fixes and code quality
-- **OpenCV** — 2 PRs (2 merged): Python bindings and build fixes
-- **px4-ros2-interface-lib** — 3 PRs (1 merged): VTOL fixes and new utilities
+- **Eigen** — bug fixes, compiler warning fixes, and new operators
+- **dora-rs** — building full C++ API parity
+- **XGBoost** — bug fixes and code quality
+- **OpenCV** — Python bindings and build fixes
+- **px4-ros2-interface-lib** — VTOL fixes and new utilities
 - **concurrentqueue**, **Fast-DDS** — cast safety, null-deref fixes, docs
 
 ---

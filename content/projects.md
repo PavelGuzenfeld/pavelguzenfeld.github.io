@@ -39,57 +39,51 @@ TocOpen: true
 
 ## Upstream Contributions
 
-**12 merged, 20 open** across 9 upstream projects.
+32 patches across 9 projects:
 
 ### Eigen
 
-Ten merge requests to the official [Eigen](https://gitlab.com/libeigen/eigen) linear algebra library (3 merged, 7 open):
-
-| MR | Status | Description |
-|----|--------|-------------|
-| [!2298](https://gitlab.com/libeigen/eigen/-/merge_requests/2298) | Merged | Fix most vexing parse in `SparseSparseProductWithPruning.h` |
-| [!2299](https://gitlab.com/libeigen/eigen/-/merge_requests/2299) | Open | Guard redundant `constexpr` static member redeclarations for C++17+ |
-| [!2300](https://gitlab.com/libeigen/eigen/-/merge_requests/2300) | Open | Fix `TensorUInt128` division infinite loop on overflow |
-| [!2301](https://gitlab.com/libeigen/eigen/-/merge_requests/2301) | Open | Remove trailing semicolon from `EIGEN_UNUSED_VARIABLE` macro |
-| [!2306](https://gitlab.com/libeigen/eigen/-/merge_requests/2306) | Open | Fix vectorized `erf` returning NaN at ±inf instead of ±1 |
-| [!2307](https://gitlab.com/libeigen/eigen/-/merge_requests/2307) | Open | Add coefficient-wise modulus operator (`%`) for `Array` |
-| [!2308](https://gitlab.com/libeigen/eigen/-/merge_requests/2308) | Open | Add mixed dense/skew-symmetric arithmetic operators |
-| [!2309](https://gitlab.com/libeigen/eigen/-/merge_requests/2309) | Merged | Include `Scaling.h` in IterativeSolvers module |
-| [!2310](https://gitlab.com/libeigen/eigen/-/merge_requests/2310) | Merged | Fix undefined behavior in `matrix_cwise` test for signed integers |
-| [!2311](https://gitlab.com/libeigen/eigen/-/merge_requests/2311) | Open | Fix GCC 13 `-Warray-bounds` warning in TensorContraction |
+| MR | Description |
+|----|-------------|
+| [!2298](https://gitlab.com/libeigen/eigen/-/merge_requests/2298) | Fix most vexing parse in `SparseSparseProductWithPruning.h` |
+| [!2299](https://gitlab.com/libeigen/eigen/-/merge_requests/2299) | Guard redundant `constexpr` static member redeclarations for C++17+ |
+| [!2300](https://gitlab.com/libeigen/eigen/-/merge_requests/2300) | Fix `TensorUInt128` division infinite loop on overflow |
+| [!2301](https://gitlab.com/libeigen/eigen/-/merge_requests/2301) | Remove trailing semicolon from `EIGEN_UNUSED_VARIABLE` macro |
+| [!2306](https://gitlab.com/libeigen/eigen/-/merge_requests/2306) | Fix vectorized `erf` returning NaN at ±inf instead of ±1 |
+| [!2307](https://gitlab.com/libeigen/eigen/-/merge_requests/2307) | Add coefficient-wise modulus operator (`%`) for `Array` |
+| [!2308](https://gitlab.com/libeigen/eigen/-/merge_requests/2308) | Add mixed dense/skew-symmetric arithmetic operators |
+| [!2309](https://gitlab.com/libeigen/eigen/-/merge_requests/2309) | Include `Scaling.h` in IterativeSolvers module |
+| [!2310](https://gitlab.com/libeigen/eigen/-/merge_requests/2310) | Fix undefined behavior in `matrix_cwise` test for signed integers |
+| [!2311](https://gitlab.com/libeigen/eigen/-/merge_requests/2311) | Fix GCC 13 `-Warray-bounds` warning in TensorContraction |
 
 ### dora-rs
 
-Nine PRs to the [dora](https://github.com/dora-rs/dora) dataflow framework — building C++ API parity (3 merged, 5 open):
-
-| PR | Status | Description |
-|----|--------|-------------|
-| [#1403](https://github.com/dora-rs/dora/pull/1403) | Merged | Expose `node_id()` and `dataflow_id()` accessors |
-| [#1428](https://github.com/dora-rs/dora/pull/1428) | Merged | Dynamic node initialization |
-| [#1431](https://github.com/dora-rs/dora/pull/1431) | Merged | Zero-copy output API |
-| [#1409](https://github.com/dora-rs/dora/pull/1409) | Open | Event receive variants (timeout, non-blocking, drain) |
-| [#1410](https://github.com/dora-rs/dora/pull/1410) | Open | `close_outputs`, `NodeFailed` and `Reload` event types |
-| [#1413](https://github.com/dora-rs/dora/pull/1413) | Open | `node_config_json` and `dataflow_descriptor_json` |
-| [#1414](https://github.com/dora-rs/dora/pull/1414) | Open | Forward `InputClosed`/`Stop` events to C++ callbacks |
-| [#1427](https://github.com/dora-rs/dora/pull/1427) | Open | CLI progress bars for time-consuming operations |
+| PR | Description |
+|----|-------------|
+| [#1403](https://github.com/dora-rs/dora/pull/1403) | Expose `node_id()` and `dataflow_id()` accessors |
+| [#1428](https://github.com/dora-rs/dora/pull/1428) | Dynamic node initialization |
+| [#1431](https://github.com/dora-rs/dora/pull/1431) | Zero-copy output API |
+| [#1409](https://github.com/dora-rs/dora/pull/1409) | Event receive variants (timeout, non-blocking, drain) |
+| [#1410](https://github.com/dora-rs/dora/pull/1410) | `close_outputs`, `NodeFailed` and `Reload` event types |
+| [#1413](https://github.com/dora-rs/dora/pull/1413) | `node_config_json` and `dataflow_descriptor_json` |
+| [#1414](https://github.com/dora-rs/dora/pull/1414) | Forward `InputClosed`/`Stop` events to C++ callbacks |
+| [#1427](https://github.com/dora-rs/dora/pull/1427) | CLI progress bars for time-consuming operations |
 
 ### XGBoost
 
-Seven PRs to [XGBoost](https://github.com/dmlc/xgboost) (3 merged, 1 open):
-
-| PR | Status | Description |
-|----|--------|-------------|
-| [#12087](https://github.com/dmlc/xgboost/pull/12087) | Merged | Update competition winning solutions list |
-| [#12089](https://github.com/dmlc/xgboost/pull/12089) | Merged | Handle indicator features in `trees_to_dataframe` |
-| [#12094](https://github.com/dmlc/xgboost/pull/12094) | Merged | Fix `python -OO` crash by guarding `__doc__` assignments |
-| [#12086](https://github.com/dmlc/xgboost/pull/12086) | Open | Remove dead Python 2 guard and `sklearn.cross_validation` fallback |
+| PR | Description |
+|----|-------------|
+| [#12087](https://github.com/dmlc/xgboost/pull/12087) | Update competition winning solutions list |
+| [#12089](https://github.com/dmlc/xgboost/pull/12089) | Handle indicator features in `trees_to_dataframe` |
+| [#12094](https://github.com/dmlc/xgboost/pull/12094) | Fix `python -OO` crash by guarding `__doc__` assignments |
+| [#12086](https://github.com/dmlc/xgboost/pull/12086) | Remove dead Python 2 guard and `sklearn.cross_validation` fallback |
 
 ### Other Projects
 
-| Project | PRs | Status | Description |
-|---------|-----|--------|-------------|
-| [OpenCV](https://github.com/opencv/opencv) | [#28660](https://github.com/opencv/opencv/pull/28660), [#28665](https://github.com/opencv/opencv/pull/28665) | 2 merged | Fix Python bindings + clean up stale typing stubs |
-| [px4-ros2-interface-lib](https://github.com/Auterion/px4-ros2-interface-lib) | [#186](https://github.com/Auterion/px4-ros2-interface-lib/pull/186), [#188](https://github.com/Auterion/px4-ros2-interface-lib/pull/188), [#189](https://github.com/Auterion/px4-ros2-interface-lib/pull/189) | 1 merged, 2 open | VTOL timeout fix, geodesic namespace fix, HomePositionSetter |
-| [concurrentqueue](https://github.com/cameron314/concurrentqueue) | [#445](https://github.com/cameron314/concurrentqueue/pull/445), [#446](https://github.com/cameron314/concurrentqueue/pull/446) | 2 open | Replace C-style casts, document `try_enqueue` limit |
-| [Fast-DDS](https://github.com/eProsima/Fast-DDS) | [#6332](https://github.com/eProsima/Fast-DDS/pull/6332), [#6333](https://github.com/eProsima/Fast-DDS/pull/6333) | 2 open | Missing `#include <cstdint>`, XML parser null-deref fixes |
-| [Fast-DDS-docs](https://github.com/eProsima/Fast-DDS-docs) | [#1234](https://github.com/eProsima/Fast-DDS-docs/pull/1234) | 1 open | Troubleshooting entry for libunwind/libgcc_s conflict |
+| Project | Description |
+|---------|-------------|
+| [OpenCV](https://github.com/opencv/opencv) | Fix Python bindings ([#28660](https://github.com/opencv/opencv/pull/28660)), clean up stale typing stubs ([#28665](https://github.com/opencv/opencv/pull/28665)) |
+| [px4-ros2-interface-lib](https://github.com/Auterion/px4-ros2-interface-lib) | VTOL timeout fix ([#186](https://github.com/Auterion/px4-ros2-interface-lib/pull/186)), geodesic namespace fix ([#188](https://github.com/Auterion/px4-ros2-interface-lib/pull/188)), HomePositionSetter ([#189](https://github.com/Auterion/px4-ros2-interface-lib/pull/189)) |
+| [concurrentqueue](https://github.com/cameron314/concurrentqueue) | Replace C-style casts ([#445](https://github.com/cameron314/concurrentqueue/pull/445)), document `try_enqueue` limit ([#446](https://github.com/cameron314/concurrentqueue/pull/446)) |
+| [Fast-DDS](https://github.com/eProsima/Fast-DDS) | Missing `#include <cstdint>` ([#6332](https://github.com/eProsima/Fast-DDS/pull/6332)), XML parser null-deref fix ([#6333](https://github.com/eProsima/Fast-DDS/pull/6333)) |
+| [Fast-DDS-docs](https://github.com/eProsima/Fast-DDS-docs) | Troubleshooting entry for libunwind/libgcc_s conflict ([#1234](https://github.com/eProsima/Fast-DDS-docs/pull/1234)) |
