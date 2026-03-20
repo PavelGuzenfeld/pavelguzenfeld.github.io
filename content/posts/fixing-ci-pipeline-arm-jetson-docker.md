@@ -14,6 +14,31 @@ A QA tag push on our robotics monorepo triggered two CI workflows — "Build and
 
 What followed was a 15-failure, day-long investigation that peeled back layer after layer of infrastructure rot. Each fix revealed the next hidden problem. This is the full story.
 
+```
+Tag Push (QA)
+     │
+     ▼
+┌─ Build & Deploy ──────────────────────┐  ┌─ FC Unit Tests ──┐
+│                                       │  │                  │
+│  ① Ghost submodule (stale dirs)       │  │  ④ Tags bypass   │
+│     ▼ fixed, exposed:                 │  │    path filters  │
+│  ② GCC-15 vs assembler (-march=native)│  └──────────────────┘
+│     ▼ fixed, exposed:                 │
+│  ③ Token expired (LFS > 1 hour)       │
+│     ▼ fixed, exposed:                 │
+│  ⑤ DNS / GitHub rate-limit in Docker  │
+│     ▼ fixed, exposed:                 │
+│  ⑥ GStreamer -Werror (GCC-15 warnings)│
+│     ▼ fixed, exposed:                 │
+│  ⑦ Deleted upstream branch (XGBoost)  │
+│     ▼ fixed, exposed:                 │
+│  ⑧ Dead dependencies (5 unused libs)  │
+│     ▼ removed                         │
+│                                       │
+│  ✓ GREEN after 19 attempts            │
+└───────────────────────────────────────┘
+```
+
 ## Failure 1: The Ghost Submodule
 
 **Symptom:** `colcon build` inside Docker discovers a package called `legacy_sdk` and fails because its dependency `common_utils` is missing.

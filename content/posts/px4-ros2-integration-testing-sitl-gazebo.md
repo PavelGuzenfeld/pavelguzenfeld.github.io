@@ -16,6 +16,25 @@ The problem: **the project's CI has never run these integration tests**. The `bu
 
 This post documents the full journey of making them run.
 
+```
+┌────────────┐       ┌───────────────────┐       ┌──────────────┐
+│  Test Node │  DDS  │  MicroXRCE Agent  │  UDP  │     PX4      │
+│  (ROS 2)   │◄─────▶│  (DDS Bridge)     │◄─────▶│     SITL     │
+└────────────┘       └───────────────────┘       └──────┬───────┘
+      │                                                 │
+      │  /fmu/out/vehicle_status                        │
+      │  /fmu/in/vehicle_command        ┌───────────────┴───────────┐
+      │  /fmu/in/trajectory_setpoint    │                           │
+      │                          ┌──────┴──────┐          ┌────────┴───────┐
+      │                          │     SIH     │    OR    │ Gazebo Harmonic│
+      │                          │ (internal)  │          │  (gz_bridge)   │
+      │                          │ No GPU, 3s  │          │  GPU, 55s      │
+      │                          └─────────────┘          └────────────────┘
+      │
+      │  px4_msgs MUST match firmware version exactly
+      │  (1 byte mismatch = silent DDS data loss)
+```
+
 ---
 
 ## Starting Point: Understanding the Test Suite

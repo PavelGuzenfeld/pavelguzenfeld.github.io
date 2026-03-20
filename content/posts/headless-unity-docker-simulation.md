@@ -19,6 +19,34 @@ Take a Unity 2019.4 drone simulation platform — originally built and run on Wi
 
 This post documents every step, every dead end, and every workaround from start to finish.
 
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Docker Container (nvidia/vulkan:1.3-470, RTX 3060)         │
+│                                                             │
+│  ┌───────┐    ┌──────────────────────────────────────────┐  │
+│  │ Xvfb  │───▶│  Unity 2019.4 (-batchmode, Vulkan)       │  │
+│  │  :99  │    │                                          │  │
+│  └───────┘    │  ┌────────────┐    ┌────────────┐        │  │
+│               │  │ HeadCamera │    │ BodyCamera │        │  │
+│               │  └─────┬──────┘    └─────┬──────┘        │  │
+│               └────────┼─────────────────┼───────────────┘  │
+│                  FFmpeg │           FFmpeg │                  │
+│                  H.264  ▼           H.264  ▼                  │
+│               ┌──────────────────────────────────┐           │
+│               │   mediamtx (RTSP server :8554)   │           │
+│               │   /HeadCamera    /BodyCamera     │           │
+│               └──────────────┬───────────────────┘           │
+│                              │                               │
+├──────────────────────────────┼───────────────────────────────┤
+│                              │ :8554                         │
+│  MAVLink (UDP/TCP)           │ RTSP                          │
+│       ▲                      ▼                               │
+│  ┌────┴─────────┐   ┌─────────────────┐                     │
+│  │ PX4 / GCS    │   │ GStreamer Client │                     │
+│  └──────────────┘   └─────────────────┘                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## Starting Point: The Simulation Project
