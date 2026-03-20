@@ -4,9 +4,9 @@ title: "Home"
 
 ## What I Do
 
-I build the software that keeps drones in the air. From real-time avionics to computer vision pipelines — every line of code runs on hardware where failure isn't an option.
+I build the software that keeps drones in the air. From avionics integration to computer vision pipelines — every line of code runs on hardware where failure isn't an option.
 
-**C++23** for zero-overhead abstractions. **ROS 2** for distributed systems. **PX4** for flight control. All running on edge hardware under hard real-time constraints.
+**C++23** for zero-overhead abstractions. **ROS 2** for distributed systems. **PX4** for flight control. All running on edge hardware under tight constraints.
 
 ---
 
@@ -19,7 +19,7 @@ Header-only C++23 behavior tree with a **compile-time DSL**. Zero heap allocatio
 Type-safe C++ primitives that catch unit and coordinate mix-ups **at compile time**. Fuzz-tested. Because `meters` and `feet` should never silently convert.
 
 ### [l2-hybrid-protocol](https://github.com/PavelGuzenfeld/l2-hybrid-protocol)
-Custom Layer 2 network protocol that beats raw UDP latency for real-time drone telemetry.
+Custom Layer 2 network protocol that beats raw UDP latency for drone telemetry.
 
 ### [fiber-nav-sim](https://github.com/PavelGuzenfeld/fiber-nav-sim)
 Full VTOL navigation simulation — PX4 + Gazebo + ROS 2. Test your flight code before it leaves the ground.
@@ -45,6 +45,3 @@ I contribute upstream to the tools I depend on:
 
 `C++23` `CMake` `ROS 2` `PX4` `Gazebo` `GStreamer` `Docker` `GitHub Actions` `Python` `Linux`
 
----
-
-## Latest Posts

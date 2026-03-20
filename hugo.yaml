@@ -34,21 +34,9 @@ params:
   UseHugoToc: true
   disableSpecial1stPost: false
 
-  profileMode:
-    enabled: true
-    title: "Pavel Guzenfeld"
-    subtitle: "Drone Avionics Software Engineer"
-    imageUrl: "https://github.com/PavelGuzenfeld.png"
-    imageWidth: 160
-    imageHeight: 160
-    imageTitle: "Pavel Guzenfeld"
-    buttons:
-      - name: Projects
-        url: /projects/
-      - name: Blog
-        url: /posts/
-      - name: Contact
-        url: /contact/
+  homeInfoParams:
+    Title: "Pavel Guzenfeld"
+    Content: "Drone Avionics Software Engineer — C++23, ROS 2, PX4, open-source"
 
   socialIcons:
     - name: github
@@ -87,13 +75,9 @@ menu:
       name: About
       url: /about/
       weight: 30
-    - identifier: contact
-      name: Contact
-      url: /contact/
-      weight: 40
-    - identifier: search
-      name: Search
-      url: /search/
+    - identifier: rss
+      name: RSS
+      url: /index.xml
       weight: 50
 
 markup:
