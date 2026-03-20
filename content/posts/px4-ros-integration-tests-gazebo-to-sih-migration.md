@@ -241,28 +241,6 @@ cd ..
 
 ---
 
-## The astyle Formatting Fix
-
-The CI's `check_format` job caught a pre-existing astyle issue in `test/mavsdk_tests/autopilot_tester.cpp` — lambda bodies inside `poll_condition_with_timeout()` calls were indented with 2 tabs instead of 1. This was on the `maetugr/sih-ci` base branch, not introduced by our changes, but it blocked CI.
-
-```cpp
-// Before — 2-tab indent for lambda
-REQUIRE(poll_condition_with_timeout(
-		[this, flight_mode]() {
-			return _telemetry->flight_mode() == flight_mode;
-		}, timeout));
-
-// After — 1-tab indent (matches astyle config)
-REQUIRE(poll_condition_with_timeout(
-	[this, flight_mode]() {
-		return _telemetry->flight_mode() == flight_mode;
-	}, timeout));
-```
-
-Six functions were affected: `wait_until_altitude`, `start_and_wait_for_mission_sequence`, `wait_for_flight_mode`, `wait_for_landed_state`, `wait_until_speed_lower_than`, and the one in the `wait_until_fixedwing` context.
-
----
-
 ## Local Reproduction in Docker
 
 Here's how to reproduce the full test suite locally. The CI uses `px4io/px4-dev-ros2-galactic:2021-09-08` — a container with ROS 2 Galactic, colcon, and PX4 build tooling pre-installed.
@@ -385,11 +363,10 @@ A few things were intentionally left untouched:
 The final PR contains four commits:
 
 1. **`ros_integration_tests: migrate from Gazebo Classic to SIH`** — the core migration: config.json, ros_test_runner.py, CI workflow
-2. **`mavsdk_tests: fix astyle formatting in autopilot_tester.cpp`** — pre-existing format issue on base branch
-3. **`ros_tests: fix EKF2 aux global position parameter name`** — `EKF2_AGP0_CTRL` → `EKF2_AGP_CTRL`
-4. **`ros_integration_tests: pin px4-ros2-interface-lib to compatible version`** — pin to `e0c9d19` to avoid `AuxGlobalPosition` build failure
+2. **`ros_tests: fix EKF2 aux global position parameter name`** — `EKF2_AGP0_CTRL` → `EKF2_AGP_CTRL`
+3. **`ros_integration_tests: pin px4-ros2-interface-lib to compatible version`** — pin to `e0c9d19` to avoid `AuxGlobalPosition` build failure
 
-Commits 2-4 were discovered by running the tests, not by code review. This is exactly why the [previous post's](/posts/px4-ros2-integration-testing-sitl-gazebo/#takeaways) first takeaway matters: you can't validate a PX4 integration change without actually running against a live autopilot.
+Commits 2-3 were discovered by running the tests, not by code review. This is exactly why the [previous post's](/posts/px4-ros2-integration-testing-sitl-gazebo/#takeaways) first takeaway matters: you can't validate a PX4 integration change without actually running against a live autopilot.
 
 ---
 
