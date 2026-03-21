@@ -39,7 +39,7 @@ TocOpen: true
 
 ## Upstream Contributions
 
-32 patches across 9 projects:
+37 patches across 12 projects:
 
 ### Eigen
 
@@ -78,6 +78,15 @@ TocOpen: true
 | [#12094](https://github.com/dmlc/xgboost/pull/12094) | Fix `python -OO` crash by guarding `__doc__` assignments |
 | [#12086](https://github.com/dmlc/xgboost/pull/12086) | Remove dead Python 2 guard and `sklearn.cross_validation` fallback |
 
+### ROS 2 (rclcpp, ros2cli, geometry2)
+
+| PR | Description |
+|----|-------------|
+| [rclcpp#3109](https://github.com/ros2/rclcpp/pull/3109) | Fix O(N²) entity addition in CallbackGroup — 71x speedup |
+| [rclcpp#3110](https://github.com/ros2/rclcpp/pull/3110) | Fix deadlock in TimeSource::destroy_clock_sub |
+| [ros2cli#1213](https://github.com/ros2/ros2cli/pull/1213) | Add `--content-filter` DDS filtering to `ros2 topic echo\|hz\|bw` |
+| [geometry2#908](https://github.com/ros2/geometry2/pull/908) | Fix StaticCache::getData() returning true on empty cache |
+
 ### Other Projects
 
 | Project | Description |
@@ -85,5 +94,5 @@ TocOpen: true
 | [OpenCV](https://github.com/opencv/opencv) | Fix Python bindings ([#28660](https://github.com/opencv/opencv/pull/28660)), clean up stale typing stubs ([#28665](https://github.com/opencv/opencv/pull/28665)) |
 | [px4-ros2-interface-lib](https://github.com/Auterion/px4-ros2-interface-lib) | VTOL timeout fix ([#186](https://github.com/Auterion/px4-ros2-interface-lib/pull/186)), geodesic namespace fix ([#188](https://github.com/Auterion/px4-ros2-interface-lib/pull/188)), HomePositionSetter ([#189](https://github.com/Auterion/px4-ros2-interface-lib/pull/189)) |
 | [concurrentqueue](https://github.com/cameron314/concurrentqueue) | Replace C-style casts ([#445](https://github.com/cameron314/concurrentqueue/pull/445)), document `try_enqueue` limit ([#446](https://github.com/cameron314/concurrentqueue/pull/446)) |
-| [Fast-DDS](https://github.com/eProsima/Fast-DDS) | Missing `#include <cstdint>` ([#6332](https://github.com/eProsima/Fast-DDS/pull/6332)), XML parser null-deref fix ([#6333](https://github.com/eProsima/Fast-DDS/pull/6333)) |
+| [Fast-DDS](https://github.com/eProsima/Fast-DDS) | TopicPayloadPool data race fix ([#6339](https://github.com/eProsima/Fast-DDS/pull/6339)), missing `#include <cstdint>` ([#6332](https://github.com/eProsima/Fast-DDS/pull/6332)), XML parser null-deref fix ([#6333](https://github.com/eProsima/Fast-DDS/pull/6333)) |
 | [Fast-DDS-docs](https://github.com/eProsima/Fast-DDS-docs) | Troubleshooting entry for libunwind/libgcc_s conflict ([#1234](https://github.com/eProsima/Fast-DDS-docs/pull/1234)) |
