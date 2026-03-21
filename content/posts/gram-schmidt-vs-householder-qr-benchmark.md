@@ -4,7 +4,7 @@ date: 2026-03-21
 draft: false
 tags: ["C++", "Eigen", "linear-algebra", "benchmarking", "open-source"]
 categories: ["deep-dive"]
-summary: "I submitted a Modified Gram-Schmidt QR decomposition to Eigen and an maintainer asked: why? Here's the benchmark data that answered the question — and ultimately led me to close the MR."
+summary: "I submitted a Modified Gram-Schmidt QR decomposition to Eigen and a maintainer asked: why? Here's the benchmark data that answered the question."
 ShowToc: true
 ---
 
@@ -155,9 +155,15 @@ But this niche is narrow. Most real-world QR use cases involve matrices larger t
 
 ## The Decision
 
-I closed the MR. The maintenance burden of adding a new QR decomposition to Eigen — documentation, tests, API surface, compatibility across compilers and platforms — isn't justified for a method that only wins on matrices small enough that QR decomposition isn't your bottleneck anyway.
+I initially closed the MR, reasoning that the maintenance burden wasn't justified for a method that only wins on small matrices. But then Rasmus Munk Larsen — the Eigen maintainer who originally challenged the MR — reviewed the benchmark data and commented:
 
-The original [feature request (issue #2495)](https://gitlab.com/libeigen/eigen/-/issues/2495) made compelling arguments about API ergonomics and explicit Q access. Those are real pain points. But the right solution is probably improving the ergonomics of `HouseholderQR` — making Q easier to extract as a dense matrix — rather than adding an algorithmically inferior decomposition.
+> Thanks for the careful investigation.
+
+And:
+
+> I don't think supporting both APIs is a problem. MGS does have its uses as you point out.
+
+He then **reopened the MR** for further review. The benchmark data made the case: MGS has a legitimate niche for small matrices and explicit Q access. The original [feature request (issue #2495)](https://gitlab.com/libeigen/eigen/-/issues/2495) made compelling arguments about API ergonomics, and the data showed the tradeoffs clearly enough for the maintainer to reconsider.
 
 ## Takeaways
 
@@ -167,6 +173,6 @@ The original [feature request (issue #2495)](https://gitlab.com/libeigen/eigen/-
 
 3. **Orthogonality matters more than reconstruction error.** Both algorithms reconstruct A = QR to machine precision. But MGS's Q drifts from orthogonal as condition number grows. If you're using Q for anything beyond reconstructing A — projections, basis extraction, iterative refinement — that drift compounds.
 
-4. **Don't fight the maintainer.** When someone who's spent years optimizing a numerical library tells you your algorithm is slower, they're probably right. The benchmark confirmed it, and the conversation was better for having data behind it.
+4. **Let the data speak.** When a maintainer challenges your approach, respond with benchmarks, not arguments. The data confirmed MGS is slower at scale — but also showed where it wins. That honest assessment is what ultimately got the MR reopened.
 
 5. **Know your niche.** Small-matrix MGS QR is legitimately faster. If I were building a robotics system that decomposes hundreds of thousands of 6×6 matrices per second, MGS would be the right choice. But that's not what Eigen's `QR` module is for — it serves the general case, and the general case is Householder.
