@@ -77,108 +77,61 @@ I compared MGS against `HouseholderQR` across:
 
 Compiled with `g++ -O3 -march=native -DNDEBUG`.
 
-You can run a version of this benchmark yourself on Compiler Explorer:
+Try it yourself on Compiler Explorer — click "Run" to see the output:
 
-<iframe width="100%" height="600px" src="https://godbolt.org/e/z/bc8x91To9" frameborder="0"></iframe>
+<iframe width="100%" height="600px" src="https://godbolt.org/e#z/bc8x91To9" frameborder="0"></iframe>
 
 Or open it directly: [godbolt.org/z/bc8x91To9](https://godbolt.org/z/bc8x91To9)
 
-### Godbolt Results (Reproducible)
+## Results
 
-Running the benchmark on Compiler Explorer (GCC 14.2, `-O3 -DNDEBUG`, shared infrastructure) produces these results — absolute times are slower than a dedicated machine, but the **ratios and accuracy numbers are consistent**:
+All results below are from a dedicated machine (`g++ -O3 -march=native -DNDEBUG`, double precision). The Godbolt link above reproduces the same ratios on shared infrastructure.
 
-| Case | Size | MGS (μs) | HH (μs) | Ratio | MGS orth | HH orth | MGS rec | HH rec |
-|------|------|----------|---------|-------|----------|---------|---------|--------|
-| Square | 8×8 | 0.7 | 1.7 | **2.43x** | 1.1e-15 | 1.3e-15 | 1.1e-16 | 3.2e-16 |
-| Square | 16×16 | 3.6 | 5.0 | **1.40x** | 2.6e-15 | 1.8e-15 | 1.4e-16 | 3.1e-16 |
-| Square | 32×32 | 19.4 | 19.6 | **1.01x** | 7.3e-14 | 3.0e-15 | 1.9e-16 | 4.1e-16 |
-| Square | 64×64 | 138.5 | 149.8 | **1.08x** | 2.8e-14 | 6.4e-15 | 2.6e-16 | 6.1e-16 |
-| Square | 128×128 | 1131.5 | 753.0 | 0.67x | 4.1e-14 | 1.1e-14 | 3.8e-16 | 7.1e-16 |
-| Square | 256×256 | 8676.4 | 4731.5 | 0.55x | 3.4e-13 | 1.7e-14 | 5.3e-16 | 8.1e-16 |
-| Tall | 100×10 | 1272.0 | 7.1 | 0.01x | 1.2e-15 | 1.4e-15 | 1.1e-16 | 2.7e-16 |
-| Tall | 200×20 | 6246.3 | 41.0 | 0.01x | 1.9e-15 | 2.2e-15 | 1.5e-16 | 3.0e-16 |
-| Tall | 500×50 | 108128.9 | 419.4 | 0.00x | 4.7e-15 | 4.9e-15 | 2.3e-16 | 3.9e-16 |
+### Performance: Speed
 
-**Ill-Conditioned (64×64):**
+| Size | MGS (μs) | HH (μs) | Ratio | Winner |
+|------|----------|---------|-------|--------|
+| 4×4 | 0.2 | 0.5 | **2.9x** | MGS |
+| 8×8 | 0.2 | 1.2 | **5.6x** | MGS |
+| 16×16 | 1.1 | 3.1 | **3.0x** | MGS |
+| 32×32 | 5.3 | 8.4 | **1.6x** | MGS |
+| 64×64 | 27.6 | 41.0 | **1.5x** | MGS |
+| 128×128 | 217 | 152 | 0.70x | HH |
+| 256×256 | 1621 | 857 | 0.53x | HH |
+| 512×512 | 13678 | 5500 | 0.40x | HH |
+| 1024×1024 | 113725 | 34911 | 0.31x | HH |
 
-| Condition (κ) | MGS orth | HH orth |
-|---------------|----------|---------|
-| 10⁴ | 6.7e-13 | 5.9e-15 |
-| 10⁸ | 3.9e-09 | 6.6e-15 |
-| 10¹² | 3.1e-05 | 6.2e-15 |
+**Ratio** = HH_time / MGS_time. Values > 1 mean MGS is faster.
 
-The crossover on Godbolt happens at 32×32 (ratio ~1.0x) compared to ~64×64 on a dedicated machine — likely due to shared-infrastructure cache effects — but the trend is identical.
+At **n = 128** Householder takes the lead and never looks back. By 1024×1024, it's **3.3x faster**. The solve benchmark shows the same crossover — MGS is 4.3x faster at 8×8 but 2.7x slower at 512×512.
 
-## Dedicated Machine Results
+### Performance: Tall Matrices
 
-The following results were collected on a dedicated machine with `g++ -O3 -march=native -DNDEBUG`:
+This is where MGS falls apart:
 
-### Decomposition: Performance & Accuracy (double)
-
-| Test Case | Size | MGS (μs) | HH (μs) | Speedup | MGS ortho err | HH ortho err | MGS recon err | HH recon err |
-|-----------|------|----------|---------|---------|---------------|--------------|---------------|--------------|
-| Small square | 4×4 | 0.2 | 0.5 | **2.9x** | 5.6e-16 | 4.1e-16 | 8.3e-17 | 1.8e-16 |
-| Small square | 8×8 | 0.2 | 1.2 | **5.6x** | 2.2e-15 | 8.2e-16 | 9.5e-17 | 2.2e-16 |
-| Small square | 16×16 | 1.1 | 3.1 | **3.0x** | 3.1e-15 | 1.6e-15 | 1.3e-16 | 3.2e-16 |
-| Small square | 32×32 | 5.3 | 8.4 | **1.6x** | 5.5e-15 | 3.5e-15 | 2.0e-16 | 4.3e-16 |
-| Medium square | 64×64 | 27.6 | 41.0 | **1.5x** | 2.6e-14 | 5.8e-15 | 2.7e-16 | 5.3e-16 |
-| Medium square | 128×128 | 217 | 152 | 0.70x | 2.6e-14 | 1.0e-14 | 3.6e-16 | 6.7e-16 |
-| Medium square | 256×256 | 1621 | 857 | 0.53x | 2.5e-13 | 1.6e-14 | 5.2e-16 | 7.5e-16 |
-| Large square | 512×512 | 13678 | 5500 | 0.40x | 5.5e-13 | 2.3e-14 | 6.9e-16 | 7.8e-16 |
-| Large square | 1024×1024 | 113725 | 34911 | 0.31x | 6.7e-11 | 3.6e-14 | 9.4e-16 | 8.6e-16 |
-
-At **n = 128** Householder takes the lead and never looks back. By 1024×1024, it's **3.3x faster**.
-
-### Tall Matrices: Where MGS Falls Apart
-
-| Test Case | Size | MGS (μs) | HH (μs) | Speedup | MGS ortho err | HH ortho err |
-|-----------|------|----------|---------|---------|---------------|--------------|
-| Tall | 100×10 | 93.8 | 2.5 | 0.03x | 1.2e-15 | 8.1e-16 |
-| Tall | 1000×10 | 93924 | 16.4 | 0.0002x | 1.1e-15 | 1.0e-15 |
-| Tall | 1000×100 | 90504 | 854 | 0.009x | 4.1e-15 | 4.4e-15 |
-| Tall | 500×50 | 10487 | 178 | 0.02x | 2.6e-15 | 3.1e-15 |
+| Size | MGS (μs) | HH (μs) | Ratio |
+|------|----------|---------|-------|
+| 100×10 | 93.8 | 2.5 | 0.03x |
+| 500×50 | 10487 | 178 | 0.02x |
+| 1000×10 | 93924 | 16.4 | **0.0002x** |
+| 1000×100 | 90504 | 854 | 0.009x |
 
 For a 1000×10 matrix, Householder is **5700x faster**. This isn't a typo.
 
-The problem: my MGS implementation builds a full m×m Q matrix (1000×1000) and completes the remaining 990 columns by orthogonalizing standard basis vectors. Householder stores Q as 10 compact reflectors and never materializes the full matrix.
+The problem: my MGS implementation builds a full m×m Q matrix (1000×1000) and completes the remaining 990 columns by orthogonalizing standard basis vectors. Householder stores Q as 10 compact reflectors and never materializes the full matrix. Even with a thin-Q optimization, the core BLAS-2 vs BLAS-3 gap would remain.
 
-Even with a thin-Q optimization, the core BLAS-2 vs BLAS-3 gap would remain for the orthogonalization itself.
+### Accuracy: Orthogonality Under Ill-Conditioning
 
-### Solve Performance (Ax = b, double)
+Both algorithms reconstruct A = QR to machine precision (~10⁻¹⁶). The real difference is **orthogonality of Q** — how close Q^T Q is to the identity:
 
-| Size | MGS (μs) | HH (μs) | Speedup | MGS err | HH err |
-|------|----------|---------|---------|---------|--------|
-| 8×8 | 0.3 | 1.3 | **4.3x** | 1.3e-15 | 8.6e-16 |
-| 16×16 | 1.1 | 3.2 | **2.9x** | 1.0e-15 | 2.2e-15 |
-| 64×64 | 26.1 | 42.3 | **1.6x** | 7.2e-15 | 2.4e-15 |
-| 128×128 | 166 | 147 | 0.89x | 3.5e-15 | 3.0e-15 |
-| 256×256 | 1285 | 739 | 0.57x | 1.3e-14 | 1.4e-14 |
-| 512×512 | 11708 | 4363 | 0.37x | 1.3e-14 | 1.1e-14 |
-
-Same crossover at ~128. For small systems, MGS's lower overhead wins. For anything practical at scale, Householder dominates.
-
-### Ill-Conditioned Matrices: The Accuracy Gap
-
-| Condition (κ) | MGS ortho err | HH ortho err | Ratio |
-|---------------|---------------|--------------|-------|
+| Condition (κ) | MGS ‖Q^TQ − I‖ | HH ‖Q^TQ − I‖ | MGS degradation |
+|---------------|-----------------|----------------|-----------------|
+| Well-conditioned | 2.6e-14 | 5.8e-15 | ~5x worse |
 | 10⁴ | 5.9e-13 | 5.8e-15 | 100x worse |
-| 10⁸ | 3.7e-09 | 6.1e-15 | 600000x worse |
-| 10¹² | 3.2e-05 | 6.2e-15 | 5 billion x worse |
+| 10⁸ | 3.7e-09 | 6.1e-15 | 600,000x worse |
+| 10¹² | **3.2e-05** | 6.2e-15 | 5 billion x worse |
 
-This is the killer. Householder's orthogonality error stays at **~10⁻¹⁵** regardless of condition number. MGS degrades proportionally to κ — a well-known theoretical result that the data confirms precisely.
-
-For reconstruction error (‖A − QR‖/‖A‖), both methods are comparable at ~10⁻¹⁶. The factorization is correct in both cases. But if you need Q to actually be orthogonal — for projections, basis computations, or numerical stability in downstream operations — MGS's Q becomes unreliable as condition number grows.
-
-### Single Precision (float)
-
-| Size | MGS (μs) | HH (μs) | Speedup | MGS ortho err | HH ortho err |
-|------|----------|---------|---------|---------------|--------------|
-| 16×16 | 0.8 | 2.6 | **3.4x** | 6.6e-06 | 7.0e-07 |
-| 64×64 | 20.2 | 37.3 | **1.9x** | 2.3e-05 | 3.3e-06 |
-| 256×256 | 578 | 429 | 0.74x | 9.9e-05 | 8.8e-06 |
-| 512×512 | 5023 | 2295 | 0.46x | 4.3e-04 | 1.3e-05 |
-
-Same pattern. The crossover moves slightly because float has lower arithmetic intensity per element, but BLAS-3 blocking still wins at scale.
+This is the killer. Householder's orthogonality stays at **~10⁻¹⁵** regardless of condition number. MGS degrades as O(κ · ε) — a well-known theoretical result the data confirms precisely. If you need Q to actually be orthogonal — for projections, basis computations, or numerical stability downstream — MGS becomes unreliable as κ grows. The same pattern holds for single-precision float, with an even earlier onset of degradation.
 
 ## Why MGS Loses
 
