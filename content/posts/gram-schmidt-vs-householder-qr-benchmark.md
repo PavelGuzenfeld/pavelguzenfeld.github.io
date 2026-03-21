@@ -77,11 +77,11 @@ I compared MGS against `HouseholderQR` across:
 
 Compiled with `g++ -O3 -march=native -DNDEBUG`.
 
-Try it yourself on Compiler Explorer — click "Run" to see the output:
+Try it yourself on Compiler Explorer — click the play button to run:
 
-<iframe width="100%" height="600px" src="https://godbolt.org/e?z/bc8x91To9" frameborder="0"></iframe>
+<iframe width="100%" height="800px" src="https://godbolt.org/z/YE537ec18" frameborder="0" allowfullscreen></iframe>
 
-Or open it directly: [godbolt.org/z/bc8x91To9](https://godbolt.org/z/bc8x91To9)
+Or open it directly: [godbolt.org/z/YE537ec18](https://godbolt.org/z/YE537ec18)
 
 ## Results
 
