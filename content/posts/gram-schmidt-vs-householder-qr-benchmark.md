@@ -79,7 +79,7 @@ Compiled with `g++ -O3 -march=native -DNDEBUG`.
 
 Try it yourself on Compiler Explorer — click "Run" to see the output:
 
-<iframe width="100%" height="600px" src="https://godbolt.org/e#z/bc8x91To9" frameborder="0"></iframe>
+<iframe width="100%" height="600px" src="https://godbolt.org/e?z/bc8x91To9" frameborder="0"></iframe>
 
 Or open it directly: [godbolt.org/z/bc8x91To9](https://godbolt.org/z/bc8x91To9)
 
