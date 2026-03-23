@@ -66,7 +66,12 @@ The plugin suite provides three components that fill the NVMM gap:
 
 ### Component 1: GstNvmmAllocator
 
-The allocator wraps `NvBufSurfaceCreate` / `NvBufSurfaceDestroy` behind GStreamer's `GstAllocator` interface. This means any GStreamer element can allocate NVMM memory through the standard API.
+The allocator wraps `NvBufSurfaceCreate` / `NvBufSurfaceDestroy` behind GStreamer's `GstAllocator` interface. Following the upstream pattern used by `GstGLMemory` and `GstVulkanImageMemory`, it does **not** override `GstAllocator::alloc(size)` — video allocators need explicit format, width, and height, not just a byte count. Instead, allocation goes through a custom function:
+
+```cpp
+GstMemory *mem = gst_nvmm_allocator_alloc_video (alloc,
+    GST_VIDEO_FORMAT_NV12, 1920, 1080);
+```
 
 The critical design decision: **what does `gst_memory_map()` return?**
 
