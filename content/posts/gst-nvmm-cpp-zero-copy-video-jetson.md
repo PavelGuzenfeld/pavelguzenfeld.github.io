@@ -320,50 +320,61 @@ The EGL and tegra-egl mounts are essential — `NvBufSurfTransform` needs EGL in
 
 ### The Process
 
-GStreamer is hosted on freedesktop.org's GitLab instance. The contribution process:
+GStreamer is hosted on freedesktop.org's GitLab instance. Here's the process as we experienced it — including the parts that didn't go as planned.
 
-1. **File issues first.** Before writing code, describe the gap you want to fill. This starts a conversation with maintainers about whether and how the feature should be implemented. We filed three issues ([#4979](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4979), [#4980](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4980), [#4981](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4981)) for the allocator, buffer pool, and transform element.
+1. **File issues first.** We filed three issues ([#4979](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4979), [#4980](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4980), [#4981](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4981)) describing the NVMM gap. Sebastian Droge (`@slomo`), a core maintainer, responded within days with specific guidance: single MR, C++14, in `sys/nvcodec/`.
 
-2. **Wait for feedback.** Sebastian Droge (`@slomo`), a core maintainer, responded within days. He had specific preferences: single MR combining all three, C++14 to match the existing nvcodec plugin, location in `sys/nvcodec/`.
+2. **Request account verification.** New freedesktop.org GitLab accounts can't create forks. File a [user verification issue](https://gitlab.freedesktop.org/freedesktop/freedesktop/issues/new?issuable_template=User%20verification) — tick two checkboxes, a bot processes it within minutes.
 
-3. **Request account verification.** New freedesktop.org GitLab accounts can't create forks. You need to file a [user verification issue](https://gitlab.freedesktop.org/freedesktop/freedesktop/issues/new?issuable_template=User%20verification) — tick two checkboxes agreeing to the code of conduct. A bot processes it within minutes.
+3. **We submitted a 1400-line MR as a first-time contributor. It was closed.** This is the important part. Nirbheek Chauhan, another core maintainer, [closed our MR](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11101) with a detailed explanation that deserves reading in full. The key points:
 
-4. **Fork, branch, push, MR.** Standard GitLab flow. Fork `gstreamer/gstreamer`, create a branch from `main`, push your changes, open MR against upstream `main`.
+   - Large first-time MRs don't get reviewed regardless of code quality
+   - Reviews are an investment in *people*, not code — maintainers want contributors who will stick around, learn the codebase, and maybe become maintainers themselves
+   - The time to review a large feature MR is almost always equal to or greater than the time the maintainer would need to write it themselves
+   - The project benefits from the relationship, not just the code
 
-5. **CI runs.** GStreamer has extensive CI that builds on Linux, Windows, macOS, cross-compiles for various architectures. Your MR needs to pass CI. For Jetson-specific code behind `#ifdef HAVE_CUDA_NVMM`, CI won't test the actual hardware path — but it verifies compilation doesn't break anything.
+   He was right. We should have started with small contributions to build trust first.
 
-### What Maintainers Expect
+4. **Start small, for real.** After the MR was closed, we went back and found actual bugs in the existing nvcodec code — a typo in a macro name (`GST_CUDA_CONVET_FORMATS`), a triple-L in an enum (`PROP_PREFER_STREAM_ORDERED_ALLLOC`), unchecked return values. We submitted these as separate small MRs. This is how it's supposed to work.
 
-GStreamer maintainers are experienced and busy. They care about:
+5. **Maintainers give design feedback even on closed MRs.** Diego Nieto pointed out hardcoded values in our allocator. Nirbheek pointed us to `GstGLMemory` and `GstVulkanImageMemory` as the correct pattern for video allocators — custom alloc functions with explicit format/dimensions, not `GstAllocator::alloc(size)`. We [fixed our implementation](https://github.com/PavelGuzenfeld/gst-nvmm-cpp/releases/tag/v1.0.1) based on this feedback. Even a closed MR taught us something.
 
-**Code quality over features.** A smaller, correct MR is better than a large feature-complete one with rough edges. The allocator, buffer pool, and transform element are the minimum viable contribution. The shared memory sink/source elements are useful but separate — they can come in a follow-up MR.
+### What Maintainers Actually Care About
 
-**GStreamer conventions.** Every element should have:
-- `GST_DEBUG_CATEGORY` for per-element log filtering
-- `GEnum` for properties with named values (not raw integers)
-- `GstVideoMeta` attached to buffers with correct strides
-- Proper `propose_allocation` / `decide_allocation` for pool negotiation
-- `passthrough_on_same_caps` when caps match and no transform is needed
+After going through this, here's what we understand now:
 
-**Clean separation.** The NVMM code is guarded by `#ifdef HAVE_CUDA_NVMM` and only compiles on systems where `nvbufsurface.h` is detected. It adds zero overhead to non-Jetson builds.
+**Trust is earned through small contributions.** Nobody gets a 1400-line feature merged on their first interaction. Fix a typo. Add a missing error check. Clean up dead code. Show that you can follow the project's conventions, respond to feedback, and ship clean patches. Then propose bigger things.
 
-**C over C++.** GStreamer prefers C for elements unless the wrapped API is C++. The NvBufSurface API is C, so a pure-C implementation would be preferred. We used C++14 because the existing `nvcodec` plugin is already C++ (`cpp_std=c++14` in meson.build). The C++ is minimal — `std::atomic` for thread-safe properties, RAII in internal helpers.
+**Reviews are scarce.** Maintainers have a couple hours a day for open-source work. Every review is a choice — they'll invest in someone who's likely to contribute again over someone who might disappear. Proving you'll stick around is more important than the code itself.
 
-**Be honest about limitations.** Our reference implementation has a mock API for host-side testing that matches the real NVIDIA struct layouts. Tests pass on x86_64 with the mock, on Xavier NX and Orin NX with real hardware. We documented what's tested and what's not.
+**GStreamer has specific conventions.** Video allocators don't override `alloc(size)` — they use custom alloc functions (see `GstGLMemory`). Elements need `GST_DEBUG_CATEGORY`, `GEnum` properties, `GstVideoMeta` with correct strides, and proper `propose_allocation` / `decide_allocation`. Read the existing code before writing new code.
+
+**The code output of reviews is a side-effect. The community growth is the primary effect.** That's a direct quote from the maintainer, and it reframed how we think about open source contribution.
+
+### The Current Plan
+
+The standalone plugin ([gst-nvmm-cpp](https://github.com/PavelGuzenfeld/gst-nvmm-cpp)) works and solves the problem today. For upstream, we're taking the long road:
+
+1. Small fixes first — typos, error handling, dead code cleanup
+2. Then a real bug fix in an area we know (shm or v4l2)
+3. After 3-5 merged MRs, re-propose NVMM in small pieces: allocator first (~200 lines), then pool, then element
+
+It's slower, but it's how established open-source projects work. The code isn't going anywhere.
 
 ### Things That Surprised Us
 
-**Caps negotiation is the hardest part.** Writing the actual transform (call `NvBufSurfTransform`, done) took an hour. Getting caps negotiation right — `transform_caps`, `fixate_caps`, `get_unit_size`, handling passthrough, allocation queries — took days. The GStreamer design manual explains the theory; reading existing elements' source code teaches the practice.
+**Caps negotiation is the hardest part.** Writing the actual transform (call `NvBufSurfTransform`, done) took an hour. Getting caps negotiation right — `transform_caps`, `fixate_caps`, `get_unit_size`, handling passthrough, allocation queries — took days. Reading existing elements' source code teaches more than the documentation.
 
-**Pipeline tests catch what unit tests miss.** Our unit tests all passed, but real `gst-launch-1.0` pipelines failed because the allocator's byte-size heuristic produced 640x481 instead of 640x480. One pixel off. This only manifested when downstream `nvvidconv` (on Orin specifically) rejected the surface dimensions.
+**Pipeline tests catch what unit tests miss.** Our unit tests all passed, but real `gst-launch-1.0` pipelines failed because the allocator produced 640x481 instead of 640x480 due to integer rounding. One pixel off. This only manifested on Orin, not Xavier NX.
 
-**Docker on Jetson needs specific mounts.** The NVIDIA runtime (`--runtime nvidia`) isn't enough for GStreamer pipelines. You also need to mount the host's GStreamer plugins directory (`/usr/lib/aarch64-linux-gnu/gstreamer-1.0/`), the EGL libraries (`tegra-egl/`), and the GLVND alternatives. Without EGL, `NvBufSurfTransform` silently fails even though it uses VIC (not GPU) compute.
+**Docker on Jetson needs specific mounts.** The NVIDIA runtime (`--runtime nvidia`) isn't enough for GStreamer pipelines. You also need the host's GStreamer plugins directory, EGL libraries, and GLVND alternatives. Without EGL, `NvBufSurfTransform` silently fails even when using VIC compute.
 
-**Sanitizers work on the mock path.** We ran AddressSanitizer and ThreadSanitizer on the mock-API builds. Since the mock matches the real API's struct layout exactly, bugs caught by sanitizers on x86_64 apply to Jetson too. Both came back clean: no memory errors, no data races.
+**Maintainers review closed MRs.** Even after closing ours, two maintainers left technical feedback that improved the code. Stay respectful, act on the feedback, and the relationship continues.
 
 ## Links
 
 - **Reference implementation:** [github.com/PavelGuzenfeld/gst-nvmm-cpp](https://github.com/PavelGuzenfeld/gst-nvmm-cpp)
-- **Upstream MR:** [!11101](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11101)
+- **Upstream MR (closed, with useful discussion):** [!11101](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11101)
+- **Follow-up small MRs:** [!11104](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11104), [!11105](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11105), [!11106](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11106)
 - **Issues:** [#4979](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4979), [#4980](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4980), [#4981](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4981)
 - **GStreamer contribution guide:** [gstreamer.freedesktop.org/documentation/contribute](https://gstreamer.freedesktop.org/documentation/contribute/index.html)
