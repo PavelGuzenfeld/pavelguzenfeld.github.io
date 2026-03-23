@@ -346,8 +346,6 @@ GStreamer maintainers are experienced and busy. They care about:
 
 ### Things That Surprised Us
 
-**The GStreamer monorepo is enormous.** The `gstreamer/gstreamer` repo contains all of GStreamer core, base, good, bad, ugly, libav, and more. Building the full thing from source takes significant time and disk space. You don't need to — just build the specific subproject you're modifying.
-
 **Caps negotiation is the hardest part.** Writing the actual transform (call `NvBufSurfTransform`, done) took an hour. Getting caps negotiation right — `transform_caps`, `fixate_caps`, `get_unit_size`, handling passthrough, allocation queries — took days. The GStreamer design manual explains the theory; reading existing elements' source code teaches the practice.
 
 **Pipeline tests catch what unit tests miss.** Our unit tests all passed, but real `gst-launch-1.0` pipelines failed because the allocator's byte-size heuristic produced 640x481 instead of 640x480. One pixel off. This only manifested when downstream `nvvidconv` (on Orin specifically) rejected the surface dimensions.
