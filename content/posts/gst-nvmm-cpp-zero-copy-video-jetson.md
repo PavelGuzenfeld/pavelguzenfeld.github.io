@@ -209,11 +209,13 @@ for (uint32_t p = 0; p < num_planes; p++)
 NvBufSurfaceSyncForDevice (surface, 0, mapped_plane_);
 ```
 
-### The Dimension Heuristic Bug
+### The Allocator Design Bug
 
-Our initial allocator tried to reverse-engineer width/height from a byte count (assuming NV12 at 1.5 bytes/pixel). For 640x480 NV12 = 460800 bytes, the heuristic computed 640x481 due to integer rounding. One pixel off. This worked on Xavier NX but crashed on Orin — the downstream `nvvidconv` rejected the surface because the dimensions didn't match the negotiated caps.
+Our initial allocator overrode `GstAllocator::alloc(size)` and tried to reverse-engineer width/height from the byte count. This is fundamentally wrong — a GStreamer maintainer pointed us to `GstGLMemory` and `GstVulkanImageMemory` which use a custom alloc function with explicit video parameters and don't touch the `alloc(size)` path at all.
 
-Fix: `gst_nvmm_allocator_alloc_video()` that takes explicit format, width, height instead of guessing from byte count.
+The heuristic also produced off-by-one dimensions (640x481 instead of 640x480) due to integer rounding, which crashed on Orin.
+
+Fix: dropped `GstAllocator::alloc(size)` entirely. All allocation goes through `gst_nvmm_allocator_alloc_video(format, width, height)` — the correct upstream pattern for video allocators.
 
 ### The Double-Free Bug
 
