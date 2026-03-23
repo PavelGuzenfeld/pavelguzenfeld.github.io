@@ -226,15 +226,16 @@ Fix: `NvmmBuffer::release()` that detaches ownership without destroying.
 Benchmarks on Jetson Xavier NX (JetPack 5.1) and Orin NX (JetPack 6), 1000 iterations:
 
 ```
-                            Xavier NX        Orin NX
-                            ---------        -------
-NV12 1080p alloc/free       591 us           117 us      (5x faster)
-NV12 1080p map/unmap        231 us           298 us
-VIC 1080p->480p transform   1947 us          35 us       (56x faster)
-VIC 4K->1080p transform     4002 us          --
+                            Xavier NX        Orin NX        Speedup
+                            ---------        -------        -------
+NV12 1080p alloc/free       591 us           117 us         5x
+NV12 1080p map/unmap        231 us           298 us         —
+VIC 1080p->480p             1947 us          35 us          56x
+VIC 4K->1080p               4002 us          285 us         14x
+VIC 4K->480p                3548 us          31 us          114x
 ```
 
-The Orin's VIC is dramatically faster — 35 microseconds per 1080p-to-480p scale, which is ~28,000 frames per second of throughput from the hardware transform alone.
+The Orin's VIC is dramatically faster across the board. 4K-to-480p in 31 microseconds — that's ~32,000 frames per second of hardware transform throughput.
 
 ## How to Use It
 
