@@ -215,10 +215,6 @@ Our initial allocator tried to reverse-engineer width/height from a byte count (
 
 Fix: `gst_nvmm_allocator_alloc_video()` that takes explicit format, width, height instead of guessing from byte count.
 
-### The License Bug
-
-GStreamer 1.16 rejects plugins with `"MIT"` in `GST_PLUGIN_DEFINE`. The allowed strings are `"LGPL"`, `"GPL"`, `"BSD"`, etc. Our plugins silently failed to load — no error message, just `gst-inspect-1.0` couldn't find them. The GStreamer registry debug log showed: `has invalid license "MIT", not loading`.
-
 ### The Double-Free Bug
 
 `NvmmBuffer` is an RAII wrapper that calls `NvBufSurfaceDestroy` in its destructor. In `nvmmconvert::transform`, we wrapped borrowed `NvBufSurface*` pointers (owned by the pipeline allocator) in `NvmmBuffer` objects. When they went out of scope, the destructor destroyed surfaces that weren't ours.
