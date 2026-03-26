@@ -1,6 +1,6 @@
 baseURL: "https://pavelguzenfeld.com/"
 languageCode: en-us
-title: Pavel Guzenfeld
+title: "Pavel Guzenfeld"
 theme: PaperMod
 
 pagination:
@@ -19,7 +19,7 @@ outputs:
 params:
   env: production
   title: Pavel Guzenfeld
-  description: "Drone Avionics Software Engineer — C++23, ROS 2, real-time systems, open-source"
+  description: "Senior C++23 engineer building flight-critical avionics, navigation, and computer-vision pipelines for UAVs. ROS 2, PX4, GStreamer, Jetson. Available for consulting and contract work."
   keywords: [C++, Robotics, Drones, ROS2, PX4, Systems Programming, Open Source]
   author: Pavel Guzenfeld
 
@@ -36,8 +36,8 @@ params:
   disableSpecial1stPost: false
 
   homeInfoParams:
-    Title: "Pavel Guzenfeld"
-    Content: "Drone Avionics Software Engineer — C++23, ROS 2, PX4, open-source"
+    Title: "UAV & Robotics Software Engineer — C++23"
+    Content: "I design and implement flight-critical software for drones and robotics: navigation pipelines and computer vision. Available for consulting and contract work — remote or on-site."
 
   socialIcons:
     - name: github
@@ -48,6 +48,9 @@ params:
       url: "mailto:me@pavelguzenfeld.com"
     - name: rss
       url: "/index.xml"
+
+  images:
+    - /images/og-default.png
 
   cover:
     hiddenInList: false
@@ -68,6 +71,10 @@ menu:
       name: Projects
       url: /projects/
       weight: 10
+    - identifier: consulting
+      name: Consulting
+      url: /consulting/
+      weight: 15
     - identifier: blog
       name: Blog
       url: /posts/

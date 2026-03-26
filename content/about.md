@@ -1,7 +1,7 @@
 ---
 title: "About"
 layout: "single"
-summary: "About Pavel Guzenfeld"
+summary: "UAV software engineer specializing in C++23 avionics, navigation, and computer-vision pipelines. Contributor to Eigen, ROS 2, GStreamer, and more."
 ShowToc: false
 ---
 

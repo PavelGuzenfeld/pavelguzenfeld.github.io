@@ -12,16 +12,16 @@ I build the software that keeps drones in the air. From avionics integration to 
 
 ## Featured Projects
 
-### [behavior-tree-lite](https://github.com/PavelGuzenfeld/behavior-tree-lite)
+### [behavior-tree-lite](/projects/behavior-tree-lite/)
 Header-only C++23 behavior tree with a **compile-time DSL**. Zero heap allocation, flattened execution, and 10x smaller binary than BehaviorTree.CPP.
 
-### [strong-types](https://github.com/PavelGuzenfeld/strong-types)
+### [strong-types](/projects/strong-types/)
 Type-safe C++ primitives that catch unit and coordinate mix-ups **at compile time**. Fuzz-tested. Because `meters` and `feet` should never silently convert.
 
-### [l2-hybrid-protocol](https://github.com/PavelGuzenfeld/l2-hybrid-protocol)
+### [l2-hybrid-protocol](/projects/l2-hybrid-protocol/)
 Custom Layer 2 network protocol that beats raw UDP latency for drone telemetry.
 
-### [fiber-nav-sim](https://github.com/PavelGuzenfeld/fiber-nav-sim)
+### [fiber-nav-sim](/projects/fiber-nav-sim/)
 Full VTOL navigation simulation — PX4 + Gazebo + ROS 2. Test your flight code before it leaves the ground.
 
 [See all projects &rarr;](/projects/)
@@ -30,14 +30,17 @@ Full VTOL navigation simulation — PX4 + Gazebo + ROS 2. Test your flight code 
 
 ## Open Source Contributions
 
-I contribute upstream to the tools I depend on:
+97 patches across 15 projects. I contribute upstream to the tools I depend on:
 
-- **Eigen** — bug fixes, compiler warning fixes, and new operators
-- **dora-rs** — building full C++ API parity
-- **XGBoost** — bug fixes and code quality
-- **OpenCV** — Python bindings and build fixes
-- **px4-ros2-interface-lib** — VTOL fixes and new utilities
-- **concurrentqueue**, **Fast-DDS** — cast safety, null-deref fixes, docs
+- **Eigen** — 24 MRs: bug fixes, new operators, structured bindings, Gram-Schmidt QR
+- **dora-rs** — 9 PRs: C++ API parity, zero-copy output, dynamic node init
+- **XGBoost** — 10 PRs: `python -OO` crash fixes, type safety, dead code removal
+- **PX4-Autopilot** — 7 PRs: DDS reconnection, MAVLink signing, mission resume bugs
+- **GStreamer** — 7 MRs: NVMM Jetson plugins, shmsink bugs, CUDA memory checks
+- **Fast-DDS** — 7 PRs: data races, infinite loop, null-deref, missing includes
+- **MAVSDK** — 5 PRs: telemetry timestamps, geofence download, HOME_POSITION
+- **ROS 2** — 4 PRs: O(N²) → O(N) CallbackGroup (71x speedup), deadlock fix
+- **OpenCV**, **concurrentqueue**, **px4-ros2-interface-lib** — bug fixes and utilities
 
 ---
 
