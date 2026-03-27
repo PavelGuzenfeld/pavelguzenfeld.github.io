@@ -28,6 +28,4 @@ I contribute upstream to the tools I depend on — not because it looks good, bu
 
 ## Get in Touch
 
-Based in Israel — available worldwide (remote).
-
 **Email:** [me@pavelguzenfeld.com](mailto:me@pavelguzenfeld.com) | **GitHub:** [PavelGuzenfeld](https://github.com/PavelGuzenfeld) | **LinkedIn:** [pavelguzenfeld](https://www.linkedin.com/in/pavelguzenfeld/)
