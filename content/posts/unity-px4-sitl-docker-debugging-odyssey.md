@@ -4,6 +4,9 @@ date: 2026-03-21
 draft: false
 tags: ["PX4", "Unity", "Docker", "MAVLink", "SITL", "Vulkan", "simulation", "TCP", "debugging", "DevOps"]
 keywords: ["PX4 Unity Docker simulation", "Unity headless PX4 SITL", "MAVLink Unity Docker"]
+cover:
+  image: /images/posts/unity-px4-odyssey.png
+  alt: "PX4 SITL to Unity in Docker: A 60-Hour Odyssey"
 categories: ["deep-dive"]
 summary: "A three-day odyssey connecting PX4 flight controller to a GPU-rendered Unity drone simulation running headless inside Docker — through licensing labyrinths, shader abysses, coordinate system riddles, native library dragons, and a TCP protocol twist ending nobody expected."
 ShowToc: true

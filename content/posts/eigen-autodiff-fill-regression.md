@@ -4,6 +4,9 @@ date: 2026-03-20
 draft: false
 tags: ["C++", "Eigen", "GCC", "performance", "open-source"]
 keywords: ["Eigen AutoDiffScalar performance", "Eigen fill regression GCC", "trivially copyable scalar Eigen"]
+cover:
+  image: /images/posts/eigen-autodiff.png
+  alt: "How GCC's fill_n Regressed Eigen's AutoDiffScalar"
 categories: ["deep-dive"]
 summary: "A performance optimization in Eigen's fill path assumed all scalar types are equal. GCC's libstdc++ disagreed — and AutoDiffScalar paid the price."
 ShowToc: true

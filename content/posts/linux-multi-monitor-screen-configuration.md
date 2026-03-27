@@ -4,6 +4,9 @@ date: 2026-03-23
 draft: false
 tags: ["Linux", "xrandr", "multi-monitor", "systemd", "X11", "Wayland", "DevOps"]
 keywords: ["Linux multi monitor xrandr", "disable laptop screen Linux", "xrandr persistent configuration"]
+cover:
+  image: /images/posts/linux-multimonitor.png
+  alt: "Linux Multi-Monitor Setup with xrandr"
 categories: ["deep-dive"]
 summary: "A hands-on walkthrough of configuring multiple monitors on Linux — from identifying displays with xrandr, turning off the laptop screen, ignoring lid close, to making it all survive a reboot. Every command explained."
 ShowToc: true

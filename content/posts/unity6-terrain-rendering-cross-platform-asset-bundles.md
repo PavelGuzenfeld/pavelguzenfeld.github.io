@@ -4,6 +4,9 @@ date: 2026-03-27
 draft: false
 tags: ["Unity", "Docker", "asset-bundles", "shaders", "terrain", "rendering", "Vulkan", "HDRP", "Built-in-RP", "headless"]
 keywords: ["Unity terrain rendering Docker", "Unity asset bundle shader mismatch", "headless Unity terrain fix"]
+cover:
+  image: /images/posts/unity-terrain.png
+  alt: "From Magenta to Desert: Fixing Unity Terrain in Docker"
 categories: ["deep-dive"]
 summary: "A detailed account of fixing terrain rendering in a headless Unity 6 Docker simulation — from magenta buildings and gray streaming cameras to textured villages with working RTSP feeds. Covers cross-platform asset bundle shader mismatches, runtime material conversion, texture recovery from broken materials, and every dead end along the way."
 ShowToc: true

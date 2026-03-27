@@ -4,6 +4,9 @@ date: 2026-03-19
 draft: false
 tags: ["Unity", "Docker", "Vulkan", "RTSP", "MAVLink", "simulation", "headless", "GStreamer", "FFmpeg", "DevOps"]
 keywords: ["Unity headless Docker GPU", "Unity RTSP streaming Docker", "drone simulation Unity Docker"]
+cover:
+  image: /images/posts/unity-headless.png
+  alt: "Unity Headless in Docker with GPU, RTSP, and MAVLink"
 categories: ["deep-dive"]
 summary: "A detailed technical account of containerizing a Unity 2019.4 drone simulation with GPU-accelerated rendering, dual RTSP camera streaming via FFmpeg/mediamtx, and MAVLink drone control — including every obstacle encountered and how it was solved."
 ShowToc: true

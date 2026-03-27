@@ -4,6 +4,9 @@ date: 2026-03-21
 draft: false
 tags: ["C++", "Eigen", "Doxygen", "debugging", "documentation", "open-source", "Docker"]
 keywords: ["Doxygen inc file extension", "Eigen Doxygen configuration", "EXTENSION_MAPPING Doxygen"]
+cover:
+  image: /images/posts/doxygen-eigen.png
+  alt: "Debugging Doxygen: How .inc Files Break C++ Docs"
 categories: ["deep-dive"]
 summary: "Eigen's .inc plugin headers were read by Doxygen but never preprocessed as C++ — meaning macros like EIGEN_PARSED_BY_DOXYGEN were silently ignored. Here's how I verified it in Docker and what the one-line fix looks like."
 ShowToc: true

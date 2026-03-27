@@ -4,6 +4,9 @@ date: 2026-03-19
 draft: false
 tags: ["PX4", "ROS2", "SITL", "Gazebo", "Docker", "DDS", "uXRCE-DDS", "integration-testing", "MicroXRCEAgent", "FastDDS"]
 keywords: ["PX4 ROS 2 integration test", "px4-ros2-interface-lib SITL", "PX4 Gazebo DDS testing"]
+cover:
+  image: /images/posts/px4-ros2-sitl.png
+  alt: "Running px4-ros2-interface-lib Tests Against PX4 SITL"
 categories: ["deep-dive"]
 summary: "A detailed technical account of running px4-ros2-interface-lib integration tests against PX4 SITL — from discovering that the project's CI never runs them, through three different simulator backends, five distinct failure modes, and the surprising DDS payload mismatch that blocked everything. Every dead end documented."
 ShowToc: true

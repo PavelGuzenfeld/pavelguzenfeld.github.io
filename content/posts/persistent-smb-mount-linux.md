@@ -4,6 +4,9 @@ date: 2026-03-24
 draft: false
 tags: ["Linux", "SMB", "CIFS", "systemd", "Nautilus", "networking", "DevOps"]
 keywords: ["mount SMB share Linux fstab", "persistent CIFS mount systemd", "SMB automount Linux"]
+cover:
+  image: /images/posts/smb-linux.png
+  alt: "Persistent SMB Shares on Linux"
 categories: ["deep-dive"]
 summary: "A step-by-step guide to mounting SMB/CIFS network shares on Linux — from one-off access in a file manager to persistent fstab entries with systemd automount that connect only when needed and gracefully handle VPN disconnects."
 ShowToc: true

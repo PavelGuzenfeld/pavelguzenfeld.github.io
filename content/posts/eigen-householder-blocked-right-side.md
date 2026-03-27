@@ -4,6 +4,9 @@ date: 2026-03-23
 draft: false
 tags: ["C++", "Eigen", "linear-algebra", "performance", "open-source"]
 keywords: ["Eigen Householder blocked application", "Householder right side multiply", "Eigen QR performance"]
+cover:
+  image: /images/posts/eigen-householder.png
+  alt: "Upgrading Householder Right-Side: BLAS-2 to BLAS-3"
 categories: ["deep-dive"]
 summary: "Eigen's blocked Householder path only existed for left-side application. I added the right-side equivalent, upgrading M*Q from O(n) rank-1 updates to cache-friendly blocked matrix multiplies."
 ShowToc: true
