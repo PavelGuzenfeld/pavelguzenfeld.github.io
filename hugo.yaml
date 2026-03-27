@@ -48,6 +48,8 @@ params:
       url: "https://github.com/PavelGuzenfeld"
     - name: linkedin
       url: "https://linkedin.com/in/pavelguzenfeld"
+    - name: x
+      url: "https://x.com/PavelGuzenfeld"
     - name: email
       url: "mailto:me@pavelguzenfeld.com"
     - name: rss
