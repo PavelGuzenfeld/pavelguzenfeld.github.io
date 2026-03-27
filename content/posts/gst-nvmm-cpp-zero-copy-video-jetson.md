@@ -379,3 +379,10 @@ It's slower, but it's how established open-source projects work. The code isn't 
 - **Follow-up small MRs:** [!11104](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11104), [!11105](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11105), [!11106](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11106)
 - **Issues:** [#4979](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4979), [#4980](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4980), [#4981](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4981)
 - **GStreamer contribution guide:** [gstreamer.freedesktop.org/documentation/contribute](https://gstreamer.freedesktop.org/documentation/contribute/index.html)
+
+---
+
+**Related:**
+- [Anatomy of Four GStreamer Shared Memory Bugs](/posts/anatomy-of-gstreamer-shm-bugs/)
+- [Fixing a GStreamer Bug: Why shmsink Always Exits with Code 1](/posts/fixing-gstreamer-shmsink-exit-code-bug/)
+- [GStreamer and video pipeline consulting](/consulting/)

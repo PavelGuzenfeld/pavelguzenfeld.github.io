@@ -169,3 +169,10 @@ The fix is 2 lines. The investigation took longer than the fix — which is usua
 - **MR:** [!11109](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11109)
 - **Issue:** [#4487](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/4487)
 - **The 2-line diff:** [commit](https://gitlab.freedesktop.org/PavelGuzenfeld/gstreamer/-/commit/fix-shmsink-exit-code)
+
+---
+
+**Related:**
+- [Anatomy of Four GStreamer Shared Memory Bugs](/posts/anatomy-of-gstreamer-shm-bugs/)
+- [Zero-Copy Video on Jetson: Building gst-nvmm-cpp and Contributing to GStreamer](/posts/gst-nvmm-cpp-zero-copy-video-jetson/)
+- [GStreamer and video pipeline consulting](/consulting/)

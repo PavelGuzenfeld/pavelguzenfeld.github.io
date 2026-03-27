@@ -111,3 +111,9 @@ The person who wrote the optimization knows the type hierarchy intimately. Their
 ## The MR
 
 [!2313: Guard eigen_fill_helper on trivially copyable scalars](https://gitlab.com/libeigen/eigen/-/merge_requests/2313) — closes [#2956](https://gitlab.com/libeigen/eigen/-/issues/2956).
+
+---
+
+**Related:**
+- [Fixing GCC False-Positive Warnings in Eigen](/posts/fixing-gcc-false-positives-in-eigen/)
+- [Fixing an Infinite Loop in Eigen's 128-bit Integer Division](/posts/fixing-eigen-uint128-division-infinite-loop/)

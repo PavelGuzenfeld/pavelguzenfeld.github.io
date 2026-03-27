@@ -531,3 +531,10 @@ All of these run in Docker. No local toolchain required.
 Every fix was built on STM32 + SITL, tested with `make tests` (154/154), verified with `check_code_style_all.sh`, and where applicable built with ASan and TSan. The uXRCE-DDS reconnection fix was additionally verified end-to-end in Docker SITL with a live MicroXRCEAgent.
 
 The common thread across all six: **read the code, build on all affected platforms, test in Docker, verify the fix doesn't break the thing you didn't change.**
+
+---
+
+**Related:**
+- [Running px4-ros2-interface-lib Integration Tests Against PX4 SITL](/posts/px4-ros2-integration-testing-sitl-gazebo/)
+- [Migrating PX4's ROS Integration Tests from Gazebo Classic to SIH](/posts/px4-ros-integration-tests-gazebo-to-sih-migration/)
+- [fiber-nav-sim project](/projects/fiber-nav-sim/)

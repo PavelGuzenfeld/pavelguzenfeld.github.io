@@ -417,3 +417,9 @@ MultiSim/Assets/Shaders/
 ---
 
 *This project took approximately 20 hours of debugging across two days.*
+
+---
+
+**Related:**
+- [Connecting PX4 SITL to a Headless Unity Simulation in Docker](/posts/unity-px4-sitl-docker-debugging-odyssey/)
+- [From Magenta to Desert: Fixing Cross-Platform Unity Terrain Rendering in Docker](/posts/unity6-terrain-rendering-cross-platform-asset-bundles/)

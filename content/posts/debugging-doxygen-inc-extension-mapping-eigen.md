@@ -257,3 +257,9 @@ If !2330 merges first, `IndexedViewMethods.inc` goes away. But the other 9+ plug
 4. **Check the processing logs, not just the output.** The `Reading` vs `Preprocessing` distinction in Doxygen's stderr output is invisible in the generated HTML for files that are `#include`d elsewhere. The logs are the only way to confirm the processing pipeline is correct.
 
 5. **One-line configuration fixes deserve the same verification rigor as code changes.** This was a one-line diff to `Doxyfile.in`. The Docker verification that proved it works took 30 lines of shell. The ratio is worth it — configuration bugs are notoriously hard to debug because their symptoms are silent omissions, not errors.
+
+---
+
+**Related:**
+- [Fixing GCC False-Positive Warnings in Eigen](/posts/fixing-gcc-false-positives-in-eigen/)
+- [Upgrading Eigen's Householder Right-Side Application from BLAS-2 to BLAS-3](/posts/eigen-householder-blocked-right-side/)

@@ -363,3 +363,9 @@ Removing them cut Docker build time and eliminated 5 potential failure points.
 7. **Audit Docker dependencies periodically.** Dead libraries add build time, increase attack surface, and create failure points. A simple `grep` across the codebase catches them.
 
 8. **Each fix reveals the next bug.** CI pipelines are layered systems. Fixing one layer exposes issues in the next. Budget time for cascading failures — the first error is rarely the last.
+
+---
+
+**Related:**
+- [Zero-Copy Video on Jetson: Building gst-nvmm-cpp and Contributing to GStreamer](/posts/gst-nvmm-cpp-zero-copy-video-jetson/)
+- [PX4 Autopilot: A Practitioner's Guide to Troubleshooting, Debugging, Building, and Testing](/posts/px4-autopilot-troubleshooting-debugging-testing-guide/)

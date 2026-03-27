@@ -158,3 +158,9 @@ Same fix for the second FIXME in `apply_block_householder_on_the_left`.
 All 62 tests across the Householder/QR/Schur/Eigensolver test suites pass, including the existing right-side application tests that verify `M * hseq == M * hseq_mat` for random matrices up to 320x320.
 
 The MR is [!2341](https://gitlab.com/libeigen/eigen/-/merge_requests/2341), closing [issue #3057](https://gitlab.com/libeigen/eigen/-/issues/3057).
+
+---
+
+**Related:**
+- [Modified Gram-Schmidt vs Householder QR: A Performance Showdown in Eigen](/posts/gram-schmidt-vs-householder-qr-benchmark/)
+- [Why You Should Use stableNorm() Instead of norm()](/posts/eigen-stablenorm-gram-schmidt/)

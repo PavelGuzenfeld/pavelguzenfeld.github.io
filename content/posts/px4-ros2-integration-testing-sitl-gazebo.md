@@ -102,7 +102,7 @@ The ROCX CI doesn't use px4-ros2-interface-lib for flight control — it uses MA
 
 ## Research Interlude: How fiber-nav-sim Does It
 
-The [`fiber-nav-sim`](https://github.com/PavelGuzenfeld/fiber-nav-sim) project (a VTOL navigation simulation) has a working PX4 + ROS 2 + Gazebo Harmonic setup. Key discoveries from reading its `CLAUDE.md` and `px4-sitl-entrypoint.sh`:
+The [`fiber-nav-sim`](https://github.com/PavelGuzenfeld/fiber-nav-sim) project ([project page](/projects/fiber-nav-sim/)) — a VTOL navigation simulation — has a working PX4 + ROS 2 + Gazebo Harmonic setup. Key discoveries from reading its `CLAUDE.md` and `px4-sitl-entrypoint.sh`:
 
 1. **MicroXRCEAgent** bridges PX4's internal uXRCE-DDS client to standard DDS: `MicroXRCEAgent udp4 -p 8888`
 2. PX4 v1.14+ has a built-in `uxrce_dds_client` module that connects to the agent
@@ -447,3 +447,10 @@ The integration tests verify that this delegation works for every command the mo
 5. **Each integration test needs a fresh environment.** `rclcpp::shutdown()` + Gazebo model state + DDS endpoint caching all conspire against running multiple tests in the same process or container. One container per test is the reliable pattern.
 
 6. **55 seconds.** That's how long you need to wait after starting PX4 with Gazebo for EKF convergence, GPS lock, and DDS topic establishment. SIH needs about 3 seconds. Plan your CI timeouts accordingly.
+
+---
+
+**Related:**
+- [Migrating PX4's ROS Integration Tests from Gazebo Classic to SIH](/posts/px4-ros-integration-tests-gazebo-to-sih-migration/)
+- [PX4 Autopilot: A Practitioner's Guide to Troubleshooting, Debugging, Building, and Testing](/posts/px4-autopilot-troubleshooting-debugging-testing-guide/)
+- [fiber-nav-sim project](/projects/fiber-nav-sim/)

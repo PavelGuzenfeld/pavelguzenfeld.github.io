@@ -115,3 +115,9 @@ Code review caught what tests didn't. That single `stableNorm?` comment saved a 
 3. **One-word review comments can be the most valuable.** The reviewer didn't explain the problem — they just named the solution. That brevity reflects deep familiarity with the failure mode. When an experienced contributor drops a single-word hint, investigate it thoroughly.
 
 4. **"It works" is not the same as "it's correct."** My implementation produced correct results for every test I wrote. It was still wrong, because correctness means handling the full domain of inputs, not just the ones you thought to test.
+
+---
+
+**Related:**
+- [Modified Gram-Schmidt vs Householder QR: A Performance Showdown in Eigen](/posts/gram-schmidt-vs-householder-qr-benchmark/)
+- [Upgrading Eigen's Householder Right-Side Application from BLAS-2 to BLAS-3](/posts/eigen-householder-blocked-right-side/)

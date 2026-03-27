@@ -157,3 +157,9 @@ All tests pass under AddressSanitizer and UndefinedBehaviorSanitizer.
 ---
 
 The PR is [ros2/rclcpp#3109](https://github.com/ros2/rclcpp/pull/3109). The fix targets the `rolling` branch.
+
+---
+
+**Related:**
+- [Contributing to ROS 2 — A Practical Guide from Four Accepted PRs](/posts/contributing-to-ros2-a-practical-guide/)
+- [PX4 Autopilot: A Practitioner's Guide to Troubleshooting, Debugging, Building, and Testing](/posts/px4-autopilot-troubleshooting-debugging-testing-guide/)

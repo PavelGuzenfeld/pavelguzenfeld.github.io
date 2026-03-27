@@ -318,3 +318,9 @@ Total: ~60 hours across three days. The `-d` flag that fixed everything took 1 s
 ---
 
 *Every great debugging story ends the same way: the fix is embarrassingly simple, and the journey to find it teaches you more about the system than any documentation ever could.*
+
+---
+
+**Related:**
+- [Running Unity 2019.4 Headless in Docker with GPU Rendering, RTSP Camera Streaming, and MAVLink](/posts/headless-unity-docker-simulation/)
+- [From Magenta to Desert: Fixing Cross-Platform Unity Terrain Rendering in Docker](/posts/unity6-terrain-rendering-cross-platform-asset-bundles/)

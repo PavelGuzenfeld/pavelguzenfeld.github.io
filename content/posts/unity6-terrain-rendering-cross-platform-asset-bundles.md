@@ -446,3 +446,9 @@ The `protocols=tcp` flag remains essential on Ubuntu 24.04 — GStreamer's UDP t
 5. **Runtime material conversion is viable.** Processing 956 materials at startup takes negligible time. It's not as clean as rebuilding bundles from source, but when the source is unavailable, it's the pragmatic path.
 
 6. **Windows paths in asset metadata persist.** Materials built on Windows carry their original texture paths as metadata (material name, texture references). Cross-platform tooling must handle backslashes, drive letters, and case-insensitive matching.
+
+---
+
+**Related:**
+- [Running Unity 2019.4 Headless in Docker with GPU Rendering, RTSP Camera Streaming, and MAVLink](/posts/headless-unity-docker-simulation/)
+- [Connecting PX4 SITL to a Headless Unity Simulation in Docker](/posts/unity-px4-sitl-docker-debugging-odyssey/)

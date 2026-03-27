@@ -127,3 +127,9 @@ The bug has been present since the division operator was written. It's the kind 
 3. **Dead code in algorithms obscures bugs.** The unused `tmp` computation in the first loop added visual noise that made the missing overflow check harder to spot during review.
 
 4. **Fallback code paths need the same test coverage as primary ones.** If your codebase has a software implementation behind a hardware-accelerated fast path, the slow path needs its own edge-case tests — especially at numeric boundaries.
+
+---
+
+**Related:**
+- [Fixing GCC False-Positive Warnings in Eigen](/posts/fixing-gcc-false-positives-in-eigen/)
+- [How GCC's std::fill_n Silently Regressed Eigen's AutoDiffScalar Performance](/posts/eigen-autodiff-fill-regression/)

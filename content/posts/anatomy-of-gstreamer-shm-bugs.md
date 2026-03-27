@@ -17,7 +17,7 @@ This post walks through each bug, how I found the root cause, and what general l
 
 The bugs, in order of subtlety:
 
-1. **The Exit Code Bug** — a race between shutdown and error reporting
+1. **[The Exit Code Bug](/posts/fixing-gstreamer-shmsink-exit-code-bug/)** — a race between shutdown and error reporting
 2. **The Hang Bug** — a wrong pointer and a use-after-free in the shm pipe protocol
 3. **The Flaky Test** — a shutdown ordering problem that only manifests under load
 4. **The Page Alignment Bug** — a mismatch between what the OS allocates and what GStreamer reports
@@ -347,3 +347,10 @@ Sanitizers are powerful for memory bugs (Bug 2's use-after-free) but useless for
 - [!11126 — flaky test fix](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11126)
 - [!8766 — shmsink hang fix](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/8766) (original analysis by @thunderspoonextreme)
 - [gst-nvmm-cpp](https://github.com/PavelGuzenfeld/gst-nvmm-cpp) — our GStreamer plugin for Jetson zero-copy video, where we first encountered many of these patterns
+
+---
+
+**Related:**
+- [Fixing a GStreamer Bug: Why shmsink Always Exits with Code 1](/posts/fixing-gstreamer-shmsink-exit-code-bug/)
+- [Zero-Copy Video on Jetson: Building gst-nvmm-cpp and Contributing to GStreamer](/posts/gst-nvmm-cpp-zero-copy-video-jetson/)
+- [GStreamer and video pipeline consulting](/consulting/)

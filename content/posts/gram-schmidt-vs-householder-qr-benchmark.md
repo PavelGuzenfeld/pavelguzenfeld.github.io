@@ -177,3 +177,9 @@ He then **reopened the MR** for further review. The benchmark data made the case
 4. **Let the data speak.** When a maintainer challenges your approach, respond with benchmarks, not arguments. The data confirmed MGS is slower at scale — but also showed where it wins. That honest assessment is what ultimately got the MR reopened.
 
 5. **Know your niche.** Small-matrix MGS QR is legitimately faster. If I were building a robotics system that decomposes hundreds of thousands of 6×6 matrices per second, MGS would be the right choice. But that's not what Eigen's `QR` module is for — it serves the general case, and the general case is Householder.
+
+---
+
+**Related:**
+- [Upgrading Eigen's Householder Right-Side Application from BLAS-2 to BLAS-3](/posts/eigen-householder-blocked-right-side/)
+- [Why You Should Use stableNorm() Instead of norm()](/posts/eigen-stablenorm-gram-schmidt/)

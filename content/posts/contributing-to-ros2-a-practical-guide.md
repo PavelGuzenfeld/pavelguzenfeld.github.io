@@ -17,7 +17,7 @@ I recently submitted four pull requests across three ROS 2 core repositories:
 
 | PR | Repository | Summary |
 |---|---|---|
-| [#3109](https://github.com/ros2/rclcpp/pull/3109) | `ros2/rclcpp` | Fix O(N²) entity addition in `CallbackGroup` |
+| [#3109](https://github.com/ros2/rclcpp/pull/3109) | `ros2/rclcpp` | [Fix O(N²) entity addition in `CallbackGroup`](/posts/fixing-quadratic-callback-group-rclcpp/) |
 | [#3110](https://github.com/ros2/rclcpp/pull/3110) | `ros2/rclcpp` | Fix deadlock in `TimeSource::destroy_clock_sub` |
 | [#1213](https://github.com/ros2/ros2cli/pull/1213) | `ros2/ros2cli` | Add `--content-filter` to `ros2 topic echo\|hz\|bw` |
 | [#908](https://github.com/ros2/geometry2/pull/908) | `ros2/geometry2` | Fix `StaticCache::getData()` on empty cache |
@@ -664,3 +664,9 @@ All testing was done in `ros:rolling` Docker containers:
 6. **Small, focused PRs.** Each of my PRs changed 1–3 files. Small PRs get reviewed faster and are easier to backport.
 
 7. **Pre-validate everything.** The faster your PR goes green on the first CI run, the faster it gets reviewed. Maintainers have hundreds of PRs to look at — don't waste their time with avoidable failures.
+
+---
+
+**Related:**
+- [Fixing O(N^2) Entity Addition in ROS 2's CallbackGroup](/posts/fixing-quadratic-callback-group-rclcpp/)
+- [PX4 Autopilot: A Practitioner's Guide to Troubleshooting, Debugging, Building, and Testing](/posts/px4-autopilot-troubleshooting-debugging-testing-guide/)

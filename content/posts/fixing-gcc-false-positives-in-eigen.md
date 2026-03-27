@@ -144,3 +144,9 @@ ctest -R cxx11_tensor_contraction  # 8/8 passed
 4. **Value-initialization (`{}`) is cheap defense in depth.** Zero-initializing a few `Index` values costs nothing at runtime but prevents uninitialized reads if assumptions ever break.
 
 5. **Review comments from maintainers are gold.** The initial fix looked correct, passed CI, and solved the immediate problem. The reviewer's one-line comment about C++14 led to a fundamentally better solution.
+
+---
+
+**Related:**
+- [How GCC's std::fill_n Silently Regressed Eigen's AutoDiffScalar Performance](/posts/eigen-autodiff-fill-regression/)
+- [Fixing an Infinite Loop in Eigen's 128-bit Integer Division](/posts/fixing-eigen-uint128-division-infinite-loop/)
