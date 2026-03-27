@@ -3,6 +3,7 @@ title: "Fixing GCC False-Positive Warnings in Eigen: A Deep Dive into -Warray-bo
 date: 2026-03-18
 draft: false
 tags: ["C++", "Eigen", "GCC", "compilers", "open-source"]
+keywords: ["GCC Warray-bounds false positive", "Eigen GCC 13 warning", "suppress compiler warning Eigen"]
 categories: ["deep-dive"]
 summary: "How a GCC 13 false-positive -Warray-bounds warning in Eigen's TensorContraction led to a lesson about if constexpr, C++14 portability, and the right way to suppress compiler warnings in a large codebase."
 ShowToc: true

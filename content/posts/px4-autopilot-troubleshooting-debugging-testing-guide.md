@@ -3,6 +3,7 @@ title: "PX4 Autopilot: A Practitioner's Guide to Troubleshooting, Debugging, Bui
 date: 2026-03-22
 draft: false
 tags: ["PX4", "C++", "NuttX", "debugging", "Docker", "SITL", "uXRCE-DDS", "MAVLink", "ASan", "TSan", "integration-testing", "open-source"]
+keywords: ["PX4 Docker build guide", "PX4 SITL debugging", "PX4 uXRCE-DDS troubleshooting"]
 categories: ["deep-dive"]
 summary: "Everything I learned contributing 6 PRs to PX4-Autopilot in a single session — from Docker-based builds and sanitizer workflows, through uXRCE-DDS session debugging and MAVLink signing analysis, to SITL integration testing. Real bugs, real fixes, real build output."
 ShowToc: true

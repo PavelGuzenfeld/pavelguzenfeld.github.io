@@ -3,6 +3,7 @@ title: "Migrating PX4's ROS Integration Tests from Gazebo Classic to SIH"
 date: 2026-03-20
 draft: false
 tags: ["PX4", "ROS2", "SITL", "SIH", "Docker", "CI/CD", "integration-testing", "open-source"]
+keywords: ["PX4 SIH migration", "PX4 ROS integration test SIH", "PX4 Gazebo Classic to SIH"]
 categories: ["deep-dive"]
 summary: "PX4's MAVSDK tests were migrated to SIH but the ROS integration tests were left behind on Gazebo Classic. This post documents the complete migration — the config changes, the CI pipeline surgery, the parameter name pitfall that silently broke GlobalPositionInterfaceTest, and how to reproduce the full 14-test suite locally in Docker."
 ShowToc: true

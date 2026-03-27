@@ -3,6 +3,7 @@ title: "Anatomy of Four GStreamer Shared Memory Bugs"
 date: 2026-03-24
 draft: false
 tags: ["GStreamer", "debugging", "shared-memory", "C", "concurrency", "open-source"]
+keywords: ["GStreamer shmsink bug", "GStreamer shared memory race condition", "shmsrc use after free"]
 categories: ["deep-dive"]
 summary: "Four bugs in GStreamer's shmsink/shmsrc elements — a race condition, a use-after-free, a wrong-pointer dereference, and a page alignment mismatch. What they have in common, how to find them, and what they teach about writing correct GStreamer elements."
 ShowToc: true

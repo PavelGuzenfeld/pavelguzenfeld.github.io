@@ -3,6 +3,7 @@ title: "Modified Gram-Schmidt vs Householder QR: A Performance Showdown in Eigen
 date: 2026-03-21
 draft: false
 tags: ["C++", "Eigen", "linear-algebra", "benchmarking", "open-source"]
+keywords: ["Gram Schmidt vs Householder benchmark", "Modified Gram Schmidt QR", "Eigen QR decomposition comparison"]
 categories: ["deep-dive"]
 summary: "I submitted a Modified Gram-Schmidt QR decomposition to Eigen and a maintainer asked: why? Here's the benchmark data that answered the question."
 ShowToc: true

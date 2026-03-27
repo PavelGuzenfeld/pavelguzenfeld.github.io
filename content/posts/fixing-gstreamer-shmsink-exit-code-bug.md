@@ -3,6 +3,7 @@ title: "Fixing a GStreamer Bug: Why shmsink Always Exits with Code 1"
 date: 2026-03-24
 draft: false
 tags: ["GStreamer", "debugging", "shared-memory", "C", "open-source", "contributing"]
+keywords: ["GStreamer shmsink exit code 1", "GStreamer shared memory pipeline error", "shmsink race condition fix"]
 categories: ["deep-dive"]
 summary: "A 2-line fix for a race condition in GStreamer's shmsink that causes every pipeline using shared memory to exit with an error. How I found it, proved it, and verified the fix with sanitizers."
 ShowToc: true

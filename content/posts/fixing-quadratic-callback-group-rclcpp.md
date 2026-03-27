@@ -3,6 +3,7 @@ title: "Fixing O(N²) Entity Addition in ROS 2's CallbackGroup"
 date: 2026-03-23
 draft: false
 tags: ["ROS 2", "C++", "performance", "open-source", "rclcpp"]
+keywords: ["rclcpp CallbackGroup performance", "ROS 2 O(N²) bug", "rclcpp entity registration slow"]
 categories: ["deep-dive"]
 summary: "How a simple erase-remove in every add_timer() call turned entity registration into a quadratic bottleneck — and the 71x speedup from moving cleanup to the right place."
 ShowToc: true

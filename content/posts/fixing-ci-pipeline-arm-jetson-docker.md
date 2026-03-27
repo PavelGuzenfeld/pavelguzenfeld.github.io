@@ -3,6 +3,7 @@ title: "Fixing a CI Pipeline on a Jetson Xavier — 15 Failures to Green"
 date: 2026-03-20
 draft: false
 tags: ["CI/CD", "Docker", "ARM", "GCC", "GitHub Actions", "debugging", "DevOps"]
+keywords: ["Jetson Docker CI pipeline", "ARM Docker build GitHub Actions", "GCC assembler error Jetson"]
 categories: ["deep-dive"]
 summary: "A day-long battle fixing a CI pipeline that builds Docker images on a self-hosted Jetson Xavier runner. From stale git submodules to GCC-15 assembler errors, expired tokens, DNS failures inside Docker, and deleted upstream branches — every layer of the stack had something broken."
 ShowToc: true
