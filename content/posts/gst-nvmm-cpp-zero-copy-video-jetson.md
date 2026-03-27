@@ -4,6 +4,9 @@ date: 2026-03-23
 draft: false
 tags: ["GStreamer", "NVIDIA", "Jetson", "NVMM", "C++", "video-processing", "zero-copy", "open-source", "contributing"]
 keywords: ["GStreamer NVMM Jetson plugin", "zero copy video Jetson", "GStreamer Jetson Orin Xavier"]
+cover:
+  image: /images/posts/gst-nvmm.png
+  alt: "Zero-Copy Video on Jetson: Building gst-nvmm-cpp"
 categories: ["deep-dive"]
 summary: "How we built a GStreamer plugin suite for zero-copy NVMM video on NVIDIA Jetson, the bugs we hit along the way, and what it takes to contribute to the GStreamer project — from filing issues to getting an MR merged."
 ShowToc: true

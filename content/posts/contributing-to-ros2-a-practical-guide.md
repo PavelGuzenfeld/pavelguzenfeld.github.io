@@ -4,6 +4,9 @@ date: 2026-03-22
 draft: false
 tags: ["ROS 2", "open-source", "Docker", "C++", "Python", "testing", "git", "contributing"]
 keywords: ["how to contribute to ROS 2", "ROS 2 pull request guide", "ROS 2 DCO check"]
+cover:
+  image: /images/posts/contributing-ros2.png
+  alt: "Contributing to ROS 2 — A Practical Guide"
 categories: ["deep-dive"]
 summary: "Everything I learned submitting four pull requests to ROS 2 core repositories — from finding issues and building in Docker to passing DCO checks, handling OSRF's AI disclosure policy, rebasing across distro branches, and running the full test suites. A warts-and-all field guide."
 ShowToc: true
