@@ -23,6 +23,10 @@ params:
   keywords: [C++, Robotics, Drones, ROS2, PX4, Systems Programming, Open Source]
   author: Pavel Guzenfeld
 
+  analytics:
+    google:
+      SiteVerificationTag: "6Wk9XWS8pq2UUIrcJHLEyCOn0Gtv0wNbShWavWFXqRc"
+
   defaultTheme: dark
   disableThemeToggle: false
   ShowReadingTime: true
