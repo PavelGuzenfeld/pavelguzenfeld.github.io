@@ -8,12 +8,11 @@
     {{- $responsiveImages := (.Params.cover.responsiveImages | default site.Params.cover.responsiveImages) | default true }}
 
     {{- $pageBundleCover := (.Resources.ByType "image").GetMatch (printf "*%s*" (.Params.cover.image)) }}
-    {{- /* Strip leading / from cover path for global resource lookup */ -}}
     {{- $coverPath := strings.TrimPrefix "/" .Params.cover.image -}}
     {{- $globalResourcesCover := resources.Get $coverPath }}
     {{- $cover := (or $pageBundleCover $globalResourcesCover)}}
 
-    {{- $sizes := (slice "360" "480" "720" "1080" "1500") }}
+    {{- $sizes := (slice "360" "720") }}
     {{- $processableFormats := (slice "jpg" "jpeg" "png" "tif" "bmp" "gif") -}}
     {{- if hugo.IsExtended -}}
         {{- $processableFormats = $processableFormats | append "webp" -}}
@@ -21,7 +20,7 @@
 
     {{- $imgdl := (.Params.cover.image) | absURL }}
     {{- if $cover -}}
-        {{- $imgdl = $cover.Permalink }}
+        {{- $imgdl = $cover.RelPermalink }}
     {{- end -}}
 
     {{- if $addLink }}
@@ -30,16 +29,17 @@
 
     {{- if $cover -}}
         {{- if (and (in $processableFormats $cover.MediaType.SubType) ($responsiveImages) (eq $prod true)) }}
-            {{- $webp := $cover.Process "webp q80" -}}
+            {{- $webp := $cover.Process "resize 720x webp q80" -}}
             <img loading="{{$loading}}"
                 srcset='{{- range $size := $sizes -}}
                             {{- if (ge $cover.Width $size) }}
                                 {{- $resized := $cover.Process (printf "resize %sx webp q80" $size) -}}
-                                {{- printf "%s %sw, " $resized.Permalink $size }}
+                                {{- printf "%s %sw, " $resized.RelPermalink $size }}
                             {{- end }}
                         {{- end }}
-                        {{- printf "%s %dw" $webp.Permalink $cover.Width }}'
-                src="{{ $webp.Permalink }}"
+                        {{- $full := $cover.Process "webp q80" -}}
+                        {{- printf "%s %dw" $full.RelPermalink $cover.Width }}'
+                src="{{ $webp.RelPermalink }}"
                 sizes="(min-width: 768px) 720px, 100vw"
                 width="{{ $cover.Width }}" height="{{ $cover.Height }}"
                 alt="{{ $alt }}">
