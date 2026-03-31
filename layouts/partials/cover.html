@@ -8,7 +8,9 @@
     {{- $responsiveImages := (.Params.cover.responsiveImages | default site.Params.cover.responsiveImages) | default true }}
 
     {{- $pageBundleCover := (.Resources.ByType "image").GetMatch (printf "*%s*" (.Params.cover.image)) }}
-    {{- $globalResourcesCover := (resources.ByType "image").GetMatch (printf "*%s*" (.Params.cover.image)) }}
+    {{- /* Strip leading / from cover path for global resource lookup */ -}}
+    {{- $coverPath := strings.TrimPrefix "/" .Params.cover.image -}}
+    {{- $globalResourcesCover := resources.Get $coverPath }}
     {{- $cover := (or $pageBundleCover $globalResourcesCover)}}
 
     {{- $sizes := (slice "360" "480" "720" "1080" "1500") }}

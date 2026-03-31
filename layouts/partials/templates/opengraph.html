@@ -37,7 +37,8 @@
 
 {{- if .Params.cover.image -}}
   {{- $ogImage := "" -}}
-  {{- $globalRes := (resources.ByType "image").GetMatch (printf "*%s*" (.Params.cover.image)) -}}
+  {{- $coverPath := strings.TrimPrefix "/" .Params.cover.image -}}
+  {{- $globalRes := resources.Get $coverPath -}}
   {{- if $globalRes -}}
     {{- $ogImage = $globalRes.Permalink -}}
   {{- else if (ne .Params.cover.relative true) -}}
