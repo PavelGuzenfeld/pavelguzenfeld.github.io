@@ -46,7 +46,7 @@ TocOpen: true
 
 ## Upstream Contributions
 
-97 PRs/MRs across 15 projects:
+103 PRs/MRs across 15 projects:
 
 ### Eigen (24 MRs)
 
@@ -101,23 +101,29 @@ TocOpen: true
 | [#26853](https://github.com/PX4/PX4-Autopilot/pull/26853) | bug | Mission resume picks wrong waypoint when camera triggering is active | 2026-03-22 | open |
 | [#26854](https://github.com/PX4/PX4-Autopilot/pull/26854) | bug | False landed-state detection in OFFBOARD direct_actuator mode | 2026-03-22 | open |
 
-### MAVSDK (5 PRs)
+### MAVSDK (11 PRs)
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#2800](https://github.com/mavlink/MAVSDK/pull/2800) | bug | System incorrectly set to disconnected on heartbeat timeout | 2026-03-16 | closed |
-| [#2801](https://github.com/mavlink/MAVSDK/pull/2801) | feature | Add `timestamp_us` to Altitude and GroundTruth telemetry structs | 2026-03-21 | open |
-| [#2802](https://github.com/mavlink/MAVSDK/pull/2802) | feature | Expose full `HOME_POSITION` fields in `subscribe_home` | 2026-03-21 | open |
-| [#2803](https://github.com/mavlink/MAVSDK/pull/2803) | feature | Implement `set_rate_rc` for ArduPilot via `SYS_STATUS` | 2026-03-21 | open |
-| [#2804](https://github.com/mavlink/MAVSDK/pull/2804) | feature | Implement `download_geofence` mirroring `download_mission` | 2026-03-21 | open |
+| [#2801](https://github.com/mavlink/MAVSDK/pull/2801) | feature | Add `timestamp_us` to Altitude and GroundTruth telemetry structs | 2026-03-21 | merged |
+| [#2803](https://github.com/mavlink/MAVSDK/pull/2803) | feature | Implement `set_rate_rc` for ArduPilot via `SYS_STATUS` | 2026-03-21 | merged |
+| [#2804](https://github.com/mavlink/MAVSDK/pull/2804) | feature | Implement `download_geofence` mirroring `download_mission` | 2026-03-21 | merged |
+| [#2821](https://github.com/mavlink/MAVSDK/pull/2821) | bug | `mission_raw_server`: Fix crash on empty mission upload | 2026-03-29 | merged |
+| [#2822](https://github.com/mavlink/MAVSDK/pull/2822) | fix | `log_streaming`: Guard ardupilotmega-specific messages with `#ifdef` | 2026-03-29 | merged |
+| [#2823](https://github.com/mavlink/MAVSDK/pull/2823) | feature | telemetry: Use `REQUEST_DATA_STREAM` for ArduPilot `set_rate` | 2026-03-29 | closed |
+| [#2827](https://github.com/mavlink/MAVSDK/pull/2827) | bug | mocap: Fix `MavFrame` enum sending wrong values on the wire | 2026-03-30 | merged |
+| [#2828](https://github.com/mavlink/MAVSDK/pull/2828) | bug | system_tests: Fix race in mission tests by registering server before connections | 2026-03-30 | merged |
+| [#2839](https://github.com/mavlink/MAVSDK/pull/2839) | feature | Expose full `HOME_POSITION` fields in `subscribe_home` | 2026-04-02 | open |
 
-### MAVSDK-Proto (3 PRs)
+### MAVSDK-Proto (4 PRs)
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
-| [#398](https://github.com/mavlink/MAVSDK-Proto/pull/398) | feature | Add `timestamp_us` to Altitude and GroundTruth messages | 2026-03-21 | open |
+| [#398](https://github.com/mavlink/MAVSDK-Proto/pull/398) | feature | Add `timestamp_us` to Altitude and GroundTruth messages | 2026-03-21 | merged |
 | [#399](https://github.com/mavlink/MAVSDK-Proto/pull/399) | feature | Add `HomePosition` message with full `HOME_POSITION` fields | 2026-03-21 | open |
-| [#400](https://github.com/mavlink/MAVSDK-Proto/pull/400) | feature | Add `DownloadGeofence` RPC to geofence proto | 2026-03-21 | open |
+| [#400](https://github.com/mavlink/MAVSDK-Proto/pull/400) | feature | Add `DownloadGeofence` RPC to geofence proto | 2026-03-21 | merged |
+| [#401](https://github.com/mavlink/MAVSDK-Proto/pull/401) | feature | Add `HomePosition` message and timestamp fields to telemetry | 2026-03-27 | closed |
 
 ### dora-rs (9 PRs)
 

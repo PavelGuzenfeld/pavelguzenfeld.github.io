@@ -30,7 +30,7 @@ Full VTOL navigation simulation — PX4 + Gazebo + ROS 2. Test your flight code 
 
 ## Open Source Contributions
 
-97 patches across 15 projects. I contribute upstream to the tools I depend on:
+103 patches across 15 projects. I contribute upstream to the tools I depend on:
 
 - **Eigen** — 24 MRs: bug fixes, new operators, structured bindings, Gram-Schmidt QR
 - **dora-rs** — 9 PRs: C++ API parity, zero-copy output, dynamic node init
@@ -38,7 +38,7 @@ Full VTOL navigation simulation — PX4 + Gazebo + ROS 2. Test your flight code 
 - **PX4-Autopilot** — 7 PRs: DDS reconnection, MAVLink signing, mission resume bugs
 - **GStreamer** — 7 MRs: NVMM Jetson plugins, shmsink bugs, CUDA memory checks
 - **Fast-DDS** — 7 PRs: data races, infinite loop, null-deref, missing includes
-- **MAVSDK** — 5 PRs: telemetry timestamps, geofence download, HOME_POSITION
+- **MAVSDK** — 11 PRs: telemetry timestamps, geofence download, HOME_POSITION, mocap fixes, mission test races
 - **ROS 2** — 4 PRs: O(N²) → O(N) CallbackGroup (71x speedup), deadlock fix
 - **OpenCV**, **concurrentqueue**, **px4-ros2-interface-lib** — bug fixes and utilities
 
