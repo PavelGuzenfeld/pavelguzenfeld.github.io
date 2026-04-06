@@ -1,6 +1,6 @@
 ---
 title: "The Satellite Tile Hunt: From 15m Blobs to 13cm Resolution in an Air-Gapped Simulation"
-date: 2026-04-06
+date: 2026-04-05
 draft: false
 tags: ["Unity", "Docker", "terrain", "satellite", "DTM", "GIS", "ESRI", "Google", "Mapzen", "simulation", "headless", "air-gapped", "Python"]
 keywords: ["satellite imagery Unity terrain", "download satellite tiles Python", "Google satellite tiles offline", "Mapzen terrain tiles DTM", "Unity heightmap resolution", "digital terrain model Unity", "SRTM vs Copernicus DTM", "tile stitching Python", "air-gapped terrain simulation", "ESRI World Imagery download"]
