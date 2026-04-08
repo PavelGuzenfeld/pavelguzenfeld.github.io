@@ -2,7 +2,7 @@
 title: "Scripted Hardware Testing for PX4 — MAVLink Shell, Docker, and pymavlink"
 date: 2026-04-07
 draft: false
-tags: ["PX4", "MAVLink", "Docker", "Python", "hardware-testing", "pymavlink", "embedded", "CI"]
+tags: ["PX4", "MAVLink", "Docker", "Python", "hardware-testing", "pymavlink", "embedded", "CI-CD"]
 keywords: ["PX4 hardware testing", "MAVLink shell scripting", "pymavlink serial control", "PX4 firmware verification", "CubeOrange testing", "Docker embedded testing"]
 cover:
   image: /images/posts/px4-hardware-testing.png

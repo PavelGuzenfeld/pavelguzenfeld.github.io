@@ -2,7 +2,7 @@
 title: "Migrating PX4's ROS Integration Tests from Gazebo Classic to SIH"
 date: 2026-03-20
 draft: false
-tags: ["PX4", "ROS2", "SITL", "SIH", "Docker", "CI/CD", "integration-testing", "open-source"]
+tags: ["PX4", "ROS2", "SITL", "SIH", "Docker", "CI-CD", "integration-testing", "open-source"]
 keywords: ["PX4 SIH migration", "PX4 ROS integration test SIH", "PX4 Gazebo Classic to SIH"]
 cover:
   image: /images/posts/px4-sih-migration.png

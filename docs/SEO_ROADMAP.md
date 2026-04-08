@@ -164,17 +164,21 @@ Create individual pages for each featured project so they can rank independently
 
 ## Priority Order
 
-| Priority | Item | Effort | Impact |
-|----------|------|--------|--------|
-| 1 | 1.1–1.3 Homepage title + meta + homeInfo | 15 min | High |
-| 2 | 2.1 Default OG image | 30 min | High |
-| 3 | 3.1 "For Recruiters" section | 30 min | High |
-| 4 | 1.4 About page description | 5 min | Medium |
-| 5 | 3.2 Consulting page | 1 hr | High |
-| 6 | 4.1–4.4 Dedicated project pages | 2 hr | Medium |
-| 7 | 1.5 Search Console verification | 15 min | Medium |
-| 8 | 5.1–5.2 Backlinks from GitHub/LinkedIn | 30 min | Medium |
-| 9 | 6.1–6.3 Blog post SEO polish | 1 hr | Low-Med |
-| 10 | 2.2 Post cover images | 1 hr | Low-Med |
-| 11 | 3.3 Location signals | 5 min | Low |
-| 12 | 2.3 Twitter handle | 5 min | Low |
+| Priority | Item | Effort | Impact | Status |
+|----------|------|--------|--------|--------|
+| 1 | 1.1–1.3 Homepage title + meta + homeInfo | 15 min | High | DONE |
+| 2 | 2.1 Default OG image | 30 min | High | DONE |
+| 3 | 3.1 "For Recruiters" section | 30 min | High | Skipped |
+| 4 | 1.4 About page description | 5 min | Medium | DONE |
+| 5 | 3.2 Consulting page | 1 hr | High | DONE |
+| 6 | 4.1–4.4 Dedicated project pages | 2 hr | Medium | DONE |
+| 7 | 1.5 Search Console verification | 15 min | Medium | DONE |
+| 8 | 5.1–5.2 Backlinks from GitHub/LinkedIn | 30 min | Medium | DONE |
+| 9 | 6.1–6.3 Blog post SEO polish | 1 hr | Low-Med | DONE |
+| 10 | 2.2 Post cover images | 1 hr | Low-Med | DONE |
+| 11 | 3.3 Location signals | 5 min | Low | Removed |
+| 12 | 2.3 Twitter handle | 5 min | Low | DONE |
+
+## Next: Social Campaign
+
+See [SOCIAL_CAMPAIGN.md](SOCIAL_CAMPAIGN.md) for the social media plan.

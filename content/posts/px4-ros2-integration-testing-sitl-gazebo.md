@@ -2,7 +2,7 @@
 title: "Running px4-ros2-interface-lib Integration Tests Against PX4 SITL: A Deep Technical Journey"
 date: 2026-03-19
 draft: false
-tags: ["PX4", "ROS2", "SITL", "Gazebo", "Docker", "DDS", "uXRCE-DDS", "integration-testing", "MicroXRCEAgent", "FastDDS"]
+tags: ["PX4", "ROS2", "SITL", "Gazebo", "Docker", "DDS", "uXRCE-DDS", "integration-testing", "MicroXRCEAgent", "Fast-DDS"]
 keywords: ["PX4 ROS 2 integration test", "px4-ros2-interface-lib SITL", "PX4 Gazebo DDS testing"]
 cover:
   image: /images/posts/px4-ros2-sitl.png

@@ -2,7 +2,7 @@
 title: "Contributing to ROS 2 — A Practical Guide from Four Accepted PRs"
 date: 2026-03-22
 draft: false
-tags: ["ROS 2", "open-source", "Docker", "C++", "Python", "testing", "git", "contributing"]
+tags: ["ROS2", "open-source", "Docker", "C++", "Python", "testing", "git", "contributing"]
 keywords: ["how to contribute to ROS 2", "ROS 2 pull request guide", "ROS 2 DCO check"]
 cover:
   image: /images/posts/contributing-ros2.png

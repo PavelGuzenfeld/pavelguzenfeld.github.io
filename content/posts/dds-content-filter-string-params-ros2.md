@@ -2,7 +2,7 @@
 title: "Why DDS Content Filter Parameters Silently Fail for Strings in ROS 2"
 date: 2026-04-04
 draft: false
-tags: ["ROS 2", "DDS", "Fast DDS", "content-filter", "debugging", "open-source", "rmw"]
+tags: ["ROS2", "DDS", "Fast-DDS", "content-filter", "debugging", "open-source", "rmw"]
 keywords: ["DDS content filter parameters", "Fast DDS DDSSQLFilter", "ROS 2 content filter string", "rmw_fastrtps content filter fix"]
 cover:
   image: /images/posts/dds-content-filter.png

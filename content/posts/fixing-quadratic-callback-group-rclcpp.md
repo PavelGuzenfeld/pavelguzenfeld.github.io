@@ -2,7 +2,7 @@
 title: "Fixing O(N²) Entity Addition in ROS 2's CallbackGroup"
 date: 2026-03-23
 draft: false
-tags: ["ROS 2", "C++", "performance", "open-source", "rclcpp"]
+tags: ["ROS2", "C++", "performance", "open-source", "rclcpp"]
 keywords: ["rclcpp CallbackGroup performance", "ROS 2 O(N²) bug", "rclcpp entity registration slow"]
 cover:
   image: /images/posts/rclcpp-callbackgroup.png

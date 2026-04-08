@@ -2,7 +2,7 @@
 title: "From Magenta to Desert: Fixing Cross-Platform Unity Terrain Rendering in Docker"
 date: 2026-03-27
 draft: false
-tags: ["Unity", "Docker", "asset-bundles", "shaders", "terrain", "rendering", "Vulkan", "HDRP", "Built-in-RP", "headless"]
+tags: ["Unity", "Docker", "asset-bundles", "shader", "terrain", "rendering", "Vulkan", "HDRP", "Built-in-RP", "headless"]
 keywords: ["Unity terrain rendering Docker", "Unity asset bundle shader mismatch", "headless Unity terrain fix"]
 cover:
   image: /images/posts/unity-terrain.png
