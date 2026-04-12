@@ -95,7 +95,7 @@ private:
 };
 ```
 
-Try it on Compiler Explorer: [godbolt.org/z/G1ahGEh69](https://godbolt.org/z/G1ahGEh69)
+Try it on Compiler Explorer: [godbolt.org/z/3Wxb5TbvG](https://godbolt.org/z/3Wxb5TbvG)
 
 ---
 
@@ -140,7 +140,7 @@ This gives O(log N) best-price lookup and correct time priority. The `mutable` q
 
 **Match price logic.** The match price is the resting order's price, not the aggressor's. If the new order is a BUY, the match price is the ask price. If SELL, the bid price.
 
-Try it on Compiler Explorer: [godbolt.org/z/e17bsEoGq](https://godbolt.org/z/e17bsEoGq)
+Try it on Compiler Explorer: [godbolt.org/z/ePh9fPbE1](https://godbolt.org/z/ePh9fPbE1)
 
 ---
 
@@ -181,7 +181,7 @@ ssize_t get_price(PriceSet & price_set, size_t offset_days)
 
 The symptom: day 3 returned 900 (next dividend's price) instead of 1000 (no dividend yet). Day 60 returned 825 instead of 875. Both off by one lookup step.
 
-Try it on Compiler Explorer: [godbolt.org/z/1aq9nzfjd](https://godbolt.org/z/1aq9nzfjd)
+Try it on Compiler Explorer: [godbolt.org/z/4dvW51nbM](https://godbolt.org/z/4dvW51nbM)
 
 ---
 
@@ -263,7 +263,7 @@ long count_paths(int k, int n, int m)
 
 No parity logic needed. Unreachable states are naturally 0. Accumulate `dp[n]` at every step count.
 
-Try it on Compiler Explorer: [godbolt.org/z/orE7bxnKW](https://godbolt.org/z/orE7bxnKW)
+Try it on Compiler Explorer: [godbolt.org/z/aKo5zf3rG](https://godbolt.org/z/aKo5zf3rG)
 
 ---
 
@@ -328,7 +328,7 @@ The `f < free_nodes` check is the entire constraint. Think of `f` as a fuel gaug
 
 An alternative approach: run Dijkstra C(M, K) times, each time zeroing a different combination of K edges. For M=100 and K=3, that is 160,000 runs. For K=10, 17 trillion. The layered approach does it in one pass with O(N*K * log(N*K)) complexity.
 
-Try it on Compiler Explorer: [godbolt.org/z/hshYs4YWr](https://godbolt.org/z/hshYs4YWr)
+Try it on Compiler Explorer: [godbolt.org/z/GK4djdGW8](https://godbolt.org/z/GK4djdGW8)
 
 ---
 
