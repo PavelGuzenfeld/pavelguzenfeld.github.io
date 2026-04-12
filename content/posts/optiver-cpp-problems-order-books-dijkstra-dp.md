@@ -5,7 +5,7 @@ draft: false
 tags: [C++, debugging, optimization, performance, compilers]
 keywords: ["Optiver C++ assessment preparation", "order book matching engine C++", "Dijkstra shortest path C++ implementation"]
 cover:
-  image: /images/og-default.png
+  image: /images/posts/optiver-cpp-problems.png
   alt: "Five Optiver-Style C++ Problems: Order Books, Dijkstra, and DP"
 categories: ["deep-dive"]
 summary: "Working through five C++ problems modeled on Optiver's Senior SWE assessment: supermarket checkout simulation, order book matching, dividend pricing, lattice path DP, and Dijkstra with K free edges. Every bug, wrong turn, and data structure tradeoff included."
