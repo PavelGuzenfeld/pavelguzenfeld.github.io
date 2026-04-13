@@ -61,6 +61,7 @@ No slashes or spaces in tech tags (breaks Hugo URL generation).
 | NVIDIA | |
 | NVMM | |
 | open-source | |
+| OpenStreetMap | |
 | optimization | |
 | performance | |
 | profiling | |
