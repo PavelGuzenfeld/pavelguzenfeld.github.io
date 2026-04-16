@@ -192,16 +192,18 @@ gst-launch-1.0 udpsrc port=5000 \
 
 Each `MainPipelineRenderToTexture` instance costs ~15 ms CPU (40 render passes). Three cameras = three full pipeline instances. The GPU stays at 8-24% -- the bottleneck is CPU-side pass scheduling, not rendering.
 
-### Comparison with Unity
+### Where this stands vs Unity
 
-| | Unity (current) | O3DE (empty scene) |
+These numbers are **not a fair comparison**. Unity renders a full scene (6 km terrain, 500 buildings, roads, trees, a drone entity, PX4 integration). O3DE is rendering a flat ground plane and a sky. The GPU headroom (8-24% vs Unity's ~90%) only tells us that the GPU isn't the bottleneck *yet* -- it says nothing about what happens when real content loads.
+
+| | Unity (full scene) | O3DE (empty scene) |
 |---|---|---|
+| Content | Terrain + 500 buildings + drone + PX4 | Ground plane + sky |
 | 1 camera | 11-16 FPS | 34.5 FPS |
 | 3 cameras | ~8 FPS | 21 FPS |
-| Terrain + 500 buildings | 11-16 FPS | not yet tested |
 | GPU utilization | ~90% | ~20% |
 
-O3DE is 2-3x faster than Unity on equivalent camera counts, with 75% GPU headroom remaining. The real test comes in Phase 2 when we add terrain and buildings.
+The only honest conclusion: O3DE's engine overhead on an empty scene leaves room for content. Whether that room is enough for the full Sandbox scene is an open question that Phase 2-4 will answer.
 
 ## What we didn't solve
 
@@ -216,4 +218,4 @@ O3DE is 2-3x faster than Unity on equivalent camera counts, with 75% GPU headroo
 - **Phase 4**: connect PX4 SITL and fly the tailsitter
 - **Phase 5**: port all art assets (drone, vehicles, characters)
 
-The engine works. The streaming pipeline works. The question is no longer "can O3DE replace Unity" -- it's "how much content can we add before hitting the frame budget."
+The engine boots, renders, and streams. The plumbing works. But the real question -- whether O3DE can handle the full Sandbox scene (terrain, 500 buildings, drone, PX4) at a higher frame rate than Unity -- is still unanswered. That's Phase 2-4.
