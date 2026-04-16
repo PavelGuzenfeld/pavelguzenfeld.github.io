@@ -60,6 +60,7 @@ No slashes or spaces in tech tags (breaks Hugo URL generation).
 | NVENC | |
 | NVIDIA | |
 | NVMM | |
+| O3DE | Open 3D Engine |
 | open-source | |
 | OpenStreetMap | |
 | optimization | |
