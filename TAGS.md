@@ -35,7 +35,9 @@ No slashes or spaces in tech tags (breaks Hugo URL generation).
 | FFmpeg | |
 | Gazebo | |
 | GCC | |
+| GDExtension | Godot C++ plugin interface |
 | GIS | |
+| Godot | Godot Engine |
 | git | |
 | GitHub-Actions | Not `GitHub Actions` |
 | Google | |
