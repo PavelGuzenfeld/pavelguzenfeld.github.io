@@ -66,6 +66,7 @@ No slashes or spaces in tech tags (breaks Hugo URL generation).
 | open-source | |
 | OpenStreetMap | |
 | optimization | |
+| pathfinding | |
 | performance | |
 | profiling | |
 | PX4 | |
