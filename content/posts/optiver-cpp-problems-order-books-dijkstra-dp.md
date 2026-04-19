@@ -1,20 +1,20 @@
 ---
-title: "Five Optiver-Style C++ Problems: Order Books, Dijkstra, and DP"
+title: "Six Optiver-Style C++ Problems: Order Books, Dijkstra, DP, and an AoS→SoA Rewrite"
 date: 2026-04-12
 draft: false
 tags: [C++, debugging, optimization, performance, compilers]
-keywords: ["Optiver C++ assessment preparation", "order book matching engine C++", "Dijkstra shortest path C++ implementation"]
+keywords: ["Optiver C++ assessment preparation", "order book matching engine C++", "Dijkstra shortest path C++ implementation", "AoS vs SoA C++", "price alert router"]
 cover:
   image: /images/posts/optiver-cpp-problems.png
-  alt: "Five Optiver-Style C++ Problems: Order Books, Dijkstra, and DP"
+  alt: "Six Optiver-Style C++ Problems: Order Books, Dijkstra, DP, and Price Alert Router"
 categories: ["deep-dive"]
-summary: "Working through five C++ problems modeled on Optiver's Senior SWE assessment: supermarket checkout simulation, order book matching, dividend pricing, lattice path DP, and Dijkstra with K free edges. Every bug, wrong turn, and data structure tradeoff included."
+summary: "Working through six C++ problems modeled on Optiver's Senior SWE assessment: supermarket checkout simulation, order book matching, dividend pricing, lattice path DP, Dijkstra with K free edges, and a price-alert router built twice — AoS first, then SoA. Every bug, wrong turn, and data structure tradeoff included."
 ShowToc: true
 ---
 
 Optiver's Senior Software Engineer EU assessment is one coding problem in two hours. The problem is long, the spec is dense, and the code quality bar is high. They want clean OOP, correct complexity analysis, and evidence that you think about cache lines and allocator behavior — not just algorithmic correctness.
 
-I spent a week working through five problems modeled on what shows up in public Optiver OA reports: supermarket checkout simulation, order book matching, stock dividend pricing, a lattice-path DP problem, and a modified Dijkstra. Each problem produced bugs worth documenting. The recurring pattern: architectural instincts were right, but operator typos (`<` vs `=`), container initialization (braces vs parentheses), and iterator invalidation burned real time.
+I spent a week working through six problems modeled on what shows up in public Optiver OA reports: supermarket checkout simulation, order book matching, stock dividend pricing, a lattice-path DP problem, a modified Dijkstra, and a price-alert router that I wrote twice — once with `std::map`-of-tuples (array-of-structs), once with parallel `std::vector`s (structure-of-arrays). Each problem produced bugs worth documenting. The recurring pattern: architectural instincts were right, but operator typos (`<` vs `=`), container initialization (braces vs parentheses), and iterator invalidation burned real time.
 
 This post is the full record. Every wrong output, every segfault, every fix.
 
@@ -332,9 +332,191 @@ Try it on Compiler Explorer: [godbolt.org/z/GK4djdGW8](https://godbolt.org/z/GK4
 
 ---
 
+## Problem 6: Price Alert Router (AoS → SoA Rewrite)
+
+A market-data service publishes **price alerts** tagged with timestamp, volatility, and a set of tickers. Brokers subscribe with a **minimum volatility threshold** and a **max alerts per second** rate limit, also scoped to a ticker list. On each `publish()`, match every alert to every interested broker while respecting volatility filtering, per-second rate limits, and not dispatching the same alert twice to a broker that subscribes to multiple overlapping tickers.
+
+The instructive part of this problem isn't the matching — it's the storage. The obvious version uses `std::map<BrokerId, tuple<...>>` keyed by id. The senior version notices that `publish()`'s inner loop only ever reads *one field at a time* per broker — threshold, then rate limit — and that `std::tuple` packs everything into a single cache line that's mostly useless on each access. Rewriting with parallel `std::vector`s (structure-of-arrays) changes the access pattern to column-major, makes the hot fields sequentially streamed, and turns remove into swap-and-pop.
+
+### The AoS Version
+
+Array-of-structs — one `std::map` entry per broker holding a tuple of fields:
+
+```cpp
+using Brokers         = std::map<BrokerId, std::tuple<VolatilityThreshold, AlertsPerSec>>;
+using BrokersByTicker = std::map<Ticker, std::set<BrokerId>>;
+using Alerts          = std::map<AlertId, std::tuple<Timestamp_ms, VolatilityThreshold>>;
+using AlertsByTicker  = std::map<Ticker, std::set<AlertId>>;
+
+DispatchPlan PriceAlertRouter::publish() const
+{
+    auto plan = DispatchPlan{};
+    for (auto const& [ticker, broker_id_set] : brokers_by_ticker_)
+    {
+        auto alerts_it = alerts_by_ticker_.find(ticker);
+        if (alerts_it == alerts_by_ticker_.end()) continue;
+
+        for (auto const alert_id : alerts_it->second)
+        {
+            auto const [alert_ts, alert_volatility] = alerts_.at(alert_id);
+            for (auto const broker_id : broker_id_set)
+            {
+                auto const [min_volatility, max_alerts_sec] = brokers_.at(broker_id);
+                auto& plan_alert_set = plan[broker_id];
+                if (alert_volatility < min_volatility) continue;
+
+                auto const same_second_count = std::count_if(
+                    plan_alert_set.begin(), plan_alert_set.end(),
+                    [&](AlertId other_id) {
+                        auto const [other_ts, _] = alerts_.at(other_id);
+                        return static_cast<uint32_t>(alert_ts) / 1000
+                            == static_cast<uint32_t>(other_ts) / 1000;
+                    });
+                if (same_second_count >= max_alerts_sec) break;
+                plan_alert_set.insert(alert_id);
+            }
+        }
+    }
+    return plan;
+}
+```
+
+Clean, correct, and every inner iteration does a `brokers_.at(broker_id)` — a red-black tree traversal that loads the whole tuple into L1, then discards most of it. The `count_if` over `plan_alert_set` is also O(|set|) per check, calling `alerts_.at(other_id)` again each time.
+
+Try the AoS version: [godbolt.org/z/xK6K893ET](https://godbolt.org/z/xK6K893ET)
+
+### The SoA Rewrite
+
+Each field becomes a dense column. An `unordered_map<Id, size_t>` translates external ids to row indices; the ticker indices store row indices directly, so the inner loop reads from the vectors without another hashmap hop.
+
+```cpp
+class PriceAlertRouter
+{
+public:
+    void add_broker(BrokerId, VolatilityThreshold, AlertsPerSec, Tickers const&);
+    void remove_broker(BrokerId);
+    void add_alert(AlertId, Timestamp_ms, VolatilityThreshold, Tickers const&);
+    DispatchPlan publish() const;
+
+private:
+    // Broker SoA — each field is a dense column.
+    std::vector<BrokerId>            broker_id_;
+    std::vector<VolatilityThreshold> broker_min_vol_;
+    std::vector<AlertsPerSec>        broker_max_alerts_;
+    std::unordered_map<BrokerId, std::size_t> broker_index_;
+
+    // Alert SoA.
+    std::vector<AlertId>             alert_id_;
+    std::vector<Timestamp_ms>        alert_ts_;
+    std::vector<VolatilityThreshold> alert_vol_;
+    std::unordered_map<AlertId, std::size_t> alert_index_;
+
+    // Ticker indices hold dense row indices, not ids.
+    std::unordered_map<Ticker, std::vector<std::size_t>> broker_rows_by_ticker_;
+    std::unordered_map<Ticker, std::vector<std::size_t>> alert_rows_by_ticker_;
+};
+```
+
+The matching loop now reads only the columns it needs and does no associative lookups inside the triple loop:
+
+```cpp
+DispatchPlan PriceAlertRouter::publish() const
+{
+    DispatchPlan plan;
+    std::unordered_map<std::uint64_t, int> same_sec_count;
+    std::unordered_set<std::uint64_t> already_sent;
+    const auto pack = [](std::size_t a, std::size_t b) {
+        return (std::uint64_t(a) << 32) | std::uint32_t(b);
+    };
+
+    for (auto const& [ticker, broker_rows] : broker_rows_by_ticker_) {
+        auto ait = alert_rows_by_ticker_.find(ticker);
+        if (ait == alert_rows_by_ticker_.end()) continue;
+
+        for (std::size_t a_row : ait->second) {
+            const auto a_vol = alert_vol_[a_row];                            // column read
+            const auto a_sec = static_cast<std::uint32_t>(alert_ts_[a_row]) / 1000;
+
+            for (std::size_t b_row : broker_rows) {
+                if (a_vol < broker_min_vol_[b_row]) continue;                // column read
+                if (!already_sent.insert(pack(b_row, a_row)).second) continue;
+
+                auto& count = same_sec_count[pack(b_row, a_sec)];
+                if (count >= broker_max_alerts_[b_row]) continue;            // column read
+                ++count;
+                plan[broker_id_[b_row]].push_back(alert_id_[a_row]);
+            }
+        }
+    }
+    return plan;
+}
+```
+
+Three wins over the AoS version:
+
+1. **Rate limiting is O(1) per insert**, not O(|plan[broker]|). The `(broker_row, second)` → count hashmap replaces the `count_if` over the growing result set. On the AoS version, a broker receiving N alerts in the same second does O(N²) work; the SoA version stays O(N).
+2. **Dedup is explicit.** The AoS version used `std::set` insertion to deduplicate when a broker and alert overlap on multiple tickers. The SoA version uses an `already_sent` hashset keyed by `(broker_row, alert_row)` — same effect, but decoupled from result storage.
+3. **Removal stays contiguous.** `remove_broker` does swap-and-pop across the three column vectors, fixes the index map, and patches the ticker index. The arrays never develop holes, so cache prefetch stays useful.
+
+```cpp
+void PriceAlertRouter::remove_broker(BrokerId id)
+{
+    auto it = broker_index_.find(id);
+    if (it == broker_index_.end()) return;
+
+    const std::size_t row = it->second;
+    const std::size_t last = broker_id_.size() - 1;
+
+    if (row != last) {
+        broker_id_[row]         = broker_id_[last];
+        broker_min_vol_[row]    = broker_min_vol_[last];
+        broker_max_alerts_[row] = broker_max_alerts_[last];
+        broker_index_[broker_id_[row]] = row;
+    }
+    broker_id_.pop_back();
+    broker_min_vol_.pop_back();
+    broker_max_alerts_.pop_back();
+    broker_index_.erase(it);
+
+    for (auto& [_, rows] : broker_rows_by_ticker_) {
+        rows.erase(std::remove(rows.begin(), rows.end(), row), rows.end());
+        for (auto& r : rows) if (r == last) r = row;
+    }
+    std::erase_if(broker_rows_by_ticker_,
+                  [](auto const& kv) { return kv.second.empty(); });
+}
+```
+
+Try the SoA version: [godbolt.org/z/3n85rf3TE](https://godbolt.org/z/3n85rf3TE)
+
+### Bugs and Subtleties
+
+**Rate-limit counting against dispatched set.** The AoS code's `std::count_if` over the already-dispatched alerts works but is subtly quadratic in the number of dispatches per second. At interview pace, this is the kind of thing an interviewer nods at — "what's the complexity of that inner check?" — and a solid senior answer switches to per-bucket counting without rewriting the whole data model. The SoA version makes it trivial because the storage is already relational.
+
+**Multi-ticker dedup.** If broker B subscribes to `{AAPL, NVDA}` and alert A is tagged `{AAPL, NVDA}`, the outer loop visits the pair twice (once per ticker). Both versions need explicit dedup: AoS gets it for free via `std::set` insertion into the per-broker result; SoA needs the `already_sent` hashset because the result is a `vector`. Pick your poison — `set`'s O(log N) insert vs `vector` + hashset's amortised O(1).
+
+**Timestamp → second bucketing.** `static_cast<uint32_t>(alert_ts) / 1000` treats the timestamp as milliseconds. With `float` timestamps, rounding can put alerts near a second boundary into the wrong bucket. For an assessment, mention the issue and move on. In production, use integer ms.
+
+**Swap-and-pop invalidates cached row indices.** Anything holding a `row` index across a `remove_broker` call is looking at the wrong broker now. Both the ticker index and `broker_index_` need fixups. Get either wrong and the next `publish()` dispatches to the swapped-in neighbor instead.
+
+**Duplicate add_broker.** Both versions guard against re-adding. AoS relies on `std::map::insert` returning false; SoA checks `broker_index_.contains(id)` explicitly. The AoS one is quieter but easier to miss in review.
+
+### When SoA Wins
+
+The real argument for SoA isn't abstract "cache locality." It's two concrete structural properties:
+
+- **Hot-path field access is narrow.** `publish()`'s inner loop reads two ints per broker and two per alert. Packing them into separate vectors means each read streams a cache line of 16 threshold values, not 16 broker-id/threshold/rate-limit triples.
+- **Field widths differ.** `BrokerId` is 4 bytes, `VolatilityThreshold` is 4, `AlertsPerSec` is 4, but add `std::string` tickers in the same struct and you've exploded the row size. SoA lets the cold fields (ticker lists, names, metadata) live elsewhere without bloating the hot columns.
+
+For this problem at interview scale (≤1000 brokers, ≤1000 alerts), both versions run in microseconds. The point isn't to measure the difference — it's to articulate *why* you'd choose one over the other. "I'd pick AoS for write-heavy workloads with few fields read per access, SoA when the publish-side read pattern is narrow and hot" is the senior answer.
+
+Try both on Compiler Explorer: AoS [godbolt.org/z/xK6K893ET](https://godbolt.org/z/xK6K893ET) · SoA [godbolt.org/z/3n85rf3TE](https://godbolt.org/z/3n85rf3TE)
+
+---
+
 ## Recurring Bug Patterns
 
-Five problems, and the same categories of bug appeared repeatedly.
+Six problems, and the same categories of bug appeared repeatedly.
 
 | Bug Pattern | Occurrences | Example |
 |-------------|-------------|---------|
