@@ -48,7 +48,7 @@ TocOpen: true
 
 **64 patches merged across 11 projects, 17 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of April 2026.
 
-### Eigen (24 MRs)
+### Eigen — 21 merged, 1 open, 2 closed
 
 | MR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -77,7 +77,7 @@ TocOpen: true
 | [!2338](https://gitlab.com/libeigen/eigen/-/merge_requests/2338) | fix | Map `.inc` files to C++ in Doxygen extension mapping | 2026-03-21 | merged |
 | [!2341](https://gitlab.com/libeigen/eigen/-/merge_requests/2341) | perf | Add blocked right-side application for HouseholderSequence | 2026-03-23 | closed |
 
-### GStreamer (7 MRs)
+### GStreamer — 5 merged, 1 open, 1 closed
 
 | MR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -89,7 +89,7 @@ TocOpen: true
 | [!11118](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11118) | bug | `GstShmAllocator` maxsize not rounded up to page size | 2026-03-24 | merged |
 | [!11126](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11126) | test | Fix flaky `test_shm_live` timeout | 2026-03-24 | open |
 
-### PX4-Autopilot (7 PRs)
+### PX4-Autopilot — 4 merged, 2 open, 1 closed
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -101,7 +101,7 @@ TocOpen: true
 | [#26853](https://github.com/PX4/PX4-Autopilot/pull/26853) | bug | Mission resume picks wrong waypoint when camera triggering is active | 2026-03-22 | merged |
 | [#26854](https://github.com/PX4/PX4-Autopilot/pull/26854) | bug | False landed-state detection in OFFBOARD direct_actuator mode | 2026-03-22 | open |
 
-### MAVSDK (11 PRs)
+### MAVSDK — 8 merged, 2 closed
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -116,7 +116,7 @@ TocOpen: true
 | [#2828](https://github.com/mavlink/MAVSDK/pull/2828) | bug | system_tests: Fix race in mission tests by registering server before connections | 2026-03-30 | merged |
 | [#2839](https://github.com/mavlink/MAVSDK/pull/2839) | feature | Expose full `HOME_POSITION` fields in `subscribe_home` | 2026-04-02 | merged |
 
-### MAVSDK-Proto (4 PRs)
+### MAVSDK-Proto — 3 merged, 1 closed
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -125,7 +125,7 @@ TocOpen: true
 | [#400](https://github.com/mavlink/MAVSDK-Proto/pull/400) | feature | Add `DownloadGeofence` RPC to geofence proto | 2026-03-21 | merged |
 | [#401](https://github.com/mavlink/MAVSDK-Proto/pull/401) | feature | Add `HomePosition` message and timestamp fields to telemetry | 2026-03-27 | closed |
 
-### dora-rs (9 PRs)
+### dora-rs — 3 merged, 5 open, 1 closed
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -139,7 +139,7 @@ TocOpen: true
 | [#1428](https://github.com/dora-rs/dora/pull/1428) | feature | Dynamic node initialization | 2026-03-17 | merged |
 | [#1431](https://github.com/dora-rs/dora/pull/1431) | feature | Zero-copy output API | 2026-03-17 | merged |
 
-### XGBoost (10 PRs)
+### XGBoost — 4 merged, 1 open, 5 closed
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -154,7 +154,7 @@ TocOpen: true
 | [#12111](https://github.com/dmlc/xgboost/pull/12111) | cleanup | Replace bare `Any` with specific types in sklearn helpers | 2026-03-19 | open |
 | [#12112](https://github.com/dmlc/xgboost/pull/12112) | refactor | Consolidate version query scripts into shared Python module | 2026-03-19 | closed |
 
-### ROS 2 — rclcpp, ros2cli, geometry2 (4 PRs)
+### ROS 2 — rclcpp, ros2cli, geometry2 — 1 merged, 3 open
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -163,7 +163,7 @@ TocOpen: true
 | [ros2cli#1213](https://github.com/ros2/ros2cli/pull/1213) | feature | Add `--content-filter` DDS filtering to `ros2 topic echo\|hz\|bw` | 2026-03-21 | open |
 | [geometry2#908](https://github.com/ros2/geometry2/pull/908) | bug | `StaticCache::getData()` returns true on empty cache | 2026-03-21 | merged |
 
-### Fast-DDS (7 PRs)
+### Fast-DDS — 7 open
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -175,7 +175,7 @@ TocOpen: true
 | [#6343](https://github.com/eProsima/Fast-DDS/pull/6343) | bug | Infinite loop in VOLATILE `DataReader` `init_shared_segment` | 2026-03-21 | open |
 | [#6344](https://github.com/eProsima/Fast-DDS/pull/6344) | bug | Race between Condition destruction and WaitSet iteration | 2026-03-21 | open |
 
-### px4-ros2-interface-lib (4 PRs)
+### px4-ros2-interface-lib — 4 merged
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -184,21 +184,21 @@ TocOpen: true
 | [#189](https://github.com/Auterion/px4-ros2-interface-lib/pull/189) | feature | Add `HomePositionSetter` utility | 2026-03-18 | merged |
 | [#192](https://github.com/Auterion/px4-ros2-interface-lib/pull/192) | refactor | Use `VehicleCommandSender` in `sendCommandSync()` | 2026-03-19 | merged |
 
-### OpenCV (2 PRs)
+### OpenCV — 2 merged
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#28660](https://github.com/opencv/opencv/pull/28660) | bug | Broken Python bindings | 2026-03-15 | merged |
 | [#28665](https://github.com/opencv/opencv/pull/28665) | cleanup | Stale typing stubs | 2026-03-16 | merged |
 
-### concurrentqueue (2 PRs)
+### concurrentqueue — 2 merged
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#445](https://github.com/cameron314/concurrentqueue/pull/445) | cleanup | Replace C-style casts with C++ casts | 2026-03-10 | merged |
 | [#446](https://github.com/cameron314/concurrentqueue/pull/446) | docs | Document `try_enqueue` capacity limit | 2026-03-17 | merged |
 
-### Fast-DDS-docs (1 PR)
+### Fast-DDS-docs — 1 open
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|

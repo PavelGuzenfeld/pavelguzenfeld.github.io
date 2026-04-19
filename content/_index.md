@@ -2,29 +2,14 @@
 title: "Home"
 ---
 
-## What I Do
-
-I build the software that keeps drones in the air. From avionics integration to computer vision pipelines — every line of code runs on hardware where failure isn't an option.
-
-**C++23** for zero-overhead abstractions. **ROS 2** for distributed systems. **PX4** for flight control. All running on edge hardware under tight constraints.
-
----
-
 ## Featured Projects
 
-### [behavior-tree-lite](/projects/behavior-tree-lite/)
-Header-only C++23 behavior tree with a **compile-time DSL**. Zero heap allocation, flattened execution, and 10x smaller binary than BehaviorTree.CPP.
+- [**behavior-tree-lite**](/projects/behavior-tree-lite/) — header-only C++23 behavior tree with a compile-time DSL. Zero heap allocation, 10× smaller binary than BehaviorTree.CPP.
+- [**strong-types**](/projects/strong-types/) — compile-time type safety for C++ primitives with SI units. Fuzz-tested. No more silent `meters` → `feet` conversions.
+- [**l2-hybrid-protocol**](/projects/l2-hybrid-protocol/) — custom Layer 2 network protocol that beats raw UDP latency for drone telemetry.
+- [**fiber-nav-sim**](/projects/fiber-nav-sim/) — VTOL navigation simulation with PX4 + Gazebo + ROS 2. Fiber-optic + monocular vision fusion tested over 3.3 km in SITL.
 
-### [strong-types](/projects/strong-types/)
-Type-safe C++ primitives that catch unit and coordinate mix-ups **at compile time**. Fuzz-tested. Because `meters` and `feet` should never silently convert.
-
-### [l2-hybrid-protocol](/projects/l2-hybrid-protocol/)
-Custom Layer 2 network protocol that beats raw UDP latency for drone telemetry.
-
-### [fiber-nav-sim](/projects/fiber-nav-sim/)
-Full VTOL navigation simulation — PX4 + Gazebo + ROS 2. Test your flight code before it leaves the ground.
-
-[See all projects &rarr;](/projects/)
+[See all projects →](/projects/)
 
 ---
 
@@ -40,12 +25,13 @@ Full VTOL navigation simulation — PX4 + Gazebo + ROS 2. Test your flight code 
 - **px4-ros2-interface-lib** — 4 merged PRs (Auterion): VTOL timeout config, `HomePositionSetter`, namespace fixes
 - **dora-rs** — 3 merged PRs: dynamic node init, zero-copy output, progress bars
 - **OpenCV** (2), **concurrentqueue** (2), **ros2/geometry2** (1) — targeted upstream fixes
-- **ROS 2** `rclcpp`/`ros2cli` — O(N²) → O(N) CallbackGroup (71x speedup), deadlock fix, `--content-filter` in `ros2 topic` (3 PRs under review)
+- **ROS 2** `rclcpp`/`ros2cli` — O(N²) → O(N) CallbackGroup (71× speedup), deadlock fix, `--content-filter` in `ros2 topic` (3 PRs under review)
 - **Fast-DDS** — 7 PRs under review: data races, infinite loop, null-deref, missing includes
+
+[Full list with per-PR status →](/projects/#upstream-contributions)
 
 ---
 
 ## Tech Stack
 
 `C++23` `CMake` `ROS 2` `PX4` `Gazebo` `GStreamer` `Docker` `GitHub Actions` `Python` `Linux`
-
