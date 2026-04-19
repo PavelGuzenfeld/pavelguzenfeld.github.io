@@ -1,7 +1,7 @@
 ---
 title: "About"
 layout: "single"
-summary: "UAV software engineer specializing in C++23 avionics, navigation, and computer-vision pipelines. 103 patches merged across Eigen, ROS 2, GStreamer, PX4, MAVSDK, and Fast-DDS."
+summary: "UAV software engineer specializing in C++23 avionics, navigation, and computer-vision pipelines. 64 patches merged across Eigen, GStreamer, MAVSDK, PX4, ROS 2, XGBoost, OpenCV, and other upstream projects."
 ShowToc: false
 ---
 
@@ -25,21 +25,27 @@ I'm drawn to problems at the boundary between correctness and performance -- typ
 
 ## Open Source Contributions
 
-103 patches merged across 15 projects. I contribute upstream to the tools I depend on -- not because it looks good, but because I hit bugs and want them fixed.
+**64 patches merged across 11 upstream projects, with 17 more open for review.** I contribute upstream to the tools I depend on -- not because it looks good, but because I hit bugs and want them fixed. Numbers below are live GitHub/GitLab counts as of April 2026.
 
-**Eigen** -- 24 MRs: [Householder BLAS-3 right-side application](/posts/eigen-householder-blocked-right-side/), [Gram-Schmidt QR implementation](/posts/gram-schmidt-vs-householder-qr-benchmark/), [uint128 division infinite loop fix](/posts/fixing-eigen-uint128-division-infinite-loop/), [AutoDiffScalar fill regression](/posts/eigen-autodiff-fill-regression/), [GCC false-positive suppression](/posts/fixing-gcc-false-positives-in-eigen/), [stableNorm code review fix](/posts/eigen-stablenorm-gram-schmidt/), [Doxygen .inc extension mapping](/posts/debugging-doxygen-inc-extension-mapping-eigen/)
+**[Eigen](https://gitlab.com/libeigen/eigen)** -- 23 merged MRs: [Householder BLAS-3 right-side application](/posts/eigen-householder-blocked-right-side/), [Gram-Schmidt QR implementation](/posts/gram-schmidt-vs-householder-qr-benchmark/), [uint128 division infinite loop fix](/posts/fixing-eigen-uint128-division-infinite-loop/), [AutoDiffScalar fill regression](/posts/eigen-autodiff-fill-regression/), [GCC false-positive suppression](/posts/fixing-gcc-false-positives-in-eigen/), [stableNorm code review fix](/posts/eigen-stablenorm-gram-schmidt/), [Doxygen .inc extension mapping](/posts/debugging-doxygen-inc-extension-mapping-eigen/)
 
-**ROS 2** -- 4 PRs: [O(N²) → O(N) CallbackGroup fix (71x speedup)](/posts/fixing-quadratic-callback-group-rclcpp/), deadlock fix in TimeSource, and more. Full writeup: [Contributing to ROS 2 -- A Practical Guide](/posts/contributing-to-ros2-a-practical-guide/)
+**[MAVSDK](https://github.com/mavlink/MAVSDK)** -- 14 merged PRs (10 on `MAVSDK`, 4 on `MAVSDK-Proto`): telemetry timestamps, geofence download, HOME_POSITION, mocap fixes, mission test race conditions
 
-**GStreamer** -- 7 MRs: [Four shared memory bugs (race condition, use-after-free, fd leak, exit code)](/posts/anatomy-of-gstreamer-shm-bugs/), [shmsink exit code fix](/posts/fixing-gstreamer-shmsink-exit-code-bug/), [gst-nvmm-cpp zero-copy Jetson plugin](/posts/gst-nvmm-cpp-zero-copy-video-jetson/)
+**[GStreamer](https://gitlab.freedesktop.org/gstreamer/gstreamer)** -- 6 merged MRs: [Four shared memory bugs (race condition, use-after-free, fd leak, exit code)](/posts/anatomy-of-gstreamer-shm-bugs/), [shmsink exit code fix](/posts/fixing-gstreamer-shmsink-exit-code-bug/), [gst-nvmm-cpp zero-copy Jetson plugin](/posts/gst-nvmm-cpp-zero-copy-video-jetson/) (2 more open for review)
 
-**PX4-Autopilot** -- 7 PRs: DDS reconnection, MAVLink signing analysis, mission resume bugs. Detailed in [PX4 Troubleshooting Guide](/posts/px4-autopilot-troubleshooting-debugging-testing-guide/)
+**[XGBoost](https://github.com/dmlc/xgboost)** -- 5 merged PRs
 
-**MAVSDK** -- 11 PRs: telemetry timestamps, geofence download, HOME_POSITION, mocap fixes, mission test race conditions
+**[PX4-Autopilot](https://github.com/PX4/PX4-Autopilot)** -- 4 merged PRs: DDS reconnection, MAVLink signing analysis, mission resume bugs. Detailed in [PX4 Troubleshooting Guide](/posts/px4-autopilot-troubleshooting-debugging-testing-guide/)
 
-**Fast-DDS** -- 7 PRs: data races, infinite loop, null-deref, missing includes. Related: [DDS Content Filter String Params Bug](/posts/dds-content-filter-string-params-ros2/)
+**[px4-ros2-interface-lib](https://github.com/Auterion/px4-ros2-interface-lib)** -- 4 merged PRs (Auterion)
 
-**Other:** [XGBoost](https://github.com/dmlc/xgboost) (10 PRs), [OpenCV](https://github.com/opencv/opencv), [dora-rs](https://github.com/dora-rs/dora) (9 PRs), [concurrentqueue](https://github.com/cameron314/concurrentqueue), [px4-ros2-interface-lib](https://github.com/Auterion/px4-ros2-lib)
+**[dora-rs](https://github.com/dora-rs/dora)** -- 3 merged PRs
+
+**[OpenCV](https://github.com/opencv/opencv)** -- 2 merged PRs · **[concurrentqueue](https://github.com/cameron314/concurrentqueue)** -- 2 merged PRs · **[ros2/geometry2](https://github.com/ros2/geometry2)** -- 1 merged PR: `StaticCache::getData()` on empty cache
+
+**ROS 2 ecosystem** -- 4 PRs submitted, 1 merged (geometry2), 3 open on `rclcpp` and `ros2cli`: [O(N²) → O(N) CallbackGroup fix (71x speedup)](/posts/fixing-quadratic-callback-group-rclcpp/), deadlock fix in `TimeSource`, content-filter support in `ros2 topic`. Full writeup: [Contributing to ROS 2 -- A Practical Guide](/posts/contributing-to-ros2-a-practical-guide/)
+
+**[Fast-DDS](https://github.com/eProsima/Fast-DDS)** -- 7 PRs open for review: data races, infinite loop, null-deref, missing includes, content-filter string params. Related: [DDS Content Filter String Params Bug](/posts/dds-content-filter-string-params-ros2/)
 
 ## Projects
 
