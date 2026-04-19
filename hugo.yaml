@@ -10,6 +10,25 @@ buildDrafts: false
 buildFuture: false
 buildExpired: false
 
+# Google Search Console flagged tag/category pages as "Crawled - currently not
+# indexed" — Google sees them as thin aggregators that compete with the real
+# posts. Mark them noindex, follow so Google still traverses to the posts but
+# doesn't surface the tag page itself in results. Also drop them from the
+# sitemap so we're not advertising URLs we've told Google to skip.
+cascade:
+  - _target:
+      kind: taxonomy
+    params:
+      robotsNoIndex: true
+    sitemap:
+      disable: true
+  - _target:
+      kind: term
+    params:
+      robotsNoIndex: true
+    sitemap:
+      disable: true
+
 outputs:
   home:
     - HTML
