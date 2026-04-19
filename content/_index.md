@@ -2,9 +2,9 @@
 title: "Pavel Guzenfeld"
 ---
 
-# I write C++ for drones.
+# I write code for drones.
 
-Flight controllers, sensor fusion, video pipelines — the code that can't afford a second chance.
+C++ mostly. Navigation, video pipelines, sensor fusion, bits of flight control. A lot of the job is chasing weird bugs that only show up once the drone's been flying for an hour.
 
 ## What I'm up to now
 
