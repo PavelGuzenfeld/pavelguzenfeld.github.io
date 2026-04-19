@@ -340,7 +340,7 @@ The instructive part of this problem isn't the matching — it's the storage. Th
 
 ### The AoS Version
 
-Array-of-structs — one `std::map` entry per broker holding a tuple of fields:
+Array-of-structs — one `std::map` entry per broker holding a tuple of fields. I'll lean on C++20/23 algorithms and views so the intent is readable without nested raw loops:
 
 ```cpp
 using Brokers         = std::map<BrokerId, std::tuple<VolatilityThreshold, AlertsPerSec>>;
@@ -348,42 +348,65 @@ using BrokersByTicker = std::map<Ticker, std::set<BrokerId>>;
 using Alerts          = std::map<AlertId, std::tuple<Timestamp_ms, VolatilityThreshold>>;
 using AlertsByTicker  = std::map<Ticker, std::set<AlertId>>;
 
+void PriceAlertRouter::add_broker(BrokerId id,
+                                  VolatilityThreshold min_volatility,
+                                  AlertsPerSec max_alerts,
+                                  Tickers const& tickers)
+{
+    if (!brokers_.try_emplace(id, min_volatility, max_alerts).second) return;
+    std::ranges::for_each(tickers, [&](Ticker const& t) {
+        brokers_by_ticker_[t].insert(id);
+    });
+}
+
+void PriceAlertRouter::remove_broker(BrokerId id)
+{
+    brokers_.erase(id);
+    std::ranges::for_each(brokers_by_ticker_, [&](auto& kv) { kv.second.erase(id); });
+    std::erase_if(brokers_by_ticker_, [](auto const& kv) { return kv.second.empty(); });
+}
+
 DispatchPlan PriceAlertRouter::publish() const
 {
-    auto plan = DispatchPlan{};
+    DispatchPlan plan;
     for (auto const& [ticker, broker_id_set] : brokers_by_ticker_)
     {
         auto alerts_it = alerts_by_ticker_.find(ticker);
         if (alerts_it == alerts_by_ticker_.end()) continue;
 
-        for (auto const alert_id : alerts_it->second)
+        // One cartesian_product over (alerts x brokers) replaces two nested for-loops.
+        for (auto const [alert_id, broker_id] :
+             std::views::cartesian_product(alerts_it->second, broker_id_set))
         {
-            auto const [alert_ts, alert_volatility] = alerts_.at(alert_id);
-            for (auto const broker_id : broker_id_set)
-            {
-                auto const [min_volatility, max_alerts_sec] = brokers_.at(broker_id);
-                auto& plan_alert_set = plan[broker_id];
-                if (alert_volatility < min_volatility) continue;
+            auto const [alert_ts, alert_vol] = alerts_.at(alert_id);
+            auto const [min_vol, max_per_sec] = brokers_.at(broker_id);
+            if (alert_vol < min_vol) continue;
 
-                auto const same_second_count = std::count_if(
-                    plan_alert_set.begin(), plan_alert_set.end(),
-                    [&](AlertId other_id) {
-                        auto const [other_ts, _] = alerts_.at(other_id);
-                        return static_cast<uint32_t>(alert_ts) / 1000
-                            == static_cast<uint32_t>(other_ts) / 1000;
-                    });
-                if (same_second_count >= max_alerts_sec) break;
-                plan_alert_set.insert(alert_id);
-            }
+            auto& plan_alerts = plan[broker_id];
+            auto const a_sec = static_cast<std::uint32_t>(alert_ts) / 1000;
+            auto const same_sec = std::ranges::count_if(plan_alerts,
+                [&](AlertId other) {
+                    auto const [other_ts, _] = alerts_.at(other);
+                    return static_cast<std::uint32_t>(other_ts) / 1000 == a_sec;
+                });
+            if (same_sec >= max_per_sec) continue;
+            plan_alerts.insert(alert_id);
         }
     }
     return plan;
 }
 ```
 
-Clean, correct, and every inner iteration does a `brokers_.at(broker_id)` — a red-black tree traversal that loads the whole tuple into L1, then discards most of it. The `count_if` over `plan_alert_set` is also O(|set|) per check, calling `alerts_.at(other_id)` again each time.
+The algorithm library in use here:
 
-Try the AoS version: [godbolt.org/z/xK6K893ET](https://godbolt.org/z/xK6K893ET)
+- `std::map::try_emplace` and `std::ranges::for_each` for insertion — the `try_emplace` guards against double-adding and the ranges version of `for_each` replaces the `for (auto const& t : tickers)` boilerplate with a named lambda that states what happens per ticker.
+- `std::erase_if` for dropping empty ticker buckets — the manual `itr = map.erase(itr)` dance is gone.
+- `std::views::cartesian_product` (C++23) over the ticker's alert set and broker set — one loop replaces the nested `for (alert) for (broker)`. Bonus: rewriting forced me to notice the original code's subtle bug — a `break` where `continue` was correct. `break` bailed out of the entire broker loop when *one* broker hit its rate limit, skipping other brokers who would still have accepted the alert. The cartesian iteration makes `continue` the only natural choice.
+- `std::ranges::count_if` instead of the iterator-pair `std::count_if` — reads cleaner and infers the sentinel.
+
+Every inner iteration still does a `brokers_.at(broker_id)` — a red-black tree traversal that loads the whole tuple into L1, then discards most of it. The `count_if` over `plan_alerts` is also O(|set|) per check, calling `alerts_.at(other)` again each time. This is the cost AoS pays.
+
+Try the AoS version: [godbolt.org/z/17vxWhzMj](https://godbolt.org/z/17vxWhzMj)
 
 ### The SoA Rewrite
 
@@ -417,7 +440,7 @@ private:
 };
 ```
 
-The matching loop now reads only the columns it needs and does no associative lookups inside the triple loop:
+The matching loop now reads only the columns it needs and uses `std::views::cartesian_product` to pair alerts × brokers in one sweep. No associative lookups inside the inner loop:
 
 ```cpp
 DispatchPlan PriceAlertRouter::publish() const
@@ -425,7 +448,7 @@ DispatchPlan PriceAlertRouter::publish() const
     DispatchPlan plan;
     std::unordered_map<std::uint64_t, int> same_sec_count;
     std::unordered_set<std::uint64_t> already_sent;
-    const auto pack = [](std::size_t a, std::size_t b) {
+    constexpr auto pack = [](std::size_t a, std::size_t b) {
         return (std::uint64_t(a) << 32) | std::uint32_t(b);
     };
 
@@ -433,21 +456,20 @@ DispatchPlan PriceAlertRouter::publish() const
         auto ait = alert_rows_by_ticker_.find(ticker);
         if (ait == alert_rows_by_ticker_.end()) continue;
 
-        for (std::size_t a_row : ait->second) {
-            const auto a_vol = alert_vol_[a_row];                            // column read
+        for (auto const [a_row, b_row] :
+             std::views::cartesian_product(ait->second, broker_rows))
+        {
+            if (alert_vol_[a_row] < broker_min_vol_[b_row]) continue;         // column read
+            if (!already_sent.insert(pack(b_row, a_row)).second) continue;
+
             const auto a_sec = static_cast<std::uint32_t>(alert_ts_[a_row]) / 1000;
-
-            for (std::size_t b_row : broker_rows) {
-                if (a_vol < broker_min_vol_[b_row]) continue;                // column read
-                if (!already_sent.insert(pack(b_row, a_row)).second) continue;
-
-                auto& count = same_sec_count[pack(b_row, a_sec)];
-                if (count >= broker_max_alerts_[b_row]) continue;            // column read
-                ++count;
-                plan[broker_id_[b_row]].push_back(alert_id_[a_row]);
-            }
+            auto& count = same_sec_count[pack(b_row, a_sec)];
+            if (count >= broker_max_alerts_[b_row]) continue;                 // column read
+            ++count;
+            plan[broker_id_[b_row]].push_back(alert_id_[a_row]);
         }
     }
+    std::ranges::for_each(plan, [](auto& kv) { std::ranges::sort(kv.second); });
     return plan;
 }
 ```
@@ -478,18 +500,23 @@ void PriceAlertRouter::remove_broker(BrokerId id)
     broker_max_alerts_.pop_back();
     broker_index_.erase(it);
 
-    for (auto& [_, rows] : broker_rows_by_ticker_) {
-        rows.erase(std::remove(rows.begin(), rows.end(), row), rows.end());
-        for (auto& r : rows) if (r == last) r = row;
-    }
+    // Per-bucket: drop `row`, rename `last` → `row`.
+    std::ranges::for_each(broker_rows_by_ticker_, [&](auto& kv) {
+        std::erase(kv.second, row);
+        std::ranges::replace(kv.second, last, row);
+    });
     std::erase_if(broker_rows_by_ticker_,
                   [](auto const& kv) { return kv.second.empty(); });
 }
 ```
 
-Try the SoA version: [godbolt.org/z/3n85rf3TE](https://godbolt.org/z/3n85rf3TE)
+The bucket fixup uses three algorithms in sequence: `std::erase` (C++20 free function — no more `v.erase(std::remove(...), v.end())`), `std::ranges::replace` to rename the tail row's index, and `std::erase_if` to prune buckets whose last broker we just removed.
+
+Try the SoA version: [godbolt.org/z/EhK5KndxM](https://godbolt.org/z/EhK5KndxM)
 
 ### Bugs and Subtleties
+
+**`break` where `continue` should be.** The original AoS version broke out of the broker loop the moment *one* broker hit its rate limit, skipping every broker after it for that alert. None of the single-broker test cases triggered the bug, so the tests passed. Swapping the nested `for` loops for `std::views::cartesian_product` made the fix unambiguous — there's no longer an "inner loop" to break out of, only a `continue` that moves to the next (alert, broker) pair. A case for letting the algorithm library push you toward the less-bug-prone control flow.
 
 **Rate-limit counting against dispatched set.** The AoS code's `std::count_if` over the already-dispatched alerts works but is subtly quadratic in the number of dispatches per second. At interview pace, this is the kind of thing an interviewer nods at — "what's the complexity of that inner check?" — and a solid senior answer switches to per-bucket counting without rewriting the whole data model. The SoA version makes it trivial because the storage is already relational.
 
@@ -510,7 +537,7 @@ The real argument for SoA isn't abstract "cache locality." It's two concrete str
 
 For this problem at interview scale (≤1000 brokers, ≤1000 alerts), both versions run in microseconds. The point isn't to measure the difference — it's to articulate *why* you'd choose one over the other. "I'd pick AoS for write-heavy workloads with few fields read per access, SoA when the publish-side read pattern is narrow and hot" is the senior answer.
 
-Try both on Compiler Explorer: AoS [godbolt.org/z/xK6K893ET](https://godbolt.org/z/xK6K893ET) · SoA [godbolt.org/z/3n85rf3TE](https://godbolt.org/z/3n85rf3TE)
+Try both on Compiler Explorer: AoS [godbolt.org/z/17vxWhzMj](https://godbolt.org/z/17vxWhzMj) · SoA [godbolt.org/z/EhK5KndxM](https://godbolt.org/z/EhK5KndxM)
 
 ---
 
