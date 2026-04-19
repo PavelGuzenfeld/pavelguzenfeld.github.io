@@ -2,7 +2,7 @@
 title: "Pavel Guzenfeld"
 ---
 
-# I write code that keeps drones from crashing.
+# Drone software, mostly. The part that stops them falling out of the sky.
 
 C++ mostly. Navigation, video pipelines, sensor fusion, bits of flight control. A lot of the job is chasing weird bugs that only show up once the drone's been flying for an hour.
 
