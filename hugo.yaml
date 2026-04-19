@@ -58,9 +58,7 @@ params:
   UseHugoToc: true
   disableSpecial1stPost: false
 
-  homeInfoParams:
-    Title: "I build the software that keeps drones in the air."
-    Content: "C++23 for flight-critical systems — navigation, computer vision, real-time video, the pipelines that keep avionics airborne. 64 patches merged upstream across Eigen, MAVSDK, GStreamer, PX4, and rclcpp. Remote or on-site. [Work with me →](/consulting/) · [Projects →](/projects/) · [About →](/about/)"
+  # Home renders content/_index.md via layouts/index.html; no hero card.
 
   socialIcons:
     - name: github
