@@ -16,13 +16,13 @@ buildExpired: false
 # doesn't surface the tag page itself in results. Also drop them from the
 # sitemap so we're not advertising URLs we've told Google to skip.
 cascade:
-  - _target:
+  - target:
       kind: taxonomy
     params:
       robotsNoIndex: true
     sitemap:
       disable: true
-  - _target:
+  - target:
       kind: term
     params:
       robotsNoIndex: true
