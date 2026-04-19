@@ -30,17 +30,18 @@ Full VTOL navigation simulation — PX4 + Gazebo + ROS 2. Test your flight code 
 
 ## Open Source Contributions
 
-103 patches across 15 projects. I contribute upstream to the tools I depend on:
+**64 patches merged across 11 upstream projects, 17 more open for review.** I contribute upstream to the tools I depend on:
 
-- **Eigen** — 24 MRs: bug fixes, new operators, structured bindings, Gram-Schmidt QR
-- **dora-rs** — 9 PRs: C++ API parity, zero-copy output, dynamic node init
-- **XGBoost** — 10 PRs: `python -OO` crash fixes, type safety, dead code removal
-- **PX4-Autopilot** — 7 PRs: DDS reconnection, MAVLink signing, mission resume bugs
-- **GStreamer** — 7 MRs: NVMM Jetson plugins, shmsink bugs, CUDA memory checks
-- **Fast-DDS** — 7 PRs: data races, infinite loop, null-deref, missing includes
-- **MAVSDK** — 11 PRs: telemetry timestamps, geofence download, HOME_POSITION, mocap fixes, mission test races
-- **ROS 2** — 4 PRs: O(N²) → O(N) CallbackGroup (71x speedup), deadlock fix
-- **OpenCV**, **concurrentqueue**, **px4-ros2-interface-lib** — bug fixes and utilities
+- **Eigen** — 23 merged MRs: Householder BLAS-3, Gram-Schmidt QR, uint128 division, AutoDiffScalar, stableNorm, GCC false-positives
+- **MAVSDK** — 14 merged PRs (MAVSDK + MAVSDK-Proto): telemetry timestamps, geofence download, HOME_POSITION, mocap fixes
+- **GStreamer** — 6 merged MRs: shmsink exit code, GstShmAllocator page alignment, CUDA memory checks, NVMM Jetson
+- **XGBoost** — 5 merged PRs: `python -OO` crash fixes, type safety, dead code removal
+- **PX4-Autopilot** — 4 merged PRs: DDS reconnection, MAVLink signing, mission resume bugs
+- **px4-ros2-interface-lib** — 4 merged PRs (Auterion): VTOL timeout config, `HomePositionSetter`, namespace fixes
+- **dora-rs** — 3 merged PRs: dynamic node init, zero-copy output, progress bars
+- **OpenCV** (2), **concurrentqueue** (2), **ros2/geometry2** (1) — targeted upstream fixes
+- **ROS 2** `rclcpp`/`ros2cli` — O(N²) → O(N) CallbackGroup (71x speedup), deadlock fix, `--content-filter` in `ros2 topic` (3 PRs under review)
+- **Fast-DDS** — 7 PRs under review: data races, infinite loop, null-deref, missing includes
 
 ---
 
