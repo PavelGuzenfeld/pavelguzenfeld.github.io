@@ -9,8 +9,6 @@ ShowToc: false
 
 Day-to-day I build ROS 2 and DDS microservices for drone stacks -- the data pipelines, the inter-node contracts, the business logic that ties a fleet together. On the side I work on the video and system-testing layer: headless simulators that actually run in CI, GStreamer pipelines that fail cleanly once a week, the next bug in a reproducer before it flies.
 
-I'm not a flight-control engineer and I don't write sensor-fusion algorithms. There are people who do those well and I'm not one of them.
-
 ## What I Work With
 
 - **Languages:** C++23, Python

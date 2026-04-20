@@ -9,8 +9,6 @@ ShowToc: false
 
 I work on the ROS 2, DDS, video, and testing side of drone software. If your message bus is silently dropping samples, your microservices don't quite agree on a message schema, your CI keeps falling over, a GStreamer pipeline is flaking once a week, or a library you depend on has a bug nobody's gotten around to fixing — that's where I'm useful.
 
-Not the right person if you need a navigation or sensor-fusion engineer. Those jobs need people who write Kalman filters for a living and I don't.
-
 ### What I'll do for you
 
 - **ROS 2 and DDS microservices.** Node and lifecycle design, QoS that actually matches, topic discovery, content-filter traps, schema evolution, and the business-logic code that ties a drone stack together.
