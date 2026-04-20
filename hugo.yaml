@@ -90,14 +90,14 @@ params:
 
 menu:
   main:
+    - identifier: consulting
+      name: Consulting
+      url: /consulting/
+      weight: 5
     - identifier: projects
       name: Open Source
       url: /projects/
       weight: 10
-    - identifier: consulting
-      name: Consulting
-      url: /consulting/
-      weight: 15
     - identifier: blog
       name: Blog
       url: /posts/
