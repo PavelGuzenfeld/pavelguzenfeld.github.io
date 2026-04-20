@@ -2,6 +2,9 @@
 title: "behavior-tree-lite -- C++23 Header-Only Behavior Tree Library"
 summary: "Header-only C++23 behavior tree with compile-time DSL, zero heap allocations, and sub-nanosecond node dispatch. 10x smaller binary than BehaviorTree.CPP."
 tags: ["C++", "C++23", "behavior-tree", "robotics", "game-ai", "header-only"]
+aliases:
+  - /projects/behavior-tree-lite/
+
 ---
 
 ## What It Is

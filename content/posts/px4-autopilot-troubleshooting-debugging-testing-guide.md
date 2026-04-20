@@ -540,4 +540,4 @@ The common thread across all six: **read the code, build on all affected platfor
 **Related:**
 - [Running px4-ros2-interface-lib Integration Tests Against PX4 SITL](/posts/px4-ros2-integration-testing-sitl-gazebo/)
 - [Migrating PX4's ROS Integration Tests from Gazebo Classic to SIH](/posts/px4-ros-integration-tests-gazebo-to-sih-migration/)
-- [fiber-nav-sim project](/projects/fiber-nav-sim/)
+- [fiber-nav-sim project](/open-source/fiber-nav-sim/)

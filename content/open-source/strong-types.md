@@ -2,6 +2,9 @@
 title: "strong-types -- Compile-Time Type Safety for C++ Primitives"
 summary: "Zero-dependency C++23 strong type library with SI units, dimensional analysis, quantity points, and safe integer math. Prevents unit and coordinate mix-ups at compile time."
 tags: ["C++", "C++23", "type-safety", "units", "header-only"]
+aliases:
+  - /projects/strong-types/
+
 ---
 
 ## What It Is

@@ -23,7 +23,7 @@ Correctness and performance where they meet the physical world. A type-safe API 
 
 I'd rather spend a day getting the abstraction right than ship something that "works for now."
 
-For the full contribution list and everything I've shipped, see [Open Source](/projects/).
+For the full contribution list and everything I've shipped, see [Open Source](/open-source/).
 
 ## Get in Touch
 

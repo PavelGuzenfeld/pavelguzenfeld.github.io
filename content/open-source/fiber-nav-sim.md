@@ -2,6 +2,9 @@
 title: "fiber-nav-sim -- PX4 + Gazebo VTOL Navigation Simulator"
 summary: "GPS-denied VTOL navigation simulator using fiber optic odometry and monocular vision fusion. PX4 SITL + Gazebo Harmonic + ROS 2 Jazzy. Sub-meter accuracy over 3.3km."
 tags: ["C++", "ROS 2", "PX4", "Gazebo", "VTOL", "navigation", "drones", "simulation"]
+aliases:
+  - /projects/fiber-nav-sim/
+
 ---
 
 ## What It Is

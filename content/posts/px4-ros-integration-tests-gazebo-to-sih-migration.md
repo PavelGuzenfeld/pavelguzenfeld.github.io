@@ -389,4 +389,4 @@ Commits 2-3 were discovered by running the tests, not by code review. This is ex
 **Related:**
 - [Running px4-ros2-interface-lib Integration Tests Against PX4 SITL](/posts/px4-ros2-integration-testing-sitl-gazebo/)
 - [PX4 Autopilot: A Practitioner's Guide to Troubleshooting, Debugging, Building, and Testing](/posts/px4-autopilot-troubleshooting-debugging-testing-guide/)
-- [fiber-nav-sim project](/projects/fiber-nav-sim/)
+- [fiber-nav-sim project](/open-source/fiber-nav-sim/)

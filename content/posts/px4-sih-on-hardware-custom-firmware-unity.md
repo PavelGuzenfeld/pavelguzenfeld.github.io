@@ -413,6 +413,91 @@ docker run -d --name mavlink-router --network host \
 
 Otherwise every param-set-and-reboot cycle requires manually restarting the router.
 
+## Flying Around: Mission vs DO_REPOSITION
+
+After getting stable hover, the next question was: can the drone actually fly a waypoint pattern? This exposed two more traps.
+
+### Sandbox REST `/takeoff` Doesn't Talk to PX4
+
+The Unity simulation exposes a local HTTP API for commanding entities (`POST /takeoff/0:0:1`, `POST /waypoint/action/...`). Those endpoints work for `SimEntity` vehicles with internal flight controllers. But for a `MavlinkEntity` driven by an external autopilot, the REST layer can't find a matching controller and logs:
+
+```
+Simple REST Server - Requested URL: /takeoff/0:0:1
+Invoker: /takeoff/0:0:1
+FlightController not found!
+```
+
+The command is silently swallowed. Nothing goes over MAVLink, nothing moves.
+
+Fix: command the real autopilot directly via MAVLink. The Unity side is a pure visualizer for MavlinkEntity drones — it has no authority to command anything.
+
+### Upload-and-Run Missions Get Stuck at WP0
+
+First pattern I tried: upload a mission with a takeoff WP at index 0 plus N waypoints, then `SET_MODE` → AUTO.MISSION. The drone armed, took off, reached altitude... and hovered forever at WP0:
+
+```
+t=11.6s  WP current=0
+t=22.6s  WP current=0
+t=33.6s  WP current=0   ← still on takeoff WP after 22s
+```
+
+The AUTO.TAKEOFF command I'd issued before uploading the mission put the vehicle into its own takeoff state machine. Switching into AUTO.MISSION afterwards restarts mission execution from `current_seq=0` — which *is* the already-completed takeoff. Never advances to WP1.
+
+Fix: skip the mission abstraction entirely and drive the vehicle with `DO_REPOSITION` commands.
+
+```python
+def goto(lat, lon, alt_asl):
+    m.mav.command_int_send(
+        m.target_system, m.target_component,
+        mavlink.MAV_FRAME_GLOBAL,
+        mavlink.MAV_CMD_DO_REPOSITION,
+        0, 0,
+        -1.0,          # speed: -1 = default
+        1,             # bitmask: ground speed
+        0,             # radius (ignored)
+        float('nan'),  # yaw: leave as-is
+        int(lat * 1e7),
+        int(lon * 1e7),
+        alt_asl,
+    )
+
+# Fly a box around home
+for lat, lon in box:
+    goto(lat, lon, home_alt + 30)
+    wait_until_within(5, lat, lon)  # 5m threshold
+```
+
+`DO_REPOSITION` bypasses mission-state bookkeeping entirely. Each call is a single "go here" nudge to the position controller. The vehicle accepts it in LOITER/HOLD mode and the flight controller just flies there.
+
+Also note: before issuing the first `DO_REPOSITION`, switch the vehicle to **AUTO.LOITER** (main=4 sub=3), NOT AUTO.MISSION. LOITER is the clean "accept external position commands" mode; MISSION fights with you.
+
+### End-to-End: Arm → Takeoff → Box → RTL
+
+Full working flight sequence:
+
+1. `MAV_CMD_COMPONENT_ARM_DISARM` (param1=1)
+2. `MAV_CMD_NAV_TAKEOFF` to `home_alt + 30`
+3. Wait for AGL ≥ 25m
+4. `MAV_CMD_DO_SET_MODE` → base=CUSTOM, main=4 (AUTO), sub=3 (LOITER)
+5. For each waypoint: `MAV_CMD_DO_REPOSITION` (frame=GLOBAL, alt=ASL), then poll `GLOBAL_POSITION_INT` until within 5m
+6. `MAV_CMD_NAV_RETURN_TO_LAUNCH`
+7. Wait for `HEARTBEAT.base_mode & 128 == 0` (disarm = landed)
+
+A ~110m × 110m box at 30m AGL with four corners + return-to-home took about 2 minutes end-to-end. Altitude drifted up to ~50m during reposition (the tailsitter's position controller is still coarse on the vertical axis) but the horizontal track was clean.
+
+### Param Drift on Reboot
+
+Worth calling out: after a PX4 reboot — even with the custom firmware and correct airframe 1102 loaded — several of the airframe-init params had reverted:
+
+```
+CA_AIRFRAME     = 0       ← should be 4 (tailsitter)
+CA_ROTOR1_KM    = 0.05    ← should be -0.05 (counter-rotate)
+CA_ROTOR1_PY    = 0.0     ← should be -0.2 (left-motor geometry)
+SIH_T_MAX       = 2.0     ← should be 5.0 for T/W=5:1
+```
+
+Same `set-default` trap as before: airframe scripts replay on boot but silently skip any param that already has a non-default value in the EEPROM. The fix is the same — force-set every airframe param via `PARAM_SET` at every session, or make it part of a bring-up script that always runs before the first arm attempt.
+
 ## What Works Now
 
 End-to-end working path:
@@ -426,8 +511,9 @@ End-to-end working path:
 - Flight controller commands motors → SIH physics integrates
 - MAVLink telemetry flows through router → Unity visualization
 - Unity drone model tracks the PX4-reported position
+- `DO_REPOSITION` waypoints produce actual lateral motion; box pattern + RTL flies to completion
 
-Autonomous takeoff, hover at altitude, and `HOLD` mode station-keeping all work.
+Autonomous takeoff, hover at altitude, `HOLD` mode station-keeping, multi-waypoint flight, and return-to-launch all work.
 
 ## Lessons
 
@@ -452,5 +538,9 @@ Autonomous takeoff, hover at altitude, and `HOLD` mode station-keeping all work.
 **Tailsitter hover needs 4:1 T/W minimum.** The default `SIH_T_MAX=2.0` with 0.2 kg mass gives only 2:1 — good luck holding altitude. Bumping to 5 N per motor (5:1 total) makes altitude hold behave.
 
 **Run the router with `--restart always`.** Every PX4 reboot (which happens each time you change airframe or key params) drops the USB serial and crashes the router. Without auto-restart, every reboot cycle requires manual intervention.
+
+**Don't use mission upload for simple waypoint flight with an active takeoff.** PX4's mission state machine re-executes from `current_seq=0` whenever you switch into AUTO.MISSION. If the WP0 is a takeoff command that already completed, the vehicle hovers forever. `MAV_CMD_DO_REPOSITION` in AUTO.LOITER mode is the right primitive for scripted "fly here, then fly there" — no mission upload, no sequencing pitfalls, just direct position commands.
+
+**Visualization REST APIs can't command an external autopilot.** Sandbox's `/takeoff` and `/waypoint/action` endpoints work for its internal physics entities. A MavLink-backed entity has no local flight controller for the REST layer to invoke — the command fails with a cryptic `FlightController not found!` and nothing moves. Treat the visualizer as read-only for external autopilots; command the autopilot directly via MAVLink.
 
 **Tailsitter visual orientation needs special handling.** Standard NED→Unity attitude conversion assumes the body x-axis points horizontally forward (as in multirotors). Tailsitters break this assumption — body x points UP during hover. Trying to apply PX4's full attitude quaternion to the visual model results in upside-down or sideways rendering during hover. The pragmatic fix: only apply yaw from PX4 attitude, keep the model in its default hover pose for pitch/roll. This loses fidelity but avoids confusing visuals. The proper fix requires a NED→Unity quaternion conversion that accounts for the tailsitter's body-frame convention — non-trivial and best done with a coordinate-frame diagram in front of you.

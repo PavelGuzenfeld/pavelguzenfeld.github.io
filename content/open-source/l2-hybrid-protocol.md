@@ -2,6 +2,9 @@
 title: "l2-hybrid-protocol -- Low-Latency Layer 2 Protocol for Drone Telemetry"
 summary: "High-performance Layer 2 raw socket networking library for Linux. Bypasses the kernel transport and network layers for deterministic latency in real-time UAV telemetry."
 tags: ["C++", "C++23", "networking", "low-latency", "telemetry", "drones"]
+aliases:
+  - /projects/l2-hybrid-protocol/
+
 ---
 
 ## What It Is

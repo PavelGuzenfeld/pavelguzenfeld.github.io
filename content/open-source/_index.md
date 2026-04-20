@@ -4,6 +4,8 @@ layout: "single"
 summary: "Open-source systems, libraries, and upstream contributions."
 ShowToc: true
 TocOpen: true
+aliases:
+  - /projects/
 ---
 
 ## Systems & Libraries
