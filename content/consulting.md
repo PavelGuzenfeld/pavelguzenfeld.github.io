@@ -27,8 +27,6 @@ I work on the ROS 2, DDS, video, and testing side of drone software. If your ROS
 
 **DDS content filters that silently filtered everything.** A Fast-DDS bug: bare string values in filter expressions were being parsed as field references instead of literals, so the subscriber matched nothing and no one noticed for weeks. Reproduced, documented, pushed the workaround into the affected services, and filed the upstream issue. [Writeup →](/posts/dds-content-filter-string-params-ros2/)
 
-**PX4 SIH on a real flight controller.** A team wanted hardware-in-the-loop on the actual Pixhawk, propellers off. Default firmware didn't include SIH, and rolling a custom build blew the code-space limit. Trimmed modules to fit, fanned out MAVLink so one serial link fed both the simulator and ground station, wired a Unity visualizer for realistic mission rehearsal. [Walkthrough →](/posts/px4-sih-on-hardware-custom-firmware-unity/)
-
 **Eigen, 23 patches merged.** A project we depended on was blocked on an infinite loop in `TensorUInt128::operator/`. Fixed it. Then a GCC 13 `-Warray-bounds` false positive that was breaking Jetson builds. Fixed that. Then a BLAS-2 bottleneck in `HouseholderSequence`'s right-side apply — wrote a blocked BLAS-3 version. All merged upstream. [Selected writeups](/posts/gram-schmidt-vs-householder-qr-benchmark/).
 
 **A CI pipeline on a Jetson Xavier, fifteen failures to green.** ARM-in-Docker builds failing differently on every retry — libunwind versions, apt mirrors timing out, Docker layer caches going stale, one test that needed `/dev/kvm` and another that didn't. Worked through each until the build was reliable. [Writeup →](/posts/fixing-ci-pipeline-arm-jetson-docker/)
@@ -37,7 +35,7 @@ I work on the ROS 2, DDS, video, and testing side of drone software. If your ROS
 
 Thirty-minute call to figure out if I can actually help. Scoped proposal — fixed price or day rate, whichever fits. I work in your repo or mine, small PRs, tests before the fix. Writeup and a short walkthrough at the end so the knowledge stays with the team.
 
-Short reproducer-then-fix work turns around in a few days. Larger engagements — a new sensor fusion path, full SITL bring-up, rebuilding CI from scratch — usually run two to eight weeks.
+Short reproducer-then-fix work turns around in a few days. Larger engagements — a new ROS 2 / DDS service, a full SITL bring-up in CI, or rebuilding a broken build pipeline from scratch — usually run two to eight weeks.
 
 ### Availability
 
