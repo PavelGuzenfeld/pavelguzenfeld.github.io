@@ -6,7 +6,7 @@ title: "Pavel Guzenfeld"
 
 Day-to-day it's ROS 2 and DDS microservices — data pipelines, inter-node contracts, and the business logic that ties a drone stack together. On the side: video pipelines, headless simulators that actually run in CI, and bug-hunts in the libraries all of it depends on.
 
-If your message bus is silently dropping samples, your CI keeps falling over, or a GStreamer pipeline is returning exit code 1 and nobody can explain it, I can probably help.
+If your ROS 2 subscriber is seeing nothing from a publisher that's clearly running, your CI keeps falling over, or a GStreamer pipeline is returning exit code 1 and nobody can explain it, I can probably help.
 
 ## What I'm on right now
 
