@@ -7,7 +7,7 @@ ShowToc: false
 
 ## Consulting
 
-I work on the ROS 2, DDS, video, and testing side of drone software. If your ROS 2 subscriber is getting nothing from a publisher that's clearly running, your services are disagreeing on a message schema after an upgrade, your CI keeps falling over, a GStreamer pipeline is flaking once a week, or a library you depend on has a bug nobody's gotten around to fixing — that's where I'm useful.
+I work on the ROS 2, DDS, video, and testing side of drone software. If your ROS 2 subscriber is getting nothing from a publisher that's clearly running, your CI keeps falling over, a GStreamer pipeline is flaking once a week, or a library you depend on has a bug nobody's gotten around to fixing — that's where I'm useful.
 
 ### What I'll do for you
 
