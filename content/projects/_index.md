@@ -1,7 +1,7 @@
 ---
-title: "Projects"
+title: "Work"
 layout: "single"
-summary: "Open-source systems, libraries, and tools"
+summary: "Open-source systems, libraries, and upstream contributions."
 ShowToc: true
 TocOpen: true
 ---
