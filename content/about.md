@@ -1,27 +1,29 @@
 ---
 title: "About"
 layout: "single"
-summary: "UAV software engineer specializing in C++23 avionics, navigation, and computer-vision pipelines. 64 patches merged across Eigen, GStreamer, MAVSDK, PX4, ROS 2, XGBoost, OpenCV, and other upstream projects."
+summary: "Drone software engineer, C++. Video pipelines, headless simulation, system-testing in CI, and upstream bug fixes across Eigen, GStreamer, MAVSDK, PX4, and ROS 2."
 ShowToc: false
 ---
 
 ## Who I Am
 
-I'm a drone avionics software engineer building safety-critical systems for autonomous flight. I design the software that runs on UAV avionics -- navigation, computer vision pipelines, and flight control integration -- where every line of code has to earn its place on hardware that can't afford to fail.
+I work on drone software -- mostly the video and system-testing side. C++ as the main tool, some Python, a lot of Docker. The job is making drone stacks observable and testable: getting a headless simulator to render synchronized camera feeds in CI, finding why a GStreamer pipeline fails cleanly once a week, making the next bug show up in a reproducer before it flies.
 
-I got into this field because I wanted to write software that interacts with the physical world under real constraints -- not just latency SLAs, but actual physics. Drones don't get to retry a failed request.
+I'm not a flight-control engineer and I don't write sensor-fusion algorithms. There are people who do those well and I'm not one of them.
 
 ## What I Work With
 
 - **Languages:** C++23, Python
-- **Domains:** Drone avionics, navigation, computer vision, edge computing
-- **Frameworks:** ROS 2, PX4, GStreamer, Gazebo
-- **Hardware:** NVIDIA Jetson (Xavier, Orin), Pixhawk
+- **Areas:** Video pipelines, headless simulation, system testing, CI for embedded
+- **Frameworks:** ROS 2, GStreamer, Gazebo, PX4 (on the integration side, not the controls side)
+- **Hardware:** NVIDIA Jetson (Xavier, Orin), x86 CI runners
 - **Infrastructure:** CMake, Docker, GitHub Actions, Linux
 
 ## What I Care About
 
-I'm drawn to problems at the boundary between correctness and performance -- type-safe APIs that compile away to nothing, zero-copy pipelines, and deterministic behavior on constrained hardware. I'd rather spend a day getting the abstraction right than ship something that "works for now."
+Correctness and performance where they meet the physical world. A type-safe API that compiles away to nothing. An integer predicate that returns the same answer on every compiler. A test that reproduces a field failure on the bench.
+
+I'd rather spend a day getting the abstraction right than ship something that "works for now."
 
 ## Open Source Contributions
 

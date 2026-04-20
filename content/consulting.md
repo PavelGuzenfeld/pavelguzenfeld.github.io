@@ -7,26 +7,30 @@ ShowToc: false
 
 ## Consulting
 
-I work freelance on UAV and robotics C++ codebases. If your drone software is misbehaving and nobody on the team can quite explain why, or you need someone to land a feature upstream and actually get it reviewed — that's what I do.
+I work on the video, testing, and bug-hunting side of drone software. If your CI keeps failing, your headless simulator won't run in Docker, a GStreamer pipeline is flaking once a week, or a library you depend on has a bug nobody's gotten around to fixing — that's where I'm useful.
+
+Not the right person if you need a navigation or sensor-fusion engineer. Those jobs need people who write Kalman filters for a living and I don't.
 
 ### What I'll do for you
 
-- **Chase down intermittent crashes in flight controllers and video pipelines.** If it shows up once every few days in the field, I'll reproduce it on the bench.
-- **Build the thing when no one else has time.** Custom PX4 modules, ROS 2 executors, GStreamer plugins, sensor fusion code. Written tight, tested, handed back with a writeup.
-- **Unstick stuck upstream contributions.** I've landed 64 patches across Eigen, PX4, MAVSDK, GStreamer, rclcpp, and friends. I know the maintainers, the review culture, when to wait, and when to push.
-- **Set up the CI that actually catches the bug before it ships.** Sanitizers on by default, SITL in Docker, fuzz targets for the predicates that matter.
+- **Video pipelines on Jetson and in headless simulators.** GStreamer, NVMM, zero-copy, multi-camera synchronization, RTP and RTSP streaming.
+- **System-testing setups for drone stacks.** Reproducible scenarios that run in CI, closing the loop all the way through to video so the whole pipeline gets exercised on every PR.
+- **Chasing intermittent bugs in the infrastructure layer.** The ones that show up once every few days, in CI but not locally, or only on one Jetson and not another.
+- **Landing upstream fixes in the libraries you already depend on.** 64 patches merged so far across Eigen, GStreamer, MAVSDK, PX4, and rclcpp. I know the review culture and when to push.
 
 ### Things I've done lately
 
-**A VTOL that flies indoors.** A tethered quad-tailsitter needed sub-meter position accuracy in a GPS-denied environment. Magnetic compass was useless near steel, plain VIO drifted over the 3-km legs. I built a fusion front-end combining fiber-optic gyro rates with monocular vision, running as a custom PX4 estimator module plus a ROS 2 fusion node. The whole stack runs in Docker against PX4 SITL, 330+ tests gating every PR. Result: under one meter of drift at 3.3 km. [fiber-nav-sim →](/projects/fiber-nav-sim/)
+**GStreamer on the Jetson, four bugs deep.** A multi-camera pipeline was crashing intermittently — exit code 1 on clean shutdown, fd leaks that killed long-running processes, a use-after-free that surfaced once a month under load, and a data race on teardown. Reproduced each in a minimal pipeline, traced them to specific GStreamer internals, landed all four fixes upstream at freedesktop.org. While I was in there I also wrote [gst-nvmm-cpp](/projects/#systems--libraries) — a zero-copy NVMM allocator and VIC transform element so the pipeline could stop copying 1080p frames across the CPU↔GPU boundary. [Writeup →](/posts/anatomy-of-gstreamer-shm-bugs/)
 
-**GStreamer was crashing on the Jetson.** Four different flavours of failure — exit code 1 on clean shutdown, fd leaks that killed processes after days of uptime, a use-after-free that surfaced once a month under memory pressure, and a data race on teardown. I reproduced each, traced it to specific internals, and landed all four fixes upstream at freedesktop.org. While there I also wrote [gst-nvmm-cpp](/projects/#systems--libraries) — a zero-copy NVMM allocator and VIC transform so we could stop copying 1080p frames across the CPU↔GPU boundary.
+**A streaming simulator that runs in CI.** The goal was three synchronized 1080p camera feeds out of a headless renderer in a Docker container, at 30+ fps, so a drone stack's video pipeline could be exercised end-to-end on every PR. Tried Unity (three months of headless-in-Docker pain), [O3DE](/posts/o3de-performance-deep-dive-readback-bottleneck/) (hit an 18 ms wall in the frame-graph readback), finally [Godot](/posts/godot-multi-camera-streaming-async-readback/). Landed a working pipeline with `RenderingDevice::texture_get_data_async` as the primitive.
 
-**rclcpp got 71× faster.** Someone reported that creating 10,000 timers took 429 ms. That's quadratic, and it was: `CallbackGroup::add_timer` did a linear membership check on every insert. I rewrote it with an indexed lookup, added the tests that should have been there, and threw in a fix for a separate deadlock in `TimeSource` on the way out. [Full writeup →](/posts/fixing-quadratic-callback-group-rclcpp/)
+**rclcpp got 71× faster.** A bug report on ROS 2's executor showed that creating 10,000 timers took 429 ms — `CallbackGroup::add_timer` was doing a linear membership check on every insert, a clean quadratic. Rewrote with an indexed lookup, added tests, fixed a separate `TimeSource` deadlock on the way out. [Writeup →](/posts/fixing-quadratic-callback-group-rclcpp/)
 
-**PX4 SIH on a real flight controller.** The team wanted hardware-in-the-loop testing on the actual Pixhawk, without propellers. Default firmware didn't include SIH, and rolling a custom build blew the code-space limit. I trimmed modules until it fit, fanned out MAVLink so one serial link fed both the simulator and the ground station, and hooked the stack to a Unity visualiser for realistic mission rehearsal. [Walkthrough →](/posts/px4-sih-on-hardware-custom-firmware-unity/)
+**PX4 SIH on a real flight controller.** A team wanted hardware-in-the-loop on the actual Pixhawk, propellers off. Default firmware didn't include SIH, and rolling a custom build blew the code-space limit. Trimmed modules to fit, fanned out MAVLink so one serial link fed both the simulator and ground station, wired a Unity visualizer for realistic mission rehearsal. [Walkthrough →](/posts/px4-sih-on-hardware-custom-firmware-unity/)
 
-**Eigen, 23 patches.** A navigation stack hit an infinite loop inside `TensorUInt128::operator/`. Fixed it. Then the GCC 13 `-Warray-bounds` false positive that was breaking our Jetson builds. Fixed that. Then noticed `HouseholderSequence`'s right-side apply was bottlenecked on a BLAS-2 inner loop, wrote a blocked BLAS-3 version. 23 patches merged upstream, each with a writeup: [Gram-Schmidt vs Householder](/posts/gram-schmidt-vs-householder-qr-benchmark/), [BLAS-3 upgrade](/posts/eigen-householder-blocked-right-side/), [uint128 infinite-loop fix](/posts/fixing-eigen-uint128-division-infinite-loop/).
+**Eigen, 23 patches merged.** A project we depended on was blocked on an infinite loop in `TensorUInt128::operator/`. Fixed it. Then a GCC 13 `-Warray-bounds` false positive that was breaking Jetson builds. Fixed that. Then a BLAS-2 bottleneck in `HouseholderSequence`'s right-side apply — wrote a blocked BLAS-3 version. All merged upstream. [Selected writeups](/posts/gram-schmidt-vs-householder-qr-benchmark/).
+
+**A CI pipeline on a Jetson Xavier, fifteen failures to green.** ARM-in-Docker builds failing differently on every retry — libunwind versions, apt mirrors timing out, Docker layer caches going stale, one test that needed `/dev/kvm` and another that didn't. Worked through each until the build was reliable. [Writeup →](/posts/fixing-ci-pipeline-arm-jetson-docker/)
 
 ### How it works
 

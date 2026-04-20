@@ -2,42 +2,44 @@
 title: "Pavel Guzenfeld"
 ---
 
-# Drone software mostly. Trying to stop them from falling out of the sky.
+# Drone software, mostly.
 
-C++, a lot of navigation and video, some sensor fusion. The day-to-day is chasing the bugs that only show up once a drone's been flying for an hour.
+Video pipelines, system-testing infrastructure, and bug-hunting in the libraries drone stacks depend on. Not a flight-control engineer and not writing sensor-fusion algorithms — I'm the person you want when your CI keeps falling over, your headless simulator won't boot in Docker, or a GStreamer pipeline is returning exit code 1 and nobody can explain it.
 
 ## What I'm on right now
 
-A training simulator. You can't crash a thousand real drones to teach a vision model what a power line looks like, so we render fake cities in a container and stream three synchronized 1080p camera feeds out of it, at thirty frames a second.
+A system-testing setup for a drone stack. Same scenario every run — same flight path, same timing, same camera inputs — executed in CI and closing the loop all the way through to the video output, so the whole pipeline gets exercised instead of just the parts you can cheaply mock.
 
-Unity was the obvious choice. It fought me for three months — driver stacks, asset bundles, license servers, the usual story for anyone trying to run Unity without a display.
+The hard part is the video. Three 1080p camera streams out of a simulator, synchronized, at thirty frames a second, inside a Docker container, on shared CI hardware.
 
-So I tried [O3DE](/posts/o3de-performance-deep-dive-readback-bottleneck/). I hit an eighteen-millisecond wall in the way it moves frames from the GPU back to the CPU.
+Unity was the first try. It fought me for three months — driver stacks, asset bundles, license servers, the usual story for anyone trying to run Unity without a display.
+
+So I tried [O3DE](/posts/o3de-performance-deep-dive-readback-bottleneck/). I hit an eighteen-millisecond wall in how it moves frames from the GPU to the CPU.
 
 So I tried [Godot](/posts/godot-multi-camera-streaming-async-readback/). That worked. Eventually. Along the way I learned more about its renderer than I'd have picked to.
 
-Same goal underneath all of it: let the team practice the risky manoeuvres on a laptop, not a real airframe.
+The pipeline now replays the exact same scenario every night, with video, and posts pass/fail to the PR.
 
 ## The kind of bugs I like
 
-The ones that only bite in flight.
+The boring ones.
 
-A sensor-fusion filter that works fine for exactly 47 minutes and then drifts. A GStreamer pipeline that exits cleanly but returns error code 1 — so the launch script assumes the run failed. A unit in a video game stuck against a wall because the pathfinder has an edge case nobody thought about (yes, that ships in real games, and in real drone planners too).
+A GStreamer pipeline that exits cleanly but returns error code 1 — so the launch script thinks the run failed. A Docker build that passes on my laptop and fails on the CI runner because libunwind is a different major version. An Eigen header that breaks on GCC 13 with a warning the code didn't deserve. A build on a Jetson Xavier that fails differently on every retry.
 
-You don't catch these with a stack trace. You catch them by building the tools that force the bug to show itself on the bench. That's the part I find satisfying.
+Nothing dramatic. I just like finding why something's off by one.
 
 ## A few posts worth reading
 
-- [**Game pathfinding, benchmarked**](/posts/game-pathfinding-algorithms-cpp23-benchmark/) — A\*, jump-point search, Theta\*, flow fields. StarCraft and Age of Empires as case studies.
 - [**Three game engines, one streaming pipeline**](/posts/godot-multi-camera-streaming-async-readback/) — the full path from Unity through O3DE to a working Godot stack.
-- [**Making ROS 2 timers 71× faster**](/posts/fixing-quadratic-callback-group-rclcpp/) — a quadratic bug hiding in the middle of the executor.
-- [**Four GStreamer shared-memory bugs**](/posts/anatomy-of-gstreamer-shm-bugs/) — including the one where clean shutdown returned error code 1.
-- [**Gram-Schmidt vs Householder QR**](/posts/gram-schmidt-vs-householder-qr-benchmark/) — the benchmark that answered an Eigen maintainer's *"why would we add this?"*
+- [**Four GStreamer shared-memory bugs**](/posts/anatomy-of-gstreamer-shm-bugs/) — race, use-after-free, fd leak, and that exit-code-1 mystery.
+- [**Making ROS 2 timers 71× faster**](/posts/fixing-quadratic-callback-group-rclcpp/) — a quadratic bug in the middle of the executor.
+- [**Running PX4 SIH on real hardware**](/posts/px4-sih-on-hardware-custom-firmware-unity/) — custom firmware, fan-out MAVLink, Unity for visualization.
+- [**Fixing a CI pipeline on a Jetson Xavier**](/posts/fixing-ci-pipeline-arm-jetson-docker/) — the slow slog to a green ARM-in-Docker build.
 
 [Everything I've written →](/posts/)
 
 ## Working together
 
-Consulting on the above — making broken drone software less broken, landing upstream fixes in Eigen, PX4, GStreamer, rclcpp, and the rest, and building the automated tests that catch the next bug before the drone leaves the ground.
+Consulting on the above — video pipelines, headless simulation, CI for embedded drone stacks, and upstream bug-hunts in GStreamer, ROS 2, PX4, and Eigen. Not the right person if you need a navigation or sensor-fusion specialist.
 
 [How that works →](/consulting/) · [About me →](/about/) · [me@pavelguzenfeld.com](mailto:me@pavelguzenfeld.com)
