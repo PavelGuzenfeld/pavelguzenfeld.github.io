@@ -91,7 +91,7 @@ params:
 menu:
   main:
     - identifier: projects
-      name: Work
+      name: Open Source
       url: /projects/
       weight: 10
     - identifier: consulting

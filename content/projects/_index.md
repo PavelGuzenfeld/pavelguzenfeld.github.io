@@ -1,5 +1,5 @@
 ---
-title: "Work"
+title: "Open Source"
 layout: "single"
 summary: "Open-source systems, libraries, and upstream contributions."
 ShowToc: true
