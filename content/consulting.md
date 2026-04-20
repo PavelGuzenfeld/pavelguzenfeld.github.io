@@ -39,6 +39,6 @@ Short reproducer-then-fix work turns around in a few days. Larger engagements �
 
 ### Availability
 
-Remote or on-site. Based in Israel (UTC+2/+3), comfortable across EU and US time zones.
+Remote or on-site.
 
 **[me@pavelguzenfeld.com](mailto:me@pavelguzenfeld.com)** · [GitHub](https://github.com/PavelGuzenfeld) · [LinkedIn](https://www.linkedin.com/in/pavelguzenfeld/)
