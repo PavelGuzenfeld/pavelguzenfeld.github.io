@@ -7,15 +7,15 @@ ShowToc: false
 
 ## Who I Am
 
-I work on drone software -- mostly the video and system-testing side. C++ as the main tool, some Python, a lot of Docker. The job is making drone stacks observable and testable: getting a headless simulator to render synchronized camera feeds in CI, finding why a GStreamer pipeline fails cleanly once a week, making the next bug show up in a reproducer before it flies.
+Day-to-day I build ROS 2 and DDS microservices for drone stacks -- the data pipelines, the inter-node contracts, the business logic that ties a fleet together. On the side I work on the video and system-testing layer: headless simulators that actually run in CI, GStreamer pipelines that fail cleanly once a week, the next bug in a reproducer before it flies.
 
 I'm not a flight-control engineer and I don't write sensor-fusion algorithms. There are people who do those well and I'm not one of them.
 
 ## What I Work With
 
 - **Languages:** C++23, Python
-- **Areas:** Video pipelines, headless simulation, system testing, CI for embedded
-- **Frameworks:** ROS 2, GStreamer, Gazebo, PX4 (on the integration side, not the controls side)
+- **Areas:** ROS 2 and DDS microservices, data pipelines, video pipelines, headless simulation, system testing, CI for embedded
+- **Frameworks:** ROS 2 (rclcpp, DDS, Fast-DDS), GStreamer, Gazebo, PX4 (on the integration side, not the controls side)
 - **Hardware:** NVIDIA Jetson (Xavier, Orin), x86 CI runners
 - **Infrastructure:** CMake, Docker, GitHub Actions, Linux
 

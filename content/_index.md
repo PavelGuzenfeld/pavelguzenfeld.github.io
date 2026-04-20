@@ -4,7 +4,9 @@ title: "Pavel Guzenfeld"
 
 # Drone software, mostly.
 
-Video pipelines, system-testing infrastructure, and bug-hunting in the libraries drone stacks depend on. Not a flight-control engineer and not writing sensor-fusion algorithms — I'm the person you want when your CI keeps falling over, your headless simulator won't boot in Docker, or a GStreamer pipeline is returning exit code 1 and nobody can explain it.
+Day-to-day it's ROS 2 and DDS microservices — data pipelines, inter-node contracts, and the business logic that ties a drone stack together. When I get to pick my own fights, it's video pipelines, headless simulators that actually run in CI, and bug-hunts in the libraries all of the above depends on.
+
+Not a flight-control engineer and not writing sensor-fusion algorithms. I'm the person you want when your message bus is silently dropping samples, your CI keeps falling over, or a GStreamer pipeline is returning exit code 1 and nobody can explain it.
 
 ## What I'm on right now
 
@@ -24,15 +26,16 @@ The pipeline now replays the exact same scenario every night, with video, and po
 
 The boring ones.
 
-A GStreamer pipeline that exits cleanly but returns error code 1 — so the launch script thinks the run failed. A Docker build that passes on my laptop and fails on the CI runner because libunwind is a different major version. An Eigen header that breaks on GCC 13 with a warning the code didn't deserve. A build on a Jetson Xavier that fails differently on every retry.
+A DDS subscriber quietly receiving nothing because a content filter stringified a field ref it shouldn't have. A ROS 2 node publishing to zero listeners because its QoS doesn't line up with the subscriber's. A GStreamer pipeline that exits cleanly but returns error code 1 — so the launch script thinks the run failed. A Docker build that passes on my laptop and fails on the CI runner because libunwind is a different major version. A Jetson Xavier build that fails differently on every retry.
 
 Nothing dramatic. I just like finding why something's off by one.
 
 ## A few posts worth reading
 
-- [**Three game engines, one streaming pipeline**](/posts/godot-multi-camera-streaming-async-readback/) — the full path from Unity through O3DE to a working Godot stack.
-- [**Four GStreamer shared-memory bugs**](/posts/anatomy-of-gstreamer-shm-bugs/) — race, use-after-free, fd leak, and that exit-code-1 mystery.
 - [**Making ROS 2 timers 71× faster**](/posts/fixing-quadratic-callback-group-rclcpp/) — a quadratic bug in the middle of the executor.
+- [**DDS content filters that silently filtered everything**](/posts/dds-content-filter-string-params-ros2/) — bare strings in Fast-DDS SQL expressions got parsed as field refs, not literals.
+- [**Four GStreamer shared-memory bugs**](/posts/anatomy-of-gstreamer-shm-bugs/) — race, use-after-free, fd leak, and the exit-code-1 mystery.
+- [**Three game engines, one streaming pipeline**](/posts/godot-multi-camera-streaming-async-readback/) — the full path from Unity through O3DE to a working Godot stack.
 - [**Running PX4 SIH on real hardware**](/posts/px4-sih-on-hardware-custom-firmware-unity/) — custom firmware, fan-out MAVLink, Unity for visualization.
 - [**Fixing a CI pipeline on a Jetson Xavier**](/posts/fixing-ci-pipeline-arm-jetson-docker/) — the slow slog to a green ARM-in-Docker build.
 
@@ -40,6 +43,6 @@ Nothing dramatic. I just like finding why something's off by one.
 
 ## Working together
 
-Consulting on the above — video pipelines, headless simulation, CI for embedded drone stacks, and upstream bug-hunts in GStreamer, ROS 2, PX4, and Eigen. Not the right person if you need a navigation or sensor-fusion specialist.
+Consulting on the above — ROS 2 and DDS microservices, data pipelines, video and headless simulation, CI for embedded drone stacks, and upstream bug-hunts in GStreamer, rclcpp, Fast-DDS, PX4, and Eigen. Not the right person if you need a navigation or sensor-fusion specialist.
 
 [How that works →](/consulting/) · [About me →](/about/) · [me@pavelguzenfeld.com](mailto:me@pavelguzenfeld.com)
