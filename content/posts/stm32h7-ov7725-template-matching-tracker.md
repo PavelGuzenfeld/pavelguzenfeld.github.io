@@ -20,8 +20,6 @@ the tracker's BB, and gives the operator an Xbox-stick crosshair to aim
 with. Video is always downstream; commands are always upstream; they
 share a single USB-C cable.
 
-![stm32h7-tracker system architecture](/images/posts/stm32h7-tracker-arch.png)
-
 End-to-end, the pipeline looks like this:
 
 ```
