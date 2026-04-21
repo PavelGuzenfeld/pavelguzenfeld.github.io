@@ -12,6 +12,58 @@ summary: "A long, honest retrospective on turning a WeAct STM32H750 board, a che
 ShowToc: true
 ---
 
+## Solution architecture
+
+End-to-end, the system looks like this:
+
+```
+┌──────────────────────────── STM32H750 ────────────────────────────┐
+│                                                                   │
+│   ┌────────┐   DCMI     ┌─────────────┐       ┌───────────────┐   │
+│   │ OV7725 │ ────────▶  │ framebuffer │ ────▶ │   SAD tracker │   │
+│   │  (DVP) │   12 MHz   │ 160×120     │       │ 2-level pyramid│   │
+│   │ SCCB   │ ◀────── XCLK (MCO1)      │       │  α-β filter   │   │
+│   └────────┘            │ AXI SRAM    │       │  flood-fill   │   │
+│                         └─────┬───────┘       │  segmentation │   │
+│                               │               └────────┬──────┘   │
+│                        SPI4 (ST7735)                   │          │
+│                               │                        │ BB       │
+│                               ▼                        ▼          │
+│                        ┌─────────────┐         ┌────────────────┐ │
+│                        │ 0.96" LCD   │         │ USB CDC device │ │
+│                        │ preview+BB  │         │ /dev/ttyACM0   │ │
+│                        └─────────────┘         └───────┬────────┘ │
+└───────────────────────────────────────────────────────┼──────────┘
+                                                        │
+                                                  USB-C │
+                                                        ▼
+                           ┌────────────────── PC host ─────────────────┐
+                           │ pygame + pyserial + Xbox controller        │
+                           │  · live RGB565 preview, BB overlay         │
+                           │  · left stick → crosshair (XY=)            │
+                           │  · A/B → lock/unlock (L/U)                 │
+                           │  · right stick → SEG / RS                  │
+                           │  · DPad → match tolerance (TOL)            │
+                           │  · triggers → velocity clamp (VC)          │
+                           └────────────────────────────────────────────┘
+```
+
+Two data paths run concurrently over the single USB-C cable:
+
+- **Uplink (board → PC), text**: one `BB,L=…,x=…,y=…,w=…,h=…,fps=…\r\n`
+  line per frame. Small, human-readable, parseable with one line of Python.
+- **Uplink (board → PC), binary**: every Nth frame a packet framed by
+  `FR\r\nSZ=<bytes>\r\n<raw pixels>\r\nEF\r\n` carries the visible 160×80
+  RGB565 strip. Host switches into binary mode on `FR`, reads exactly
+  `SZ` bytes, returns to line mode.
+- **Downlink (PC → board), text**: short `KEY=VALUE\n` commands
+  (`XY=85,40`, `TOL=3000`, `L`, `U`, `V=0`, `SEG=8`, `RS=10`…) the MCU
+  parses in the main loop.
+
+Everything runs on a single Cortex-M7 core at 240 MHz — no RTOS, no
+threads, just an interrupt-driven DCMI/DMA/USB frontline feeding a
+vanilla `while(1)` tracker loop. Total firmware ~94 KB.
+
 ## Starting point
 
 The bench the day I decided to do this:
