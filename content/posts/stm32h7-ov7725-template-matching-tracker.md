@@ -589,3 +589,56 @@ And one final one:
 
 7. **Listen when the future user of your project tells you to stop
    screwing around with blink codes.** They're right.
+
+## Postscript: the C++ port that actually worked
+
+After the tracker was stable end-to-end in C on a `c-port` branch, I
+gave C++ a second try on a fresh `cpp-port` branch. This time it worked,
+and I think the reason says something useful about when C++ is worth it
+on embedded.
+
+The approach was incremental, five commits, each built and flashed
+before the next started. The sequence:
+
+1. Rename `src/main.c` → `src/main.cpp`, tell CMake to enable C++17,
+   and wrap the WeAct BSP headers (`lcd.h`, `camera.h`) in `extern "C"`
+   because they lack the usual guards. Byte-identical firmware: 93596 B.
+2. Replace numeric `#define`s (`LCD_W`, `TPL_W`, `COARSE_R`, and the
+   rest) with `static constexpr int`. Typed, debuggable, scoped. Still
+   93596 B.
+3. Convert the `Tracker` struct to a real C++ type with in-class default
+   member initialisers and one `reset_motion()` method. 93604 B — one
+   method-emission, 8 bytes of overhead.
+4. Move `capture_template()` onto the `Tracker` as `capture_from()`.
+   Also promote the cheap `luma_rgb565` helper from `static inline
+   uint8_t` to `constexpr std::uint8_t` so the compiler keeps folding
+   it inside SAD hot loops. No size change.
+5. Convert the four USB glue files (`usb_device`, `usbd_desc`,
+   `usbd_cdc_if`, `usbd_conf`) from `.c` to `.cpp`. Each becomes a
+   `extern "C" { /* whole file */ }` wrapper so the ST USB middleware,
+   HAL callbacks, and the Cortex vector table still see C-mangled
+   symbols. The only real C++ edit was in `usbd_conf.cpp` — C's
+   implicit `void* → T*` conversions are disallowed in C++, so
+   `pdev->pData` calls get a `static_cast` via two one-line helpers
+   (`pcd_of()` and `usbd_of()`).
+
+Final firmware: **93604 B text, identical bss / data to the C baseline,
++8 bytes overall**. Zero regressions flashing on hardware.
+
+Vendor code — WeAct's CubeMX-generated peripheral inits and BSP,
+the ST HAL and USBD middleware under FetchContent — stays C. That was
+explicit: the rule I learned the hard way in the first C++ attempt was
+"match the vendor's conventions before you improve on them." The
+first time around, I violated it by rewriting startup + using my own
+Pin/I2C abstractions while trying to diff against WeAct's C. This time
+I only touched my own code and let the vendor's C stay C.
+
+The lesson isn't "C++ good / bad" — it's that **C++ pays off when you
+own the critical path, and costs you when the critical path is diffing
+against someone else's C**. After I finished the bring-up and the
+critical path moved from "match vendor exactly" to "extend my own
+tracker," C++ became a win, not a tax. Same language, different
+phase of the project.
+
+Both branches (`c-port` and `cpp-port`) live on the repo; `master`
+tracks the C++ port now that it's proven.
