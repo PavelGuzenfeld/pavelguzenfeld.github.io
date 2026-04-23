@@ -171,18 +171,18 @@ Any C++ programmer reads that `||` and `&&` short-circuit and moves on. The HFT 
 ```cpp
 static volatile std::uint64_t g_sink = 0;
 
-__attribute__((noinline)) static bool expensive(int i) {
+[[gnu::noinline]] static bool expensive(int i) {
   std::uint64_t acc = i;
   for (int k = 0; k < 2000; ++k) acc = acc * 1103515245ull + 12345ull;
   g_sink = acc;               // force the call to be observable
   return (acc & 1) == 0;
 }
-__attribute__((noinline)) static bool cheap(int i) { return i > 0; }
+[[gnu::noinline]] static bool cheap(int i) { return i > 0; }
 ```
 
 Two loops, one with `expensive(i) || cheap(i)`, one with `cheap(i) || expensive(i)`.
 
-**Godbolt:** [godbolt.org/z/PdfM735s1](https://godbolt.org/z/PdfM735s1)
+**Godbolt:** [godbolt.org/z/xezPvG6j7](https://godbolt.org/z/xezPvG6j7)
 
 ```
 expensive || cheap  (no short-circuit possible)    218,087 ns/op
@@ -201,7 +201,7 @@ The Imperial paper advocates replacing a cascade of `if (checkA()) ... else if (
 
 ```cpp
 // Cascade — five branches, each potentially mispredicted
-__attribute__((noinline)) static bool handle_cascade(const Order& o) {
+[[gnu::noinline]] static bool handle_cascade(const Order& o) {
   if (o.price <= 0) return false;
   else if (o.qty <= 0) return false;
   else if (o.qty > 1'000'000) return false;
@@ -211,7 +211,7 @@ __attribute__((noinline)) static bool handle_cascade(const Order& o) {
 }
 
 // Flags — five branchless boolean-to-mask conversions, one final branch
-__attribute__((noinline)) static bool handle_flags(const Order& o) {
+[[gnu::noinline]] static bool handle_flags(const Order& o) {
   std::uint32_t f = 0;
   f |= (o.price <= 0)        ? 0x1u  : 0;
   f |= (o.qty <= 0)          ? 0x2u  : 0;
@@ -222,7 +222,7 @@ __attribute__((noinline)) static bool handle_flags(const Order& o) {
 }
 ```
 
-**Godbolt:** [godbolt.org/z/1YcYaPbrf](https://godbolt.org/z/1YcYaPbrf)
+**Godbolt:** [godbolt.org/z/fx644q85W](https://godbolt.org/z/fx644q85W)
 
 ```
 cascade of if/else checks    681.89 ns/op
@@ -417,15 +417,15 @@ Passing a string literal to a `const std::string&` parameter constructs a tempor
 static constexpr const char kLiteral[] =
     "this string is long enough to defeat the small-string optimization on every stdlib";
 
-__attribute__((noinline)) static int count_a_str(const std::string& s) {
+[[gnu::noinline]] static int count_a_str(const std::string& s) {
   int n = 0; for (char c : s) n += (c == 'a'); return n;
 }
-__attribute__((noinline)) static int count_a_sv(std::string_view s) {
+[[gnu::noinline]] static int count_a_sv(std::string_view s) {
   int n = 0; for (char c : s) n += (c == 'a'); return n;
 }
 ```
 
-**Godbolt:** [godbolt.org/z/5erdbcW1h](https://godbolt.org/z/5erdbcW1h)
+**Godbolt:** [godbolt.org/z/KT485z18c](https://godbolt.org/z/KT485z18c)
 
 ```
 const std::string&   — temporary built per call    35.60 ns/op
@@ -490,13 +490,13 @@ The more interesting finding in the deck, which I did not reproduce in this benc
 The Imperial paper reports `__attribute__((always_inline))` as a 20% win. The win is bigger than that when the called function is trivial and the compiler can fold the call chain entirely:
 
 ```cpp
-__attribute__((noinline)) static int add_call(int a, int b) { return a + b; }
-__attribute__((always_inline)) static inline int add_inl(int a, int b) { return a + b; }
+[[gnu::noinline]] static int add_call(int a, int b) { return a + b; }
+[[gnu::always_inline]] static inline int add_inl(int a, int b) { return a + b; }
 ```
 
-Both functions are literally `a + b`. One is called through a guaranteed-out-of-line function, one is inlined.
+Both functions are literally `a + b`. One is called through a guaranteed-out-of-line function, one is inlined. The `[[gnu::noinline]]` / `[[gnu::always_inline]]` spelling is the C++11-attribute-syntax equivalent of `__attribute__((noinline))` / `__attribute__((always_inline))` — same semantics, same codegen, more modern to read.
 
-**Godbolt:** [godbolt.org/z/s6E78rGPs](https://godbolt.org/z/s6E78rGPs)
+**Godbolt:** [godbolt.org/z/cjKE8n1ax](https://godbolt.org/z/cjKE8n1ax)
 
 ```
 noinline trivial function (blocks constant fold)    310.86 ns/op
@@ -554,6 +554,24 @@ The cluster that needs a *measured* application:
 - **Cache warming** — system-design pattern, not a function-level one.
 
 Every one of the 15 techniques above is worth the 20 minutes it takes to run its Godbolt link. Click through them, change the workload, see how the ratios move. The surprising findings — the two "the claim doesn't reproduce" results — are the whole point of actually writing the benchmark rather than taking the paper at its word.
+
+## Canonical C++ alternatives to the non-standard syntax used above
+
+Three pieces of compiler-specific syntax show up repeatedly in the benchmarks above: `[[gnu::noinline]]`, `[[gnu::always_inline]]`, and `__builtin_prefetch`. None of them is part of the C++ standard — all three are GCC/Clang extensions that libstdc++ uses internally but does not re-export under a `std::` name. When there is a standard alternative, I'd use it in every new project. Here is the full mapping for this post:
+
+| Syntax in the benchmarks | Purpose | C++ standard equivalent | Notes |
+|---|---|---|---|
+| `[[gnu::noinline]]` | Force function to never inline | — (no standard attribute) | C++11-attribute-syntax form of `__attribute__((noinline))` — works on both GCC and Clang. The standard `inline` keyword is only a hint; the standard has no *anti*-hint. For portability to MSVC, use `__declspec(noinline)` inside an `#if defined(_MSC_VER)`. |
+| `[[gnu::always_inline]]` | Force inlining even at `-O0` | — (no standard attribute) | Same story — non-standard. `inline` alone is not enough; the compiler may still emit a call. On MSVC the equivalent is `__forceinline`. |
+| `__builtin_prefetch(ptr, rw, loc)` | Software prefetch hint | — (no standard equivalent) | C++ has no standard prefetch intrinsic. Stuck with the builtin until a hypothetical `std::prefetch` lands (there's no active proposal I know of). |
+| `std::hardware_destructive_interference_size` | Cache-line size for padding | ✓ already standard (C++17) | Used in §10 false sharing. No compiler-specific fallback needed on libstdc++/libc++. |
+| `std::less<>` (transparent) | Type-erased comparator | ✓ already standard (C++14) | Used in §13 transparent comparator. |
+| `std::string_view` | Non-owning string ref | ✓ already standard (C++17) | Used in §12. |
+| `std::atomic<T>` | Lock-free counter | ✓ already standard (C++11) | Used in §8. `std::atomic_ref<T>` (C++20) for non-atomic objects accessed atomically. |
+
+The companion post, [C++ Low-Latency, Enforced: __builtin_*, Compiler Flags, and clang-tidy, Benchmarked](/posts/cpp-builtins-compiler-flags-clang-tidy/#16-the-canonical-c20--c23-alternatives), has a full §1.6 with the mapping for the other common builtins — `__builtin_popcountll` → `std::popcount` (C++20), `__builtin_bswap64` → `std::byteswap` (C++23), `__builtin_unreachable` → `std::unreachable` (C++23), `__builtin_assume_aligned` → `std::assume_aligned` (C++20), `__builtin_expect` → `[[likely]]`/`[[unlikely]]` (C++20), and three more — with a nanobench proving each `std::` name compiles to the same single instruction as its builtin. If you can target C++20 or later, the standard names are a free upgrade on readability and MSVC portability.
+
+Rerunning the four benchmarks above after swapping `__attribute__((noinline))` → `[[gnu::noinline]]` produced numbers within CPU noise of the originals — the same codegen comes out the other end, which is the whole point. The Godbolt links linked in each section already use the `[[gnu::...]]` spelling.
 
 ## References and further reading
 
