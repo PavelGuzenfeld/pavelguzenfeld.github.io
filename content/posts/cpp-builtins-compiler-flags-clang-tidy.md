@@ -1,6 +1,6 @@
 ---
 title: "C++ Low-Latency, Enforced: __builtin_*, Compiler Flags, and clang-tidy, Benchmarked"
-date: 2026-04-24
+date: 2026-04-23
 draft: false
 tags: ["C++", "optimization", "performance", "benchmarking", "profiling", "compilers", "GCC"]
 keywords: ["__builtin_popcount benchmark", "likely unlikely C++20", "__builtin_unreachable switch", "__builtin_bswap64", "march native benchmark", "ffast-math danger", "clang-tidy performance checks", "performance-for-range-copy", "clang-tidy CMake integration"]
