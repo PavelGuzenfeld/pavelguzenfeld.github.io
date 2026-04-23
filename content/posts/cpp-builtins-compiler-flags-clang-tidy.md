@@ -204,6 +204,53 @@ Other builtins you'll see in real codebases: `__builtin_trap()` (unconditional f
 
 ---
 
+### 1.6 The canonical C++20 / C++23 alternatives
+
+Every builtin above (and most of the ones this post doesn't benchmark) has a standard-library wrapper in recent C++. On libstdc++ the `std::` name is a one-line `constexpr` function that routes straight to `__builtin_popcountll` / `__builtin_clzll` / `__builtin_bswap64` / etc. So the runtime and the emitted assembly are identical — the only reason to use the builtin by name is if you're targeting a pre-C++20 standard or a compiler that hasn't shipped `<bit>` yet.
+
+Proof that the codegen matches (same input, three pairs of benchmarks):
+
+**Godbolt:** [godbolt.org/z/o4be6z4E7](https://godbolt.org/z/o4be6z4E7)
+
+```
+__builtin_popcountll               72,372 ns/op
+std::popcount  (C++20 <bit>)       72,116 ns/op    1.00×
+__builtin_bswap64                  15,195 ns/op
+std::byteswap  (C++23 <bit>)       14,406 ns/op    1.05×
+__builtin_clzll                    20,030 ns/op
+std::countl_zero  (C++20 <bit>)    19,888 ns/op    1.01×
+```
+
+**Every std:: pair is within 1% of its builtin.** Use the standard names.
+
+The full mapping:
+
+| GCC/Clang builtin | C++ standard name | Header | Since |
+|---|---|---|---|
+| `__builtin_popcount` / `...ll` | `std::popcount` | `<bit>` | C++20 |
+| `__builtin_clz` / `...ll` | `std::countl_zero` | `<bit>` | C++20 |
+| `__builtin_ctz` / `...ll` | `std::countr_zero` | `<bit>` | C++20 |
+| `__builtin_parity` | `std::has_single_bit` / `popcount & 1` | `<bit>` | C++20 |
+| `__builtin_bswap16/32/64` | `std::byteswap` | `<bit>` | **C++23** |
+| `__builtin_unreachable` | `std::unreachable` | `<utility>` | **C++23** |
+| `__builtin_expect` | `[[likely]]` / `[[unlikely]]` | (attribute) | C++20 |
+| `__builtin_assume_aligned` | `std::assume_aligned<N>(ptr)` | `<memory>` | C++20 |
+| `__builtin_constant_p` | `std::is_constant_evaluated()` · `if consteval` | `<type_traits>` / language | C++20 / C++23 |
+| `__builtin_FILE/LINE/FUNCTION` | `std::source_location::current()` | `<source_location>` | C++20 |
+| `__builtin_prefetch` | — (no standard equivalent) | — | — |
+| `__builtin_trap` | — (closest: `std::abort()`; not identical) | `<cstdlib>` | — |
+| `__builtin_types_compatible_p` | `std::is_same_v<T1, T2>` | `<type_traits>` | C++11 |
+
+Three notes on picking between the two styles:
+
+- **MSVC portability is the main reason.** `__builtin_popcount` doesn't compile on MSVC; MSVC offers `__popcnt64` with subtly different semantics. `std::popcount` compiles everywhere and routes to whatever primitive the backend has.
+- **`constexpr`-ness is free on the std:: names.** `std::popcount`, `std::countl_zero`, `std::byteswap`, `std::unreachable` are all `constexpr` — you can use them in `static_assert`, in template non-type parameters, in `if constexpr` branches. The builtins accept compile-time args but the standard wrappers are cleaner about the boundary.
+- **C++23 is the cut-off for `std::byteswap` and `std::unreachable`.** If your toolchain is stuck on C++20 (still common in 2026 for conservative deployments), use the builtins for those two. Everything else in the table is C++20.
+
+The pattern I follow in new code: always start with the `std::` name. Fall back to the builtin only if the compiler rejects it. Add a one-line `#ifdef __cpp_lib_bitops` / `#ifdef __cpp_lib_byteswap` wrapper at the top of a compat header if I need to straddle an older standard.
+
+---
+
 ## Part 2: Compiler flags that change everything
 
 The intrinsic is a sentence; the flag is a paragraph. Flags are the project-level knobs that shift what the optimiser is willing to do across the whole binary. The two that move the most wall time on a compute loop are `-march` and `-ffast-math`. The ones that catch the most bugs at compile time are the `-W` family.
@@ -463,9 +510,9 @@ Fifteen patterns were in post 1. Seven tools enforce them here:
 
 | Tool | What it does | Runtime win | Where it lives |
 |------|--------------|-------------|----------------|
-| `__builtin_popcountll` | One-instruction bit count | 24× over naive | code |
-| `__builtin_unreachable` | Drops bounds check in switch default | 1.55× | code |
-| `__builtin_bswap64` | Idiom recognised anyway on GCC | 1.0× (clarity) | code |
+| `std::popcount` (≡ `__builtin_popcountll`) | One-instruction bit count | 24× over naive | code |
+| `std::unreachable` (≡ `__builtin_unreachable`) | Drops bounds check in switch default | 1.55× | code |
+| `std::byteswap` (≡ `__builtin_bswap64`) | Idiom recognised anyway on GCC | 1.0× (clarity) | code |
 | `[[likely]]` / `[[unlikely]]` | Block reorder hint | ~1.0× (noise on small loops) | code |
 | `-march=x86-64-v3 -O3 -ffast-math` | Unlocks AVX2 reduction vectorisation | 6.9× (compute-bound) | flag |
 | `-ffast-math` (alone) | Associates FP reductions | 2.0× | flag |
