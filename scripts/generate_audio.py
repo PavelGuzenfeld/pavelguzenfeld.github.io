@@ -48,10 +48,19 @@ INLINE_CODE_RE = re.compile(r"`([^`]+)`")
 TABLE_RE = re.compile(r"(?:^\|.*\|\s*\n)+", re.MULTILINE)
 IMAGE_RE = re.compile(r"!\[[^\]]*\]\([^)]+\)")
 LINK_RE = re.compile(r"\[([^\]]+)\]\([^)]+\)")
+# Link text that *itself* looks like a URL — drop the whole link.  Otherwise
+# the narrator reads "godbolt dot org slash Z slash 8 Z E Q O J A F G".
+LINK_TEXT_IS_URL_RE = re.compile(
+    r"^\s*(?:https?://|www\.|[\w-]+\.[a-z]{2,}(?:/|$))",
+    re.IGNORECASE,
+)
 BARE_URL_RE = re.compile(r"https?://\S+")
 HTML_TAG_RE = re.compile(r"</?[a-z][a-z0-9]*(?:\s[^>]*)?>", re.IGNORECASE)
 NAMESPACE_NOISE_RE = re.compile(r"\b\w+::")
-EMPHASIS_RE = re.compile(r"(\*\*|__|\*|_)(.+?)\1")
+# Asterisk-only — `_..._` and `__...__` get eaten across word boundaries
+# (e.g. ANKERL_NANOBENCH_IMPLEMENT becomes ANKERLNANOBENCHIMPLEMENT).
+# Writers using `_italic_` should switch to `*italic*` if they want it stripped.
+EMPHASIS_RE = re.compile(r"(\*\*|\*)(.+?)\1")
 
 # Inline pronunciation overrides — see Layer 3 in the module docstring.
 PRON_SHORTCODE_RE = re.compile(
@@ -98,6 +107,28 @@ PRONUNCIATION_RULES: list[tuple[re.Pattern[str], object]] = [
     # GCC builtins: `__builtin_popcountll` → "the popcountll built-in"
     (re.compile(r"\b__builtin_(\w+)"),  r"the \1 built-in"),
 
+    # `g++` mirror of the C++ rule
+    (re.compile(r"\bg\+\+\b"),  "g plus plus"),
+
+    # Preprocessor directives — rule: read so a listener understands without
+    # seeing the source.  "hash define" is jargon the listener won't recognize
+    # if they haven't read the post first; "define X" just works.
+    (re.compile(r"#defines?\s+(\w+)"),                  r"define the \1 macro"),
+    (re.compile(r"#includes?\s*<([\w./-]+)\.h>"),       r"include the \1 header"),
+    (re.compile(r"#includes?\s*<([\w./-]+)>"),          r"include the \1 header"),
+    (re.compile(r"#includes?\s*\"([\w./-]+)\.h\""),     r"include the \1 header"),
+    (re.compile(r"#includes?\s*\"([\w./-]+)\""),        r"include the \1 header"),
+    (re.compile(r"#ifdef\s+(\w+)"),                     r"if \1 is defined"),
+    (re.compile(r"#ifndef\s+(\w+)"),                    r"if \1 is not defined"),
+    (re.compile(r"#endif\b"),                           "end if"),
+    (re.compile(r"#pragma\s+(\w+)"),                    r"the \1 pragma"),
+
+    # UPPER_SNAKE_CASE identifiers (≥ 2 underscored segments) read as words.
+    # Must run AFTER preprocessor rules — those capture identifiers via \w+
+    # which would otherwise stop at the spaces this rule introduces.
+    (re.compile(r"\b([A-Z][A-Z0-9]*(?:_[A-Z][A-Z0-9]*)+)\b"),
+     lambda m: m.group(1).replace("_", " ").lower()),
+
     # Units
     (re.compile(r"\bns/(?:op|ops|iter|iteration)\b"),  "nanoseconds per operation"),
     (re.compile(r"\b([0-9.]+)\s*ns\b"),               r"\1 nanoseconds"),
@@ -114,37 +145,46 @@ PRONUNCIATION_RULES: list[tuple[re.Pattern[str], object]] = [
     # "2x" / "3.6x" / "70×"
     (re.compile(r"\b([0-9.]+)\s*[x×]\b"),  r"\1 times"),
 
-    # Acronyms
-    (re.compile(r"\bSIMD\b"),   "S I M D"),
-    (re.compile(r"\bAVX-512\b"), "A V X 512"),
-    (re.compile(r"\bAVX(\d+)?\b"),
-     lambda m: f"A V X{(' ' + m.group(1)) if m.group(1) else ''}"),
-    (re.compile(r"\bSSE(\d+)?\b"),
-     lambda m: f"S S E{(' ' + m.group(1)) if m.group(1) else ''}"),
-    (re.compile(r"\bL1d\b"),  "L 1 d"),
-    (re.compile(r"\bL1i\b"),  "L 1 i"),
-    (re.compile(r"\bL([123])\b"),  r"L \1"),
-    (re.compile(r"\bCRTP\b"),  "C R T P"),
-    (re.compile(r"\bAoS\b"),   "A o S"),
-    (re.compile(r"\bSoA\b"),   "S o A"),
-    (re.compile(r"\bHFT\b"),   "H F T"),
-    (re.compile(r"\bGCC\b"),   "G C C"),
-    (re.compile(r"\bLLVM\b"),  "L L V M"),
-    (re.compile(r"\bLTO\b"),   "L T O"),
-    (re.compile(r"\bMSVC\b"),  "M S V C"),
-    (re.compile(r"\bSTL\b"),   "S T L"),
-    (re.compile(r"\bSSO\b"),   "S S O"),
-    (re.compile(r"\bIEEE\b"),  "I triple E"),
-    (re.compile(r"\bABI\b"),   "A B I"),
-    (re.compile(r"\bCI\b"),    "C I"),
-    (re.compile(r"\bAPI\b"),   "A P I"),
-    (re.compile(r"\bMPMC\b"),  "M P M C"),
-    (re.compile(r"\bSPSC\b"),  "S P S C"),
-    (re.compile(r"\bBTB\b"),   "B T B"),
-    (re.compile(r"\bDRAM\b"),  "D RAM"),
-    (re.compile(r"\bLMAX\b"),  "L MAX"),
-    (re.compile(r"\bNRVO\b"),  "N R V O"),
-    (re.compile(r"\bPGO\b"),   "P G O"),
+    # Acronyms — rule: expand to the full phrase so a listener understands
+    # without seeing the text.  Per-post frontmatter can override these for
+    # context where the letter-spelling actually reads better (e.g. proper
+    # nouns like "the LMAX Disruptor").
+    (re.compile(r"\bSIMD\b"),       "single instruction multiple data"),
+    (re.compile(r"\bAVX-512\b"),    "advanced vector extensions five twelve"),
+    (re.compile(r"\bAVX2\b"),       "advanced vector extensions two"),
+    (re.compile(r"\bAVX\b"),        "advanced vector extensions"),
+    (re.compile(r"\bSSE2\b"),       "streaming SIMD extensions two"),
+    (re.compile(r"\bSSE\b"),        "streaming SIMD extensions"),
+    (re.compile(r"\bL1d\b"),        "L1 data cache"),
+    (re.compile(r"\bL1i\b"),        "L1 instruction cache"),
+    (re.compile(r"\bL([123])\b"),   r"L\1 cache"),
+    (re.compile(r"\bCRTP\b"),       "curiously recurring template pattern"),
+    (re.compile(r"\bAoS\b"),        "array of structs"),
+    (re.compile(r"\bSoA\b"),        "struct of arrays"),
+    (re.compile(r"\bHFT\b"),        "high-frequency trading"),
+    (re.compile(r"\bGCC\b"),        "GCC"),     # spoken as one word
+    (re.compile(r"\bLLVM\b"),       "LLVM"),    # name, leave as is
+    (re.compile(r"\bLTO\b"),        "link-time optimization"),
+    (re.compile(r"\bMSVC\b"),       "Microsoft Visual C plus plus"),
+    (re.compile(r"\bSTL\b"),        "standard template library"),
+    (re.compile(r"\bSSO\b"),        "small-string optimization"),
+    (re.compile(r"\bIEEE-754\b"),   "I triple E 754"),
+    (re.compile(r"\bIEEE\b"),       "I triple E"),
+    (re.compile(r"\bABI\b"),        "application binary interface"),
+    (re.compile(r"\bAPI\b"),        "API"),
+    (re.compile(r"\bMPMC\b"),       "multi-producer multi-consumer"),
+    (re.compile(r"\bSPSC\b"),       "single-producer single-consumer"),
+    (re.compile(r"\bBTB\b"),        "branch target buffer"),
+    (re.compile(r"\bDRAM\b"),       "DRAM"),
+    (re.compile(r"\bNRVO\b"),       "named return value optimization"),
+    (re.compile(r"\bPGO\b"),        "profile-guided optimization"),
+    (re.compile(r"\bFMA\b"),        "fused multiply-add"),
+    (re.compile(r"\bSDK\b"),        "SDK"),
+    (re.compile(r"\bMMU\b"),        "memory management unit"),
+    (re.compile(r"\bTLB\b"),        "translation lookaside buffer"),
+    (re.compile(r"\bCAS\b"),        "compare-and-swap"),
+    (re.compile(r"\bUB\b"),         "undefined behaviour"),
+    (re.compile(r"\bI/O\b"),        "I O"),
 ]
 
 
@@ -184,6 +224,14 @@ def apply_inline_overrides(text: str) -> str:
     return text
 
 
+def _link_replacer(m: re.Match[str]) -> str:
+    """Keep meaningful link text; drop links whose text is a URL/short slug."""
+    text = m.group(1)
+    if LINK_TEXT_IS_URL_RE.match(text):
+        return ""
+    return text
+
+
 # ---------- main cleaner -----------------------------------------------------
 
 def clean_markdown(md: str) -> str:
@@ -199,7 +247,7 @@ def clean_markdown(md: str) -> str:
     body = TABLE_RE.sub("\n[table omitted]\n", body)
 
     body = IMAGE_RE.sub("", body)
-    body = LINK_RE.sub(r"\1", body)
+    body = LINK_RE.sub(_link_replacer, body)
     body = BARE_URL_RE.sub("", body)
     body = HTML_TAG_RE.sub("", body)
     body = NAMESPACE_NOISE_RE.sub("", body)
@@ -219,6 +267,10 @@ def clean_markdown(md: str) -> str:
     # Layer 2 then Layer 1 — frontmatter takes precedence over the built-ins.
     body = apply_frontmatter_rules(body, frontmatter)
     body = apply_global_rules(body)
+
+    # Drop orphaned label lines like "Godbolt:" left behind once their link
+    # was stripped — a label with nothing after it reads as filler.
+    body = re.sub(r"^\s*[\w][\w ]{0,30}:\s*$", "", body, flags=re.MULTILINE)
 
     body = re.sub(r"\n{3,}", "\n\n", body).strip()
     return body
