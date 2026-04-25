@@ -1,32 +1,128 @@
 {{- /*
   Embed an <audio> player when a matching MP3 lives at static/audio/<slug>.mp3.
-  preload="none" keeps the page lightweight — the browser only fetches the
-  ~10–20 MB file when the reader actually clicks play.
 
-  Adds two custom controls beyond the browser default:
-    - speed: select 0.75x..2x, sets HTMLMediaElement.playbackRate
-    - pin to top: toggle position: sticky on the wrapper so the player follows
-      the reader as they scroll the post body
+  preload="none" keeps page weight down — the browser only fetches the
+  ~10–20 MB MP3 when the reader presses play.
+
+  Two custom controls beneath the audio:
+    - Speed: pill-button group (0.75× to 2×) bound to playbackRate.
+    - Pin:   sticky-position toggle, the player follows the reader as they
+             scroll the post body.
+
+  Styling: theme-aware (uses PaperMod's --theme / --primary / --secondary /
+  --tertiary / --content / --border / --hljs-bg variables).  Mobile target
+  size is ≥ 40 px tall; controls wrap below the audio on narrow screens.
 */ -}}
 {{- $slug := .File.BaseFileName -}}
 {{- $audioPath := printf "static/audio/%s.mp3" $slug -}}
 {{- if os.FileExists $audioPath -}}
 {{- $src := printf "/audio/%s.mp3" $slug | absURL -}}
 <style>
-  .post-audio { margin: 1rem 0 2rem 0; }
-  .post-audio figcaption { font-size: 0.85em; opacity: 0.7; margin-bottom: 0.4rem; }
-  .post-audio audio { width: 100%; display: block; }
-  .post-audio__controls {
-    display: flex; flex-wrap: wrap; gap: 1rem;
-    align-items: center; font-size: 0.9em; margin-top: 0.4rem;
-    opacity: 0.8;
+  .post-audio {
+    margin: 1.25rem 0 2rem 0;
+    padding: 0.85rem 1rem 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--code-bg);
+    transition: box-shadow 0.2s, padding 0.2s;
   }
-  .post-audio__controls label { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+  .post-audio figcaption {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--secondary);
+    margin: 0 0 0.55rem 0;
+    letter-spacing: 0.02em;
+  }
+  .post-audio audio {
+    width: 100%;
+    display: block;
+    margin: 0 0 0.7rem 0;
+    height: 38px;
+  }
+  .post-audio__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem 1.25rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .post-audio__group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .post-audio__label {
+    font-size: 0.78em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--secondary);
+    opacity: 0.75;
+  }
+  .post-audio__pills {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--theme);
+  }
+  .post-audio__pills button {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    font: inherit;
+    font-size: 0.85em;
+    padding: 0.45rem 0.7rem;
+    min-height: 36px;
+    min-width: 42px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    border-right: 1px solid var(--border);
+  }
+  .post-audio__pills button:last-child { border-right: none; }
+  .post-audio__pills button:hover { background: var(--tertiary); }
+  .post-audio__pills button[aria-pressed="true"] {
+    background: var(--primary);
+    color: var(--theme);
+  }
+  .post-audio__pin {
+    appearance: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--theme);
+    color: var(--primary);
+    font: inherit;
+    font-size: 0.85em;
+    padding: 0.45rem 0.85rem;
+    min-height: 36px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .post-audio__pin:hover { background: var(--tertiary); }
+  .post-audio__pin[aria-pressed="true"] {
+    background: var(--primary);
+    color: var(--theme);
+    border-color: var(--primary);
+  }
   .post-audio.sticky {
-    position: sticky; top: 0; z-index: 50;
-    background: var(--theme); padding: 0.6rem 0.8rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    border-radius: 4px;
+    position: sticky;
+    top: 0.5rem;
+    z-index: 50;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    padding: 0.55rem 0.85rem 0.5rem 0.85rem;
+  }
+  .post-audio.sticky figcaption { display: none; }
+  .post-audio.sticky audio { margin-bottom: 0.45rem; }
+  @media (max-width: 540px) {
+    .post-audio { padding: 0.7rem 0.75rem 0.65rem 0.75rem; }
+    .post-audio__controls { gap: 0.6rem 0.85rem; }
+    .post-audio__pills button { padding: 0.4rem 0.55rem; min-width: 40px; font-size: 0.8em; }
+    .post-audio__label { font-size: 0.72em; }
   }
 </style>
 <figure class="post-audio" id="post-audio-{{ $slug }}">
@@ -35,21 +131,21 @@
     Your browser doesn't support HTML5 audio. <a href="{{ $src }}">Download the MP3</a>.
   </audio>
   <div class="post-audio__controls">
-    <label>
-      Speed
-      <select aria-label="Playback speed">
-        <option value="0.75">0.75×</option>
-        <option value="1" selected>1×</option>
-        <option value="1.25">1.25×</option>
-        <option value="1.5">1.5×</option>
-        <option value="1.75">1.75×</option>
-        <option value="2">2×</option>
-      </select>
-    </label>
-    <label>
-      <input type="checkbox" aria-label="Pin player to top">
-      Pin to top
-    </label>
+    <div class="post-audio__group">
+      <span class="post-audio__label">Speed</span>
+      <div class="post-audio__pills" role="group" aria-label="Playback speed">
+        <button type="button" data-speed="0.75" aria-pressed="false">0.75×</button>
+        <button type="button" data-speed="1"    aria-pressed="true">1×</button>
+        <button type="button" data-speed="1.25" aria-pressed="false">1.25×</button>
+        <button type="button" data-speed="1.5"  aria-pressed="false">1.5×</button>
+        <button type="button" data-speed="1.75" aria-pressed="false">1.75×</button>
+        <button type="button" data-speed="2"    aria-pressed="false">2×</button>
+      </div>
+    </div>
+    <button type="button" class="post-audio__pin" aria-pressed="false"
+            aria-label="Pin player to top of the page">
+      <span aria-hidden="true">📌</span> Pin to top
+    </button>
   </div>
 </figure>
 <script>
@@ -57,13 +153,21 @@
     var fig = document.getElementById('post-audio-{{ $slug }}');
     if (!fig) return;
     var audio = fig.querySelector('audio');
-    var speed = fig.querySelector('select');
-    var pin   = fig.querySelector('input[type="checkbox"]');
-    speed.addEventListener('change', function () {
-      audio.playbackRate = parseFloat(speed.value);
+    var pills = fig.querySelectorAll('.post-audio__pills button');
+    var pin   = fig.querySelector('.post-audio__pin');
+
+    pills.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        audio.playbackRate = parseFloat(btn.dataset.speed);
+        pills.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+        btn.setAttribute('aria-pressed', 'true');
+      });
     });
-    pin.addEventListener('change', function () {
-      fig.classList.toggle('sticky', pin.checked);
+
+    pin.addEventListener('click', function () {
+      var pressed = pin.getAttribute('aria-pressed') === 'true';
+      pin.setAttribute('aria-pressed', String(!pressed));
+      fig.classList.toggle('sticky', !pressed);
     });
   })();
 </script>
