@@ -35,51 +35,57 @@ Linux lets you transfer file descriptors over a Unix-domain socket using ancilla
 This is a 30-line pattern that hasn't changed in 25 years. Here's the core:
 
 ```cpp
-// Send N fds over a unix socket. Returns 0 on success.
-int nvmm_send_fds(int sock, const int *fds, int n) {
-    union { struct cmsghdr cm; char buf[CMSG_SPACE(sizeof(int) * 64)]; } u;
-    char dummy = 0;
-    struct iovec iov{ &dummy, 1 };
-    struct msghdr msg{};
+// Send a batch of fds over a unix socket. C++23: std::span for the
+// batch, std::expected for the result so the error path is on the type.
+[[nodiscard]] std::expected<void, int>
+send_fds(int sock, std::span<const int> fds)
+{
+    alignas(cmsghdr) std::byte ctrl[CMSG_SPACE(sizeof(int) * 16)]{};
+    char     dummy = 'X';
+    iovec    iov{ &dummy, 1 };
+    msghdr   msg{};
     msg.msg_iov     = &iov;
     msg.msg_iovlen  = 1;
-    msg.msg_control = u.buf;
-    msg.msg_controllen = CMSG_LEN(sizeof(int) * n);
+    msg.msg_control = ctrl;
+    msg.msg_controllen = CMSG_LEN(sizeof(int) * fds.size());
 
-    struct cmsghdr *c = CMSG_FIRSTHDR(&msg);
+    auto *c = CMSG_FIRSTHDR(&msg);
     c->cmsg_level = SOL_SOCKET;
     c->cmsg_type  = SCM_RIGHTS;
-    c->cmsg_len   = CMSG_LEN(sizeof(int) * n);
-    std::memcpy(CMSG_DATA(c), fds, sizeof(int) * n);
+    c->cmsg_len   = CMSG_LEN(sizeof(int) * fds.size());
+    std::memcpy(CMSG_DATA(c), fds.data(), sizeof(int) * fds.size());
 
-    return sendmsg(sock, &msg, 0) < 0 ? -1 : 0;
+    if (sendmsg(sock, &msg, 0) < 0) return std::unexpected(errno);
+    return {};
 }
 
-// Receive N fds. Caller must close them when done.
-int nvmm_recv_fds(int sock, int *fds, int n) {
-    union { struct cmsghdr cm; char buf[CMSG_SPACE(sizeof(int) * 64)]; } u;
-    char dummy;
-    struct iovec iov{ &dummy, 1 };
-    struct msghdr msg{};
+// Caller-supplied span; we fill it. Caller closes the fds when done.
+[[nodiscard]] std::expected<void, int>
+recv_fds(int sock, std::span<int> out)
+{
+    alignas(cmsghdr) std::byte ctrl[CMSG_SPACE(sizeof(int) * 16)]{};
+    char     dummy{};
+    iovec    iov{ &dummy, 1 };
+    msghdr   msg{};
     msg.msg_iov     = &iov;
     msg.msg_iovlen  = 1;
-    msg.msg_control = u.buf;
-    msg.msg_controllen = sizeof(u.buf);
+    msg.msg_control = ctrl;
+    msg.msg_controllen = sizeof(ctrl);
 
-    if (recvmsg(sock, &msg, 0) < 0) return -1;
-    struct cmsghdr *c = CMSG_FIRSTHDR(&msg);
+    if (recvmsg(sock, &msg, 0) < 0) return std::unexpected(errno);
+    auto *c = CMSG_FIRSTHDR(&msg);
     if (!c || c->cmsg_level != SOL_SOCKET || c->cmsg_type != SCM_RIGHTS)
-        return -1;
-    std::memcpy(fds, CMSG_DATA(c), sizeof(int) * n);
-    return 0;
+        return std::unexpected(EBADMSG);
+    std::memcpy(out.data(), CMSG_DATA(c), sizeof(int) * out.size());
+    return {};
 }
 ```
 
 You connect a `socketpair(AF_UNIX, SOCK_STREAM, 0, sv)`, fork, and send fds across. **You can also send fds over a connected `AF_UNIX` socket between unrelated processes** — that's how a long-running camera daemon hands out fds to ROS nodes that come and go.
 
-A standalone runnable demo of the whole producer→consumer fd handshake (no NVIDIA libs, just kernel dma-buf via `memfd_create`, fork, socketpair, write/read through a shared mmap) is here:
+A standalone runnable demo of the whole producer→consumer fd handshake (no NVIDIA libs, just kernel dma-buf via `memfd_create`, fork, socketpair, write/read through a shared mmap) — runnable on Compiler Explorer:
 
-> **[Try it on Compiler Explorer →](https://godbolt.org/)** — paste the [demo source](#full-godbolt-example) at the bottom of this post, set the compiler to `x86-64 gcc 14` with options `-std=c++17 -O2 -pthread`. The child process opens the parent's `memfd` via SCM_RIGHTS, mmaps it, reads the message the parent wrote.
+> **[Run it on Compiler Explorer →](https://godbolt.org/z/4dvx8P6c5)** (gcc 14.2, `-std=c++23 -O2 -pthread`). The child process opens the parent's `memfd` via SCM_RIGHTS, mmaps it, reads the message the parent wrote. Source also reproduced [at the bottom of this post](#full-godbolt-example).
 
 ## Step 2: NvBufSurfaceImport — the userspace bridge
 
@@ -392,13 +398,22 @@ The full implementation is at <https://github.com/PavelGuzenfeld/gst-nvmm-cpp> i
 
 ## Full Godbolt example
 
-A standalone demo of the SCM_RIGHTS pattern — no NVIDIA libs, runs anywhere with a Linux kernel. Producer creates a `memfd`, writes a string, sends the fd to a child process via `socketpair`. Child receives, mmaps, prints. The exact same pattern the NVMM backend uses, with NVIDIA's `NvBufSurfaceCreate` standing in for `memfd_create`.
+Live link: **<https://godbolt.org/z/4dvx8P6c5>** (gcc 14.2, `-std=c++23 -O2 -pthread`).
+
+Standalone demo of the SCM_RIGHTS pattern — no NVIDIA libs, runs anywhere with a Linux kernel. Producer creates a `memfd`, writes a string, sends the fd to a child process via `socketpair`. Child receives, mmaps, prints. The exact same pattern the NVMM backend uses, with NVIDIA's `NvBufSurfaceCreate` standing in for `memfd_create`.
 
 ```cpp
-// g++ -std=c++17 -O2 -pthread scm_rights_demo.cpp -o demo && ./demo
+// Build: g++ -std=c++23 -O2 -pthread scm_rights_demo.cpp -o demo && ./demo
+
+#include <array>
+#include <cerrno>
 #include <cstring>
-#include <cstdio>
-#include <cstdlib>
+#include <cstdint>
+#include <expected>
+#include <print>
+#include <span>
+#include <string_view>
+
 #include <fcntl.h>
 #include <linux/memfd.h>
 #include <sys/mman.h>
@@ -407,79 +422,136 @@ A standalone demo of the SCM_RIGHTS pattern — no NVIDIA libs, runs anywhere wi
 #include <sys/wait.h>
 #include <unistd.h>
 
-static int send_fd(int sock, int fd) {
-    struct msghdr msg{};
-    char ctrl[CMSG_SPACE(sizeof(int))];
-    std::memset(ctrl, 0, sizeof(ctrl));
-    char dummy = 'X';
-    struct iovec iov{ &dummy, 1 };
-    msg.msg_iov = &iov; msg.msg_iovlen = 1;
-    msg.msg_control = ctrl; msg.msg_controllen = sizeof(ctrl);
-    struct cmsghdr *c = CMSG_FIRSTHDR(&msg);
-    c->cmsg_level = SOL_SOCKET; c->cmsg_type = SCM_RIGHTS;
-    c->cmsg_len = CMSG_LEN(sizeof(int));
-    std::memcpy(CMSG_DATA(c), &fd, sizeof(fd));
-    return sendmsg(sock, &msg, 0) < 0 ? -1 : 0;
+// ── Tunables ────────────────────────────────────────────────────────────────
+
+// Compile-time upper bound on how many fds we ever pass in one sendmsg.
+// CMSG_SPACE() needs a constant expression to size the ancillary buffer;
+// there's no kernel facility for "max ancillary fds per message" beyond
+// per-process /proc/sys/net/core/optmem_max divided by sizeof(int), and
+// that's runtime / non-constexpr. 16 covers our pool sizes.
+inline constexpr std::size_t kMaxFdsPerMsg = 16;
+
+// SCM_RIGHTS messages must carry at least one byte of normal payload —
+// the kernel rejects msghdrs whose iovec is empty. Any byte will do; we
+// use 'X' so it's identifiable in a packet capture.
+inline constexpr char        kIovDummy     = 'X';
+
+// mmap'd region size for the demo. mmap requires the size to be a
+// multiple of the runtime page size; sysconf(_SC_PAGESIZE) is the
+// POSIX facility for that. Per-arch: 4 KiB on x86_64 + most aarch64,
+// 16 KiB on Apple Silicon, 64 KiB on some Power.
+[[nodiscard]] static std::size_t demo_page_size() noexcept {
+    long ps = sysconf(_SC_PAGESIZE);
+    return ps > 0 ? static_cast<std::size_t>(ps) : 4096;
 }
 
-static int recv_fd(int sock) {
-    struct msghdr msg{};
-    char ctrl[CMSG_SPACE(sizeof(int))];
-    char dummy;
-    struct iovec iov{ &dummy, 1 };
-    msg.msg_iov = &iov; msg.msg_iovlen = 1;
-    msg.msg_control = ctrl; msg.msg_controllen = sizeof(ctrl);
-    if (recvmsg(sock, &msg, 0) < 0) return -1;
-    int fd = -1;
-    struct cmsghdr *c = CMSG_FIRSTHDR(&msg);
-    if (c && c->cmsg_level == SOL_SOCKET && c->cmsg_type == SCM_RIGHTS)
-        std::memcpy(&fd, CMSG_DATA(c), sizeof(fd));
-    return fd;
+// ── SCM_RIGHTS helpers ──────────────────────────────────────────────────────
+
+[[nodiscard]] std::expected<void, int>
+send_fds(int sock, std::span<const int> fds)
+{
+    alignas(cmsghdr) std::byte ctrl[CMSG_SPACE(sizeof(int) * kMaxFdsPerMsg)]{};
+    char     dummy = kIovDummy;
+    iovec    iov{ &dummy, 1 };
+    msghdr   msg{};
+    msg.msg_iov     = &iov;
+    msg.msg_iovlen  = 1;
+    msg.msg_control = ctrl;
+    msg.msg_controllen = CMSG_LEN(sizeof(int) * fds.size());
+
+    auto *c = CMSG_FIRSTHDR(&msg);
+    c->cmsg_level = SOL_SOCKET;
+    c->cmsg_type  = SCM_RIGHTS;
+    c->cmsg_len   = CMSG_LEN(sizeof(int) * fds.size());
+    std::memcpy(CMSG_DATA(c), fds.data(), sizeof(int) * fds.size());
+
+    if (sendmsg(sock, &msg, 0) < 0) return std::unexpected(errno);
+    return {};
 }
 
-int main() {
-    constexpr size_t kSize = 4096;
-    int sv[2];
-    socketpair(AF_UNIX, SOCK_STREAM, 0, sv);
+[[nodiscard]] std::expected<void, int>
+recv_fds(int sock, std::span<int> out)
+{
+    alignas(cmsghdr) std::byte ctrl[CMSG_SPACE(sizeof(int) * kMaxFdsPerMsg)]{};
+    char     dummy{};
+    iovec    iov{ &dummy, 1 };
+    msghdr   msg{};
+    msg.msg_iov     = &iov;
+    msg.msg_iovlen  = 1;
+    msg.msg_control = ctrl;
+    msg.msg_controllen = sizeof(ctrl);
 
-    pid_t pid = fork();
-    if (pid == 0) {
-        // child = consumer
+    if (recvmsg(sock, &msg, 0) < 0) return std::unexpected(errno);
+    auto *c = CMSG_FIRSTHDR(&msg);
+    if (!c || c->cmsg_level != SOL_SOCKET || c->cmsg_type != SCM_RIGHTS)
+        return std::unexpected(EBADMSG);
+    std::memcpy(out.data(), CMSG_DATA(c), sizeof(int) * out.size());
+    return {};
+}
+
+// ── Demo ────────────────────────────────────────────────────────────────────
+
+int main()
+{
+    const std::size_t kSize = demo_page_size();   // one page
+
+    std::array<int, 2> sv{};
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv.data()) < 0) {
+        std::println(stderr, "socketpair: {}", std::strerror(errno));
+        return 1;
+    }
+
+    if (auto pid = fork(); pid == 0) {
+        // ── child = consumer ───────────────────────────────────────────────
         close(sv[0]);
-        int fd = recv_fd(sv[1]);
-        if (fd < 0) { std::perror("recv_fd"); return 1; }
+        int fd = -1;
+        if (auto r = recv_fds(sv[1], std::span{&fd, 1}); !r) {
+            std::println(stderr, "recv_fds: {}", std::strerror(r.error()));
+            return 1;
+        }
         void *p = mmap(nullptr, kSize, PROT_READ, MAP_SHARED, fd, 0);
-        if (p == MAP_FAILED) { std::perror("mmap"); return 1; }
-        std::printf("[child  pid=%d] received fd=%d, content=\"%s\"\n",
-                    getpid(), fd, (char*)p);
+        if (p == MAP_FAILED) {
+            std::println(stderr, "mmap: {}", std::strerror(errno));
+            return 1;
+        }
+        std::println("[child  pid={}] received fd={}, content=\"{}\"",
+                     getpid(), fd, static_cast<const char*>(p));
         munmap(p, kSize);
         close(fd);
         return 0;
     }
 
-    // parent = producer
+    // ── parent = producer ───────────────────────────────────────────────────
     close(sv[1]);
-    int fd = (int)syscall(SYS_memfd_create, "demo", 0u);
-    ftruncate(fd, kSize);
+    int fd = static_cast<int>(syscall(SYS_memfd_create, "demo", 0u));
+    if (fd < 0 || ftruncate(fd, kSize) < 0) {
+        std::println(stderr, "memfd_create/ftruncate: {}", std::strerror(errno));
+        return 1;
+    }
     void *p = mmap(nullptr, kSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    std::strcpy((char*)p, "hello from process A — same physical page");
+    constexpr std::string_view kMsg = "hello from process A - same physical page";
+    std::memcpy(p, kMsg.data(), kMsg.size() + 1);
     munmap(p, kSize);
 
-    std::printf("[parent pid=%d] sending fd=%d\n", getpid(), fd);
-    send_fd(sv[0], fd);
-    int status; waitpid(pid, &status, 0);
+    std::println("[parent pid={}] sending fd={}", getpid(), fd);
+    if (auto r = send_fds(sv[0], std::span{&fd, 1}); !r) {
+        std::println(stderr, "send_fds: {}", std::strerror(r.error()));
+        return 1;
+    }
+    int status{};
+    wait(&status);
     close(fd);
     return WEXITSTATUS(status);
 }
 ```
 
-Expected output:
+Verified output (gcc 14, x86_64 Linux):
 
 ```
-[parent pid=12345] sending fd=3
-[child  pid=12346] received fd=4, content="hello from process A — same physical page"
+[child  pid=14] received fd=3, content="hello from process A - same physical page"
+[parent pid=13] sending fd=4
 ```
 
-Note the fd integers differ between the processes (parent's `3`, child's `4`) — they're independent fd-table entries pointing at the same kernel object. That's the kernel's fd-passing semantics, identical for `memfd` (this demo) and dma-buf (the real NVMM case).
+Note the fd integers differ between the processes (parent's `4`, child's `3`) — they're independent fd-table entries pointing at the same kernel object. That's the kernel's fd-passing semantics, identical for `memfd` (this demo) and dma-buf (the real NVMM case).
 
 Replace `memfd_create` with `NvBufSurfaceCreate(..., NVBUF_MEM_SURFACE_ARRAY, ...)`, send the `bufferDesc` fd plus the geometry struct, and on the child side call `NvBufSurfaceImport` instead of `mmap`. The pattern is otherwise identical.
