@@ -1,0 +1,206 @@
+{{- /*
+  Override of PaperMod's list template — adds a small ▶ play button on
+  each post entry that has a matching MP3 in static/audio/<slug>.mp3.
+  Click reveals an inline mini-player below the entry header without
+  navigating away from the list.
+
+  Everything else mirrors the upstream template.
+*/ -}}
+{{- define "main" }}
+
+{{- if (and site.Params.profileMode.enabled .IsHome) }}
+{{- partial "index_profile.html" . }}
+{{- else }}
+
+{{- if not .IsHome | and .Title }}
+<header class="page-header">
+  {{- partial "breadcrumbs.html" . }}
+  <h1>
+    {{ .Title }}
+    {{- if and (or (eq .Kind `term`) (eq .Kind `section`)) (.Param "ShowRssButtonInSectionTermList") }}
+    {{- with .OutputFormats.Get "rss" }}
+    <a href="{{ .RelPermalink }}" title="RSS" aria-label="RSS">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" height="23">
+        <path d="M4 11a9 9 0 0 1 9 9" />
+        <path d="M4 4a16 16 0 0 1 16 16" />
+        <circle cx="5" cy="19" r="1" />
+      </svg>
+    </a>
+    {{- end }}
+    {{- end }}
+  </h1>
+  {{- if .Description }}
+  <div class="post-description">
+    {{ .Description | markdownify }}
+  </div>
+  {{- end }}
+</header>
+{{- end }}
+
+{{- if .Content }}
+<div class="post-content">
+  {{- if not (.Param "disableAnchoredHeadings") }}
+  {{- partial "anchored_headings.html" .Content -}}
+  {{- else }}{{ .Content }}{{ end }}
+</div>
+{{- end }}
+
+{{- $pages := union .RegularPages .Sections }}
+
+{{- if .IsHome }}
+{{- $pages = where site.RegularPages "Type" "in" site.Params.mainSections }}
+{{- $pages = where $pages "Params.hiddenInHomeList" "!=" "true"  }}
+{{- end }}
+
+{{- $paginator := .Paginate $pages }}
+
+{{- if and .IsHome site.Params.homeInfoParams (eq $paginator.PageNumber 1) }}
+{{- partial "home_info.html" . }}
+{{- end }}
+
+<style>
+  .entry-play {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--theme);
+    color: var(--primary);
+    border-radius: 6px;
+    padding: 0.25rem 0.55rem;
+    margin-left: 0.5rem;
+    font-size: 0.85em;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: background 0.15s, color 0.15s;
+    z-index: 2;
+    position: relative;
+  }
+  .entry-play:hover { background: var(--primary); color: var(--theme); }
+  .entry-play[aria-pressed="true"] { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+  .entry-mini-audio {
+    display: none;
+    margin: 0.5rem 0 0 0;
+    z-index: 2;
+    position: relative;
+  }
+  .entry-mini-audio audio { width: 100%; height: 36px; }
+  .entry-mini-audio[data-open="true"] { display: block; }
+</style>
+
+{{- $term := .Data.Term }}
+{{- range $index, $page := $paginator.Pages }}
+
+{{- $class := "post-entry" }}
+
+{{- $user_preferred := or site.Params.disableSpecial1stPost site.Params.homeInfoParams }}
+{{- if (and $.IsHome (eq $paginator.PageNumber 1) (eq $index 0) (not $user_preferred)) }}
+{{- $class = "first-entry" }}
+{{- else if $term }}
+{{- $class = "post-entry tag-entry" }}
+{{- end }}
+
+{{- $slug := .File.BaseFileName }}
+{{- $audioPath := printf "static/audio/%s.mp3" $slug }}
+{{- $audioSrc := "" }}
+{{- if os.FileExists $audioPath }}
+  {{- $audioSrc = printf "/audio/%s.mp3" $slug | absURL }}
+{{- end }}
+
+<article class="{{ $class }}">
+  {{- $isHidden := (.Param "cover.hiddenInList") | default (.Param "cover.hidden") | default false }}
+  {{- partial "cover.html" (dict "cxt" . "IsSingle" false "isHidden" $isHidden) }}
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">
+      {{- .Title }}
+      {{- if .Draft }}
+      <span class="entry-hint" title="Draft">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="M160-410v-60h300v60H160Zm0-165v-60h470v60H160Zm0-165v-60h470v60H160Zm360 580v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q9 9 13 20t4 22q0 11-4.5 22.5T862.09-380L643-160H520Zm300-263-37-37 37 37ZM580-220h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z" />
+        </svg>
+      </span>
+      {{- end }}
+      {{- if $audioSrc }}
+      <button type="button" class="entry-play" data-audio-src="{{ $audioSrc }}"
+              aria-pressed="false" aria-label="Play audio for {{ .Title | plainify }}">
+        ▶ Listen
+      </button>
+      {{- end }}
+    </h2>
+  </header>
+  {{- if $audioSrc }}
+  <div class="entry-mini-audio" data-open="false"></div>
+  {{- end }}
+  {{- if (ne (.Param "hideSummary") true) }}
+  <div class="entry-content">
+    <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+  </div>
+  {{- end }}
+  {{- if not (.Param "hideMeta") }}
+  <footer class="entry-footer">
+    {{- partial "post_meta.html" . -}}
+  </footer>
+  {{- end }}
+  <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
+</article>
+{{- end }}
+
+{{- if gt $paginator.TotalPages 1 }}
+<footer class="page-footer">
+  <nav class="pagination">
+    {{- if $paginator.HasPrev }}
+    <a class="prev" href="{{ $paginator.Prev.URL | absURL }}">
+      «&nbsp;{{ i18n "prev_page" }}&nbsp;
+      {{- if (.Param "ShowPageNums") }}
+      {{- sub $paginator.PageNumber 1 }}/{{ $paginator.TotalPages }}
+      {{- end }}
+    </a>
+    {{- end }}
+    {{- if $paginator.HasNext }}
+    <a class="next" href="{{ $paginator.Next.URL | absURL }}">
+      {{- i18n "next_page" }}&nbsp;
+      {{- if (.Param "ShowPageNums") }}
+      {{- add 1 $paginator.PageNumber }}/{{ $paginator.TotalPages }}
+      {{- end }}&nbsp;»
+    </a>
+    {{- end }}
+  </nav>
+</footer>
+{{- end }}
+
+<script>
+  (function () {
+    document.querySelectorAll('.entry-play').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var article = btn.closest('article');
+        var slot = article.querySelector('.entry-mini-audio');
+        if (!slot) return;
+        var pressed = btn.getAttribute('aria-pressed') === 'true';
+        if (pressed) {
+          slot.dataset.open = 'false';
+          slot.innerHTML = '';
+          btn.setAttribute('aria-pressed', 'false');
+          btn.firstChild.nodeValue = '▶ Listen';
+        } else {
+          // Stop any other playing entry-mini-audio.
+          document.querySelectorAll('.entry-play[aria-pressed="true"]').forEach(function (b) {
+            var s = b.closest('article').querySelector('.entry-mini-audio');
+            if (s) { s.dataset.open = 'false'; s.innerHTML = ''; }
+            b.setAttribute('aria-pressed', 'false');
+            b.firstChild.nodeValue = '▶ Listen';
+          });
+          slot.innerHTML = '<audio controls autoplay preload="auto" src="' + btn.dataset.audioSrc + '"></audio>';
+          slot.dataset.open = 'true';
+          btn.setAttribute('aria-pressed', 'true');
+          btn.firstChild.nodeValue = '⏸ Pause';
+        }
+      });
+    });
+  })();
+</script>
+
+{{- end }}{{/* end profileMode */}}
+
+{{- end }}{{- /* end main */ -}}
