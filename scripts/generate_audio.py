@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Generate an MP3 narration of a Hugo blog post.
+"""Generate an MP3 narration of a Hugo blog post via Microsoft Edge TTS.
 
 Usage:
-    generate_audio.py <post.md> <output.mp3> [--voice MODEL.onnx]
+    generate_audio.py <post.md> <output.mp3> [--voice VOICE] [--rate RATE]
 
-Pipeline: markdown → cleaned text → Piper → WAV → ffmpeg → MP3.
+Pipeline: markdown → cleaned text → edge-tts (Microsoft Neural voice) → MP3.
 
 Cleaning rules (chosen so a code-heavy blog post is listenable):
 - Drop the YAML frontmatter.
@@ -14,18 +14,17 @@ Cleaning rules (chosen so a code-heavy blog post is listenable):
 - Drop image lines and HTML.
 - Replace `[link text](url)` with just the link text.
 - Convert headers to "Section: ..." so the narrator pauses.
-- Drop URLs to godbolt.org / github.com / etc — there's no point reading
-  alphanumeric short codes aloud.
-
-The remaining prose is what gets narrated.
+- Drop bare URLs — there's no point reading alphanumeric short codes aloud.
 """
 from __future__ import annotations
 
 import argparse
+import asyncio
 import re
-import subprocess
 import sys
 from pathlib import Path
+
+import edge_tts
 
 
 # ---------- markdown → narration text ----------------------------------------
@@ -89,33 +88,12 @@ def clean_markdown(md: str) -> str:
     return body
 
 
-# ---------- piper + ffmpeg ---------------------------------------------------
+# ---------- edge-tts ---------------------------------------------------------
 
-def synthesize(text: str, voice_path: Path, out_mp3: Path) -> None:
+async def synthesize(text: str, voice: str, rate: str, out_mp3: Path) -> None:
     out_mp3.parent.mkdir(parents=True, exist_ok=True)
-
-    piper = subprocess.Popen(
-        ["piper", "--model", str(voice_path), "--output_file", "-"],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-    )
-    ffmpeg = subprocess.Popen(
-        [
-            "ffmpeg", "-loglevel", "error", "-y",
-            "-f", "wav", "-i", "pipe:0",
-            "-codec:a", "libmp3lame", "-q:a", "4",
-            str(out_mp3),
-        ],
-        stdin=piper.stdout,
-    )
-    assert piper.stdin is not None
-    piper.stdin.write(text.encode("utf-8"))
-    piper.stdin.close()
-    piper.wait()
-    ffmpeg.wait()
-    if piper.returncode != 0 or ffmpeg.returncode != 0:
-        raise RuntimeError(
-            f"piper={piper.returncode} ffmpeg={ffmpeg.returncode}")
+    communicate = edge_tts.Communicate(text, voice=voice, rate=rate)
+    await communicate.save(str(out_mp3))
 
 
 # ---------- main -------------------------------------------------------------
@@ -126,9 +104,14 @@ def main() -> int:
     ap.add_argument("output", type=Path, help="path to write the MP3")
     ap.add_argument(
         "--voice",
-        type=Path,
-        default=Path("/voices/en_US-amy-medium.onnx"),
-        help="Piper voice model (.onnx)",
+        default="en-US-AndrewMultilingualNeural",
+        help="edge-tts voice id (try en-US-GuyNeural, en-US-TonyNeural, "
+             "en-US-BrianMultilingualNeural, en-GB-RyanNeural)",
+    )
+    ap.add_argument(
+        "--rate",
+        default="+0%",
+        help="speaking rate offset, e.g. '+10%' or '-5%'",
     )
     ap.add_argument(
         "--text-only",
@@ -144,12 +127,9 @@ def main() -> int:
         sys.stdout.write(text)
         return 0
 
-    if not args.voice.exists():
-        print(f"voice model not found: {args.voice}", file=sys.stderr)
-        return 1
-
-    synthesize(text, args.voice, args.output)
-    print(f"wrote {args.output} ({args.output.stat().st_size:,} bytes)")
+    asyncio.run(synthesize(text, args.voice, args.rate, args.output))
+    print(f"wrote {args.output} ({args.output.stat().st_size:,} bytes) "
+          f"voice={args.voice}")
     return 0
 
 
