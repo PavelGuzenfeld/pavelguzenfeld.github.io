@@ -1,15 +1,80 @@
 ---
-title: "Six Optiver-Style C++ Problems: Order Books, Dijkstra, DP, and an AoS→SoA Rewrite"
+title: 'Six Optiver-Style C++ Problems: Order Books, Dijkstra, DP, and an AoS→SoA
+  Rewrite'
 date: 2026-04-12
 draft: false
-tags: [C++, debugging, optimization, performance, compilers]
-keywords: ["Optiver C++ assessment preparation", "order book matching engine C++", "Dijkstra shortest path C++ implementation", "AoS vs SoA C++", "price alert router"]
+tags:
+- C++
+- debugging
+- optimization
+- performance
+- compilers
+keywords:
+- Optiver C++ assessment preparation
+- order book matching engine C++
+- Dijkstra shortest path C++ implementation
+- AoS vs SoA C++
+- price alert router
 cover:
   image: /images/posts/optiver-cpp-problems.png
-  alt: "Six Optiver-Style C++ Problems: Order Books, Dijkstra, DP, and Price Alert Router"
-categories: ["deep-dive"]
-summary: "Working through six C++ problems modeled on Optiver's Senior SWE assessment: supermarket checkout simulation, order book matching, dividend pricing, lattice path DP, Dijkstra with K free edges, and a price-alert router built twice — AoS first, then SoA. Every bug, wrong turn, and data structure tradeoff included."
+  alt: 'Six Optiver-Style C++ Problems: Order Books, Dijkstra, DP, and Price Alert
+    Router'
+categories:
+- deep-dive
+summary: 'Working through six C++ problems modeled on Optiver''s Senior SWE assessment:
+  supermarket checkout simulation, order book matching, dividend pricing, lattice
+  path DP, Dijkstra with K free edges, and a price-alert router built twice — AoS
+  first, then SoA. Every bug, wrong turn, and data structure tradeoff included.'
 ShowToc: true
+audio:
+  pronunciation:
+    Optiver: Op tiver
+    Dijkstra: Dijkstra
+    AoS: A O S
+    SoA: S O A
+    AoS→SoA: A O S to S O A
+    AoS → SoA: A O S to S O A
+    OA: online assessment
+    OOP: O O P
+    std::map: S T D map
+    std::set: S T D set
+    std::vector: S T D vector
+    std::deque: S T D deck
+    std::tuple: S T D tuple
+    std::pair: S T D pair
+    std::tie: S T D tie
+    std::priority_queue: S T D priority queue
+    std::unordered_map: S T D unordered map
+    std::ranges::for_each: S T D ranges for each
+    std::ranges::sort: S T D ranges sort
+    std::ranges::count_if: S T D ranges count if
+    std::ranges::replace: S T D ranges replace
+    std::erase: S T D erase
+    std::erase_if: S T D erase if
+    std::views::cartesian_product: S T D views cartesian product
+    try_emplace: try em place
+    emplace_back: em place back
+    lower_bound: lower bound
+    upper_bound: upper bound
+    remove_if: remove if
+    count_if: count if
+    min_element: min element
+    size_t: size T
+    ssize_t: S size T
+    operator<=>: operator spaceship
+    operator<: operator less than
+    Cox-Ross-Rubinstein: Cox Ross Rubinstein
+    Godbolt: god bolt
+    godbolt.org: god bolt dot org
+    BrokerId: broker I D
+    AlertId: alert I D
+    VolatilityThreshold: volatility threshold
+    AlertsPerSec: alerts per sec
+    DispatchPlan: dispatch plan
+    PriceAlertRouter: price alert router
+    publish(): publish
+    C++23: C plus plus twenty three
+    C++20: C plus plus twenty
 ---
 
 Optiver's Senior Software Engineer EU assessment is one coding problem in two hours. The problem is long, the spec is dense, and the code quality bar is high. They want clean OOP, correct complexity analysis, and evidence that you think about cache lines and allocator behavior — not just algorithmic correctness.

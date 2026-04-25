@@ -1,15 +1,72 @@
 ---
-title: "Chasing 18 Milliseconds: A Performance Deep Dive into O3DE's Render Readback Pipeline"
+title: 'Chasing 18 Milliseconds: A Performance Deep Dive into O3DE''s Render Readback
+  Pipeline'
 date: 2026-04-17
 draft: false
-tags: ["O3DE", "Vulkan", "GStreamer", "C++", "GPU", "performance", "benchmarking", "rendering", "Docker", "headless", "NVENC"]
-keywords: ["O3DE AttachmentReadback performance", "Vulkan readback overhead", "O3DE multi-camera rendering", "frame graph scope cost", "GPU readback optimization"]
+tags:
+- O3DE
+- Vulkan
+- GStreamer
+- C++
+- GPU
+- performance
+- benchmarking
+- rendering
+- Docker
+- headless
+- NVENC
+keywords:
+- O3DE AttachmentReadback performance
+- Vulkan readback overhead
+- O3DE multi-camera rendering
+- frame graph scope cost
+- GPU readback optimization
 cover:
   image: /images/posts/o3de-migration-exploration.png
-  alt: "O3DE multi-camera rendering performance analysis"
-categories: ["deep-dive"]
-summary: "We spent a full session systematically profiling O3DE's multi-camera streaming pipeline, testing eight different optimization approaches, and pinpointed the exact bottleneck: 18 ms of fixed overhead in the AttachmentReadback scope system. Here's what we tried, what we measured, and what it means for the engine."
+  alt: O3DE multi-camera rendering performance analysis
+categories:
+- deep-dive
+summary: 'We spent a full session systematically profiling O3DE''s multi-camera streaming
+  pipeline, testing eight different optimization approaches, and pinpointed the exact
+  bottleneck: 18 ms of fixed overhead in the AttachmentReadback scope system. Here''s
+  what we tried, what we measured, and what it means for the engine.'
 ShowToc: true
+audio:
+  pronunciation:
+    O3DE: O three D E
+    Atom: atom
+    AttachmentReadback: attachment readback
+    RenderToTexture: render to texture
+    RenderToTexturePass: render to texture pass
+    FrameScheduler: frame scheduler
+    FrameGraphCompiler: frame graph compiler
+    CompileProducers: compile producers
+    CompileResources: compile resources
+    ImportScopeProducer: import scope producer
+    ScopeProducerFunctionNoData: scope producer function no data
+    OnReadbackComplete: on readback complete
+    OnTick: on tick
+    ShaderResourceGroups: shader resource groups
+    EndFrame: end frame
+    vkCmdCopyImageToBuffer: V K C M D copy image to buffer
+    vkQueueSubmit: V K queue submit
+    CommandQueue::ProcessQueue: command queue process queue
+    GStreamerStreamComponent: G streamer stream component
+    GStreamer: G streamer
+    appsrc: app source
+    nvh264enc: N V H two six four enc
+    rtph264pay: R T P H two six four pay
+    udpsink: U D P sink
+    AZStd::thread: A Z S T D thread
+    AZ::JobCompletion: A Z job completion
+    RHI::HardwareQueueClass::Copy: R H I hardware queue class copy
+    AttachmentLifetimeType::Imported: attachment lifetime type imported
+    AttachmentImage: attachment image
+    BatchedReadback: batched readback
+    FrameCaptureRequestBus: frame capture request bus
+    CapturePassAttachmentWithCallback: capture pass attachment with callback
+    RTX 3060: R T X thirty sixty
+    libAtom_RPI.Private.so: lib atom R P I private dot S O
 ---
 
 > This is a follow-up to [From Unity to O3DE: Multi-Camera Streaming at 1080p](/posts/o3de-migration-exploration-multi-camera-streaming/). That post covered the initial migration; this one covers what happened when we tried to make it fast.

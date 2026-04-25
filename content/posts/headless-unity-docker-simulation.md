@@ -1,15 +1,82 @@
 ---
-title: "Running Unity 2019.4 Headless in Docker with GPU Rendering, RTSP Camera Streaming, and MAVLink"
+title: Running Unity 2019.4 Headless in Docker with GPU Rendering, RTSP Camera Streaming,
+  and MAVLink
 date: 2026-03-19
 draft: false
-tags: ["Unity", "Docker", "Vulkan", "RTSP", "MAVLink", "simulation", "headless", "GStreamer", "FFmpeg", "DevOps"]
-keywords: ["Unity headless Docker GPU", "Unity RTSP streaming Docker", "drone simulation Unity Docker"]
+tags:
+- Unity
+- Docker
+- Vulkan
+- RTSP
+- MAVLink
+- simulation
+- headless
+- GStreamer
+- FFmpeg
+- DevOps
+keywords:
+- Unity headless Docker GPU
+- Unity RTSP streaming Docker
+- drone simulation Unity Docker
 cover:
   image: /images/posts/unity-headless.png
-  alt: "Unity Headless in Docker with GPU, RTSP, and MAVLink"
-categories: ["deep-dive"]
-summary: "A detailed technical account of containerizing a Unity 2019.4 drone simulation with GPU-accelerated rendering, dual RTSP camera streaming via FFmpeg/mediamtx, and MAVLink drone control — including every obstacle encountered and how it was solved."
+  alt: Unity Headless in Docker with GPU, RTSP, and MAVLink
+categories:
+- deep-dive
+summary: A detailed technical account of containerizing a Unity 2019.4 drone simulation
+  with GPU-accelerated rendering, dual RTSP camera streaming via FFmpeg/mediamtx,
+  and MAVLink drone control — including every obstacle encountered and how it was
+  solved.
 ShowToc: true
+audio:
+  pronunciation:
+    Unity: Unity
+    Vulkan: vulkan
+    Xvfb: X V F B
+    MAVLink: mav link
+    MavlinkEntity: mav link entity
+    SimEntity: sim entity
+    MavLinkVehicleReflector: mav link vehicle reflector
+    SetInitialGeodLocation: set initial geod location
+    ManagedCoordinateConverter.cs: managed coordinate converter dot C S
+    RTSP: R T S P
+    FFmpeg: F F mpeg
+    ffmpeg: F F mpeg
+    mediamtx: media M T X
+    GStreamer: G streamer
+    gst-launch-1.0: G S T launch one dot zero
+    rtspsrc: R T S P source
+    rtph264depay: R T P H two six four de pay
+    avdec_h264: A V dec H two six four
+    videoconvert: video convert
+    xvimagesink: X V image sink
+    HLA: H L A
+    DIS: D I S
+    VR-Link: V R link
+    GameCI: game C I
+    unityci: unity C I
+    il2cpp: I L two C P P
+    Unity Hub: Unity Hub
+    .ulf: dot U L F
+    .alf: dot A L F
+    Unity_lic.ulf: unity lic dot U L F
+    UnityEntitlementLicense.xml: unity entitlement license dot X M L
+    DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: dot net system globalization invariant
+    ICU: I C U
+    libgconf-2.so.4: lib G conf two dot S O dot four
+    PX4: P X four
+    SITL: sittle
+    gconf2-common: G conf two common
+    HeadlessBuild.cs: headless build dot C S
+    BuildTestTerrain.cs: build test terrain dot C S
+    EmbedTerrain.cs: embed terrain dot C S
+    VertexColor.shader: vertex color shader
+    Custom/VertexColor: custom slash vertex color
+    GraphicsSettings.asset: graphics settings dot asset
+    m_AlwaysIncludedShaders: M underscore always included shaders
+    MAVLink (UDP/TCP): mav link U D P or T C P
+    MAVLink integration: mav link integration
+    Entities.yaml: entities dot yaml
 ---
 
 ## The Goal

@@ -1,15 +1,98 @@
 ---
-title: "Connecting PX4 SITL to a Headless Unity Simulation in Docker: A 60-Hour Debugging Odyssey"
+title: 'Connecting PX4 SITL to a Headless Unity Simulation in Docker: A 60-Hour Debugging
+  Odyssey'
 date: 2026-03-21
 draft: false
-tags: ["PX4", "Unity", "Docker", "MAVLink", "SITL", "Vulkan", "simulation", "TCP", "debugging", "DevOps"]
-keywords: ["PX4 Unity Docker simulation", "Unity headless PX4 SITL", "MAVLink Unity Docker"]
+tags:
+- PX4
+- Unity
+- Docker
+- MAVLink
+- SITL
+- Vulkan
+- simulation
+- TCP
+- debugging
+- DevOps
+keywords:
+- PX4 Unity Docker simulation
+- Unity headless PX4 SITL
+- MAVLink Unity Docker
 cover:
   image: /images/posts/unity-px4-odyssey.png
-  alt: "PX4 SITL to Unity in Docker: A 60-Hour Odyssey"
-categories: ["deep-dive"]
-summary: "A three-day odyssey connecting PX4 flight controller to a GPU-rendered Unity drone simulation running headless inside Docker — through licensing labyrinths, shader abysses, coordinate system riddles, native library dragons, and a TCP protocol twist ending nobody expected."
+  alt: 'PX4 SITL to Unity in Docker: A 60-Hour Odyssey'
+categories:
+- deep-dive
+summary: A three-day odyssey connecting PX4 flight controller to a GPU-rendered Unity
+  drone simulation running headless inside Docker — through licensing labyrinths,
+  shader abysses, coordinate system riddles, native library dragons, and a TCP protocol
+  twist ending nobody expected.
 ShowToc: true
+audio:
+  pronunciation:
+    PX4: P X four
+    PX4 SITL: P X four sittle
+    SITL: sittle
+    SIH: S I H
+    Unity: Unity
+    Unity 2019.4: Unity twenty nineteen dot four
+    MAVLink: mav link
+    MAV link: mav link
+    MavlinkEntity: mav link entity
+    MatrixRemoteDrone: matrix remote drone
+    MavLinkVehicleReflector: mav link vehicle reflector
+    MavLinkNode: mav link node
+    MavLinkComWrapper: mav link com wrapper
+    libMavLinkComWrapper.so: lib mav link com wrapper dot S O
+    RawMavLinkSender: raw mav link sender
+    RawMavLinkSender.cs: raw mav link sender dot C S
+    PX4Entity: P X four entity
+    SimEntity: sim entity
+    SimpleGPS: simple G P S
+    SimpleIMU: simple I M U
+    SimpleBarometer: simple barometer
+    SimpleMagnetometer: simple magnetometer
+    RemoteMavlinkFlightController: remote mav link flight controller
+    UdpRemoteEntity: U D P remote entity
+    StartServer: start server
+    SetMovementSettings: set movement settings
+    SetPlayerSettings: set player settings
+    SetInitialGeodLocation: set initial geod location
+    GetVehicleState: get vehicle state
+    VehicleState: vehicle state
+    ManagedCoordinateConverter.cs: managed coordinate converter dot C S
+    HIL_SENSOR: hill sensor
+    HIL_GPS: hill G P S
+    HIL_ACTUATOR_CONTROLS: hill actuator controls
+    HEARTBEAT: heartbeat
+    HomePoint: home point
+    TCP 4560: T C P forty five sixty
+    UDP: U D P
+    RTSP: R T S P
+    FFmpeg: F F mpeg
+    GStreamer: G streamer
+    Vulkan: vulkan
+    Xvfb: X V F B
+    mediamtx: media M T X
+    none_iris: none iris
+    Type.GetType: type dot get type
+    Debug.Log: debug dot log
+    Debug.LogError: debug dot log error
+    EXIT_CODE: exit code
+    RTX 3060: R T X thirty sixty
+    UMFTDI: U M F T D I
+    mavlink_hil_sensor_t: mav link hill sensor T
+    Marshal.SizeOf: marshal size of
+    TcpClient: T C P client
+    IOException: I O exception
+    CRC: C R C
+    MAVLink v2: mav link V two
+    '0xFD': hex F D
+    GetCrcExtra: get C R C extra
+    CrcCalculate: C R C calculate
+    CrcAccumulate: C R C accumulate
+    rtspsrc: R T S P source
+    protocols=tcp: protocols equals T C P
 ---
 
 > *"It started with a simple question: can we run a Windows-only Unity drone simulation in a Linux Docker container, stream its cameras via RTSP, and connect a PX4 flight controller to it?"*

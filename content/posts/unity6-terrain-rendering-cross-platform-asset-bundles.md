@@ -1,15 +1,88 @@
 ---
-title: "From Magenta to Desert: Fixing Cross-Platform Unity Terrain Rendering in Docker"
+title: 'From Magenta to Desert: Fixing Cross-Platform Unity Terrain Rendering in Docker'
 date: 2026-03-27
 draft: false
-tags: ["Unity", "Docker", "asset-bundles", "shader", "terrain", "rendering", "Vulkan", "HDRP", "Built-in-RP", "headless"]
-keywords: ["Unity terrain rendering Docker", "Unity asset bundle shader mismatch", "headless Unity terrain fix"]
+tags:
+- Unity
+- Docker
+- asset-bundles
+- shader
+- terrain
+- rendering
+- Vulkan
+- HDRP
+- Built-in-RP
+- headless
+keywords:
+- Unity terrain rendering Docker
+- Unity asset bundle shader mismatch
+- headless Unity terrain fix
 cover:
   image: /images/posts/unity-terrain.png
-  alt: "From Magenta to Desert: Fixing Unity Terrain in Docker"
-categories: ["deep-dive"]
-summary: "A detailed account of fixing terrain rendering in a headless Unity 6 Docker simulation — from magenta buildings and gray streaming cameras to textured villages with working RTSP feeds. Covers cross-platform asset bundle shader mismatches, runtime material conversion, texture recovery from broken materials, and every dead end along the way."
+  alt: 'From Magenta to Desert: Fixing Unity Terrain in Docker'
+categories:
+- deep-dive
+summary: A detailed account of fixing terrain rendering in a headless Unity 6 Docker
+  simulation — from magenta buildings and gray streaming cameras to textured villages
+  with working RTSP feeds. Covers cross-platform asset bundle shader mismatches, runtime
+  material conversion, texture recovery from broken materials, and every dead end
+  along the way.
 ShowToc: true
+audio:
+  pronunciation:
+    Unity: Unity
+    Unity 6: Unity six
+    Unity 2022.3: Unity twenty twenty two dot three
+    HDRP: H D R P
+    URP: U R P
+    Built-in RP: built in R P
+    Built-in render pipeline: built in render pipeline
+    Vulkan: vulkan
+    DirectX: direct X
+    DirectX 11: direct X eleven
+    StandaloneWindows: standalone windows
+    StandaloneLinux64: standalone Linux sixty four
+    TerrainMaterialFix: terrain material fix
+    TerrainMaterialFix.cs: terrain material fix dot C S
+    EditorSceneManager: editor scene manager
+    SceneManager: scene manager
+    AssetBundle: asset bundle
+    AssetBundle.LoadFromFile: asset bundle dot load from file
+    GetAllScenePaths: get all scene paths
+    Resources.FindObjectsOfTypeAll: resources dot find objects of type all
+    MeshRenderer: mesh renderer
+    Texture2D: texture two D
+    Material: material
+    Shader.Find: shader dot find
+    GraphicsSettings.asset: graphics settings dot asset
+    m_AlwaysIncludedShaders: M underscore always included shaders
+    Skybox/Procedural: skybox slash procedural
+    Skybox/6 Sided: skybox slash six sided
+    _BaseMap: base map
+    _MainTex: main tex
+    _BaseColorMap: base color map
+    RenderSettings.skybox: render settings dot skybox
+    RenderSettings.fog: render settings dot fog
+    AmbientMode.Skybox: ambient mode skybox
+    AmbientMode.Trilight: ambient mode tri light
+    DynamicGI.UpdateEnvironment: dynamic G I dot update environment
+    GitLab: git lab
+    I:\Textures: drive I textures
+    I:/Textures: drive I textures
+    URP setup script: U R P setup script
+    SetupURP.cs: setup U R P dot C S
+    UnityEngine.Rendering.Universal: unity engine dot rendering dot universal
+    VillageTerrain_Standard_v3.unity: village terrain standard V three dot unity
+    DefaultExecutionOrder: default execution order
+    CameraClearFlags.Skybox: camera clear flags skybox
+    CameraClearFlags.SolidColor: camera clear flags solid color
+    RTSP: R T S P
+    GStreamer: G streamer
+    Vulkan/Xvfb: vulkan X V F B
+    Xvfb: X V F B
+    RTX 3060: R T X thirty sixty
+    VRAM: V RAM
+    fileID: file I D
 ---
 
 ## Context

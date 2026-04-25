@@ -1,15 +1,63 @@
 ---
-title: "Fixing a CI Pipeline on a Jetson Xavier — 15 Failures to Green"
+title: Fixing a CI Pipeline on a Jetson Xavier — 15 Failures to Green
 date: 2026-03-20
 draft: false
-tags: ["CI-CD", "Docker", "ARM", "GCC", "GitHub-Actions", "debugging", "DevOps"]
-keywords: ["Jetson Docker CI pipeline", "ARM Docker build GitHub Actions", "GCC assembler error Jetson"]
+tags:
+- CI-CD
+- Docker
+- ARM
+- GCC
+- GitHub-Actions
+- debugging
+- DevOps
+keywords:
+- Jetson Docker CI pipeline
+- ARM Docker build GitHub Actions
+- GCC assembler error Jetson
 cover:
   image: /images/posts/ci-jetson.png
-  alt: "Fixing a CI Pipeline on Jetson Xavier"
-categories: ["deep-dive"]
-summary: "A day-long battle fixing a CI pipeline that builds Docker images on a self-hosted Jetson Xavier runner. From stale git submodules to GCC-15 assembler errors, expired tokens, DNS failures inside Docker, and deleted upstream branches — every layer of the stack had something broken."
+  alt: Fixing a CI Pipeline on Jetson Xavier
+categories:
+- deep-dive
+summary: A day-long battle fixing a CI pipeline that builds Docker images on a self-hosted
+  Jetson Xavier runner. From stale git submodules to GCC-15 assembler errors, expired
+  tokens, DNS failures inside Docker, and deleted upstream branches — every layer
+  of the stack had something broken.
 ShowToc: true
+audio:
+  pronunciation:
+    Jetson: Jetson
+    Xavier: Xavier
+    GCC-15: G C C fifteen
+    GCC-9: G C C nine
+    GitHub: git hub
+    GitHub-Actions: git hub actions
+    GitHub Actions: git hub actions
+    LFS: L F S
+    git lfs: git L F S
+    BuildKit: build kit
+    DOCKER_BUILDKIT: docker build kit
+    GStreamer: G streamer
+    XGBoost: X G boost
+    nvidia-nccl-cu12: N V I D I A N C C L C U twelve
+    JetPack: JetPack
+    colcon: coal con
+    meson: meeson
+    ninja: ninja
+    tags-ignore: tags ignore
+    submodule: sub module
+    submodules: sub modules
+    pyproject.toml: pie project dot toml
+    fit.__doc__: fit dunder doc
+    x-access-token: x access token
+    EOS: E O S
+    errno: err no
+    DNS: D N S
+    GPG: G P G
+    apt: ay P T
+    BSP: B S P
+    rcl_subscription_is_cft_supported: R C L subscription is C F T supported
+    rcl_subscription_is_cft_enabled: R C L subscription is C F T enabled
 ---
 
 ## The Problem

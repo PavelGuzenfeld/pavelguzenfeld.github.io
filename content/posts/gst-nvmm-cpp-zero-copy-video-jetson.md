@@ -1,15 +1,89 @@
 ---
-title: "Zero-Copy Video on Jetson: Building gst-nvmm-cpp and Contributing to GStreamer"
+title: 'Zero-Copy Video on Jetson: Building gst-nvmm-cpp and Contributing to GStreamer'
 date: 2026-03-23
 draft: false
-tags: ["GStreamer", "NVIDIA", "Jetson", "NVMM", "C++", "video-processing", "zero-copy", "open-source", "contributing"]
-keywords: ["GStreamer NVMM Jetson plugin", "zero copy video Jetson", "GStreamer Jetson Orin Xavier"]
+tags:
+- GStreamer
+- NVIDIA
+- Jetson
+- NVMM
+- C++
+- video-processing
+- zero-copy
+- open-source
+- contributing
+keywords:
+- GStreamer NVMM Jetson plugin
+- zero copy video Jetson
+- GStreamer Jetson Orin Xavier
 cover:
   image: /images/posts/gst-nvmm.png
-  alt: "Zero-Copy Video on Jetson: Building gst-nvmm-cpp"
-categories: ["deep-dive"]
-summary: "How we built a GStreamer plugin suite for zero-copy NVMM video on NVIDIA Jetson, the bugs we hit along the way, and what it takes to contribute to the GStreamer project — from filing issues to getting an MR merged."
+  alt: 'Zero-Copy Video on Jetson: Building gst-nvmm-cpp'
+categories:
+- deep-dive
+summary: How we built a GStreamer plugin suite for zero-copy NVMM video on NVIDIA
+  Jetson, the bugs we hit along the way, and what it takes to contribute to the GStreamer
+  project — from filing issues to getting an MR merged.
 ShowToc: true
+audio:
+  pronunciation:
+    GStreamer: G streamer
+    gst-nvmm-cpp: G S T N V M M C plus plus
+    NVMM: N V M M
+    NvBufSurface: N V buf surface
+    NvBufSurfaceCreate: N V buf surface create
+    NvBufSurfaceDestroy: N V buf surface destroy
+    NvBufSurfaceMap: N V buf surface map
+    NvBufSurfaceCopy: N V buf surface copy
+    NvBufSurfTransform: N V buf surf transform
+    NvBufSurfaceSyncForDevice: N V buf surface sync for device
+    NvBufSurfaceSyncForCpu: N V buf surface sync for C P U
+    GstNvmmAllocator: G S T N V M M allocator
+    GstNvmmBufferPool: G S T N V M M buffer pool
+    GstAllocator: G S T allocator
+    GstGLMemory: G S T G L memory
+    GstVulkanImageMemory: G S T vulkan image memory
+    GstBufferPool: G S T buffer pool
+    GstBaseTransform: G S T base transform
+    GstVideoMeta: G S T video meta
+    GstVideoInfo: G S T video info
+    GstQuery: G S T query
+    GstMemory: G S T memory
+    GST_DEBUG_CATEGORY: G S T debug category
+    GEnum: G enum
+    Jetson: Jetson
+    Xavier: Xavier
+    Orin: Orin
+    Tegra: Tegra
+    VIC: V I C
+    JetPack: JetPack
+    L4T: L four T
+    nvmmsink: N V M M sink
+    nvmmappsrc: N V M M app source
+    nvmmconvert: N V M M convert
+    nvvidconv: N V vid conv
+    nvv4l2decoder: N V V four L two decoder
+    nvcodec: N V codec
+    EGL: E G L
+    GLVND: G L V N D
+    tegra-egl: Tegra E G L
+    shm-name: S H M name
+    transform_caps: transform caps
+    fixate_caps: fixate caps
+    get_unit_size: get unit size
+    prepare_output_buffer: prepare output buffer
+    propose_allocation: propose allocation
+    decide_allocation: decide allocation
+    numFilled: num filled
+    Sebastian Droge: Sebastian Droge
+    Nirbheek Chauhan: Nirbheek Chauhan
+    Diego Nieto: Diego Nieto
+    GitLab: git lab
+    freedesktop.org: free desktop dot org
+    qtdemux: Q T demux
+    h264parse: H two six four parse
+    filesrc: file source
+    filesink: file sink
 ---
 
 ## The Problem Nobody Talks About

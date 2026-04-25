@@ -1,15 +1,132 @@
 ---
-title: "Cleaning Up, Pipelining, and Bake-Testing the STM32H750 Tracker"
+title: Cleaning Up, Pipelining, and Bake-Testing the STM32H750 Tracker
 date: 2026-04-23
 draft: false
-tags: ["ARM", "C++", "embedded", "debugging", "Docker", "Linux", "performance", "benchmarking", "zero-copy", "optimization"]
-keywords: ["STM32H7 SPI DMA LCD", "DCMI double buffering STM32H7", "MOSSE vs SAD tracker comparison", "STM32H750 tracker performance", "MCU tracker benchmarking"]
+tags:
+- ARM
+- C++
+- embedded
+- debugging
+- Docker
+- Linux
+- performance
+- benchmarking
+- zero-copy
+- optimization
+keywords:
+- STM32H7 SPI DMA LCD
+- DCMI double buffering STM32H7
+- MOSSE vs SAD tracker comparison
+- STM32H750 tracker performance
+- MCU tracker benchmarking
 cover:
   image: /images/posts/stm32h7-tracker.png
-  alt: "Cleaning Up, Pipelining, and Bake-Testing the STM32H750 Tracker"
-categories: ["deep-dive"]
-summary: "A sequel to the first STM32H750 tracker post. After the C++ port was proven in production, I spent a week of evenings cutting dead vendor code, splitting the algorithm out to host for unit tests, wiring the LCD SPI through DMA to let the CPU run the tracker in parallel with the blit, unlocking the camera's real frame rate, chasing a subtle BB-drift bug back to a too-wide SAD search, and finally building an offline A/B harness that compares SAD, NCC, and MOSSE on four synthetic scenarios so the next tracker port is a data decision, not a vibes one."
+  alt: Cleaning Up, Pipelining, and Bake-Testing the STM32H750 Tracker
+categories:
+- deep-dive
+summary: A sequel to the first STM32H750 tracker post. After the C++ port was proven
+  in production, I spent a week of evenings cutting dead vendor code, splitting the
+  algorithm out to host for unit tests, wiring the LCD SPI through DMA to let the
+  CPU run the tracker in parallel with the blit, unlocking the camera's real frame
+  rate, chasing a subtle BB-drift bug back to a too-wide SAD search, and finally building
+  an offline A/B harness that compares SAD, NCC, and MOSSE on four synthetic scenarios
+  so the next tracker port is a data decision, not a vibes one.
 ShowToc: true
+audio:
+  pronunciation:
+    STM32H7: S T M thirty two H seven
+    STM32H750: S T M thirty two H seven fifty
+    STM32: S T M thirty two
+    DCMI: D C M I
+    DMA: D M A
+    DMA1: D M A one
+    Stream0: stream zero
+    Stream1: stream one
+    AXI SRAM: A X I S RAM
+    ST7735: S T seventy seven thirty five
+    SPI4: S P I four
+    SPI: S P I
+    SCK: S C K
+    TXE: T X E
+    OV7725: O V seventy seven twenty five
+    OV2640: O V twenty six forty
+    OV5640: O V fifty six forty
+    OV7670: O V seventy six seventy
+    WeAct: we act
+    WeAct BSP: we act B S P
+    BSP: B S P
+    MCU: M C U
+    M7: M seven
+    Cortex-M7: Cortex M seven
+    MOSSE: MOSSE
+    NCC: N C C
+    SAD: S A D
+    PSR: P S R
+    FFT: F F T
+    arm_cfft_f32: arm C F F T F thirty two
+    CMSIS-DSP: C M sis D S P
+    α-β: alpha beta
+    RGB565: R G B five six five
+    IoU: I O U
+    BB: B B
+    MJ: M J
+    TOL: tol
+    VC: V C
+    SEG: seg
+    RS: R S
+    PROF=NEXT: P R O F equals next
+    PROF=PREV: P R O F equals prev
+    DPad: D pad
+    CDC: C D C
+    USB CDC: U S B C D C
+    SerialLink: serial link
+    pyserial: pie serial
+    pygame: pie game
+    AEC: A E C
+    AGC: A G C
+    COM5_AFR: com five A F R
+    COM8_BANDF_EN: com eight band F E N
+    ov7725_unlock_fps: O V seventy seven twenty five unlock F P S
+    Camera_Init_Device: camera init device
+    tracker_step: tracker step
+    TrackerInputs: tracker inputs
+    TrackerParams: tracker params
+    TrackerProfile: tracker profile
+    HAL_GPIO_ReadPin: hal G P I O read pin
+    HAL_SPI_Transmit: hal S P I transmit
+    HAL_SPI_TxCpltCallback: hal S P I T X complete callback
+    HAL_DCMI_FrameEventCallback: hal D C M I frame event callback
+    DCMI_HandleTypeDef: D C M I handle type def
+    DCMI_LastFilled: D C M I last filled
+    DCMI_FrameIsReady: D C M I frame is ready
+    Camera_FPS: camera F P S
+    ST_FillRGBRect: S T fill R G B rect
+    ST7735_FillRGBRect: S T seventy seven thirty five fill R G B rect
+    LCD_BlitStart: L C D blit start
+    LCD_BlitWait: L C D blit wait
+    LCD_ShowString: L C D show string
+    LCD_Init: L C D init
+    LCD_Test: L C D test
+    LCD_Light: L C D light
+    LCD_SoftPWM: L C D soft P W M
+    Camera_XCLK_Set: camera X clock set
+    Camera_WriteRegList: camera write reg list
+    Camera_Reset: camera reset
+    ov7725_RD_Reg: O V seventy seven twenty five R D reg
+    ov7725_WR_Reg: O V seventy seven twenty five W R reg
+    ov7725.c: O V seventy seven twenty five dot C
+    ov7725.cpp: O V seventy seven twenty five dot C P P
+    ov7725_regs.c: O V seventy seven twenty five regs dot C
+    st7735.c: S T seventy seven thirty five dot C
+    st7735_reg.c: S T seventy seven thirty five reg dot C
+    lcd.cpp: L C D dot C P P
+    lcd.h: L C D dot H
+    camera.h: camera dot H
+    camera.c: camera dot C
+    logo_160_80.c: logo one sixty eighty dot C
+    font.h: font dot H
+    weact_camera: we act camera
+    Bolme 2010: Bolme twenty ten
 ---
 
 The [first post](/posts/stm32h7-ov7725-template-matching-tracker/)

@@ -1,15 +1,77 @@
 ---
-title: "From 21 to 25 FPS: Profiling and Optimizing a Headless Unity Simulation Pipeline"
+title: 'From 21 to 25 FPS: Profiling and Optimizing a Headless Unity Simulation Pipeline'
 date: 2026-04-04
 draft: false
-tags: ["Unity", "Docker", "performance", "profiling", "NVENC", "GPU", "rendering", "optimization", "headless", "RTSP", "FFmpeg"]
-keywords: ["Unity headless FPS optimization", "Unity camera render performance", "NVENC vs libx264 Unity", "GPU instancing Unity headless", "Unity batch camera rendering"]
+tags:
+- Unity
+- Docker
+- performance
+- profiling
+- NVENC
+- GPU
+- rendering
+- optimization
+- headless
+- RTSP
+- FFmpeg
+keywords:
+- Unity headless FPS optimization
+- Unity camera render performance
+- NVENC vs libx264 Unity
+- GPU instancing Unity headless
+- Unity batch camera rendering
 cover:
   image: /images/posts/unity-fps-optimization.png
-  alt: "FPS optimization pipeline for headless Unity simulation"
-categories: ["deep-dive"]
-summary: "A detailed technical walkthrough of profiling and optimizing a headless Unity simulation from 21 to 25 FPS — covering NVENC GPU encoding, batch camera rendering, GPU instancing, static batching, and the failed URP migration. Every measurement, every dead end, every lesson."
+  alt: FPS optimization pipeline for headless Unity simulation
+categories:
+- deep-dive
+summary: A detailed technical walkthrough of profiling and optimizing a headless Unity
+  simulation from 21 to 25 FPS — covering NVENC GPU encoding, batch camera rendering,
+  GPU instancing, static batching, and the failed URP migration. Every measurement,
+  every dead end, every lesson.
 ShowToc: true
+audio:
+  pronunciation:
+    Unity: Unity
+    Vulkan: vulkan
+    URP: U R P
+    HDRP: H D R P
+    Built-in RP: built in R P
+    SRP Batcher: S R P batcher
+    RenderGraph: render graph
+    Xvfb: X V F B
+    EGL: E G L
+    FFmpeg: F F mpeg
+    NVENC: N V enc
+    h264_nvenc: H two six four N V enc
+    libx264: lib X two six four
+    RTSP: R T S P
+    RTX 3060: R T X thirty sixty
+    AsyncGPUReadback: async G P U readback
+    PCIe: P C I E
+    VRAM: V RAM
+    camera.Render: camera dot render
+    LateUpdate: late update
+    WaitForEndOfFrame: wait for end of frame
+    SimpleCameraCapture: simple camera capture
+    MainCamera: main camera
+    FindObjectsByType: find objects by type
+    FindObjectsSortMode.None: find objects sort mode none
+    Renderer: renderer
+    StaticBatchingUtility.Combine: static batching utility combine
+    enableInstancing: enable instancing
+    isStatic: is static
+    targetTexture: target texture
+    ApplicationSetting.yaml: application setting dot yaml
+    UseInstalledFFmpeg: use installed F F mpeg
+    defaultGPU.json: default G P U dot J S O N
+    Coroutine: co routine
+    EndOfFrameLoop: end of frame loop
+    renderGraphSettings.enableRenderCompatibilityMode: render graph settings dot enable
+      render compatibility mode
+    Unity 6000.0.71f1: Unity six thousand dot zero dot seventy one F one
+    FFmpeg pipe write: F F mpeg pipe write
+    FPS: F P S
 ---
 
 ## Starting Point

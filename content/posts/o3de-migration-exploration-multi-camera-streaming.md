@@ -1,15 +1,93 @@
 ---
-title: "From Unity to O3DE: Multi-Camera Streaming at 1080p in a Headless Docker Container"
+title: 'From Unity to O3DE: Multi-Camera Streaming at 1080p in a Headless Docker Container'
 date: 2026-04-16
 draft: false
-tags: ["O3DE", "Vulkan", "GStreamer", "Docker", "simulation", "C++", "GPU", "NVENC", "rendering", "performance", "headless", "RTSP", "benchmarking", "drones"]
-keywords: ["O3DE Unity migration", "O3DE headless Docker rendering", "GStreamer NVENC O3DE", "multi-camera simulation streaming", "RenderToTexture O3DE"]
+tags:
+- O3DE
+- Vulkan
+- GStreamer
+- Docker
+- simulation
+- C++
+- GPU
+- NVENC
+- rendering
+- performance
+- headless
+- RTSP
+- benchmarking
+- drones
+keywords:
+- O3DE Unity migration
+- O3DE headless Docker rendering
+- GStreamer NVENC O3DE
+- multi-camera simulation streaming
+- RenderToTexture O3DE
 cover:
   image: /images/posts/o3de-migration-exploration.png
-  alt: "O3DE rendering a ground plane from a camera spawned programmatically inside a headless Docker container"
-categories: ["deep-dive"]
-summary: "Exploring whether O3DE can replace Unity as the render engine for a drone simulation that streams multiple 1080p camera feeds via GStreamer. From first scaffold to three live RenderToTexture pipelines in a single session."
+  alt: O3DE rendering a ground plane from a camera spawned programmatically inside
+    a headless Docker container
+categories:
+- deep-dive
+summary: Exploring whether O3DE can replace Unity as the render engine for a drone
+  simulation that streams multiple 1080p camera feeds via GStreamer. From first scaffold
+  to three live RenderToTexture pipelines in a single session.
 ShowToc: true
+audio:
+  pronunciation:
+    O3DE: O three D E
+    Atom: atom
+    Vulkan: vulkan
+    GStreamer: G streamer
+    NVENC: N V enc
+    nvh264enc: N V H two six four enc
+    appsrc: app source
+    videoconvert: video convert
+    rtph264pay: R T P H two six four pay
+    udpsink: U D P sink
+    RenderToTexture: render to texture
+    MainPipelineRenderToTexture: main pipeline render to texture
+    RPI: R P I
+    SwapChain: swap chain
+    AttachmentReadback: attachment readback
+    FrameCaptureRequestBus: frame capture request bus
+    AddRenderPipeline: add render pipeline
+    SetDefaultView: set default view
+    SetPersistentView: set persistent view
+    RenderPipeline: render pipeline
+    MeshFeatureProcessor: mesh feature processor
+    DirectionalLightFeatureProcessor: directional light feature processor
+    CameraComponent: camera component
+    GameEntityContextRequestBus: game entity context request bus
+    CreateGameEntity: create game entity
+    FrameLoggerSystemComponent: frame logger system component
+    GStreamerStreamComponent: G streamer stream component
+    SceneBootstrapComponent: scene bootstrap component
+    SandboxConfig: sandbox config
+    AZ::TickBus::Handler: A Z tick bus handler
+    TICK_LAST: tick last
+    MainRenderPipeline.azasset: main render pipeline dot A Z asset
+    MSAA: M S A A
+    GetApplicationMultisampleState: get application multisample state
+    VK_ERROR_DEVICE_LOST: V K error device lost
+    SIGABRT: sig abort
+    SSAO: S S A O
+    DoF: depth of field
+    TAA: T A A
+    .spawnable: dot spawn able
+    PX4: P X four
+    SITL: sittle
+    tailsitter: tail sitter
+    SRTM: S R T M
+    DTM: D T M
+    OSM: O S M
+    Unity Sandbox: unity sandbox
+    FFmpegOut: F F mpeg out
+    Negev: Negev
+    Xvfb: X V F B
+    azasset: A Z asset
+    RTX 3060: R T X thirty sixty
+    fiber-nav-o3de: fiber nav O three D E
 ---
 
 Our Unity-based drone simulation runs at 11-16 FPS. The cameras stream via RTSP, PX4 SITL controls the airframe, and the whole thing lives in Docker. That frame rate isn't acceptable for the scenarios we need to run, so I set out to answer one question: **can O3DE do better?**

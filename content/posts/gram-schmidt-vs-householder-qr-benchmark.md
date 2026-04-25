@@ -1,15 +1,44 @@
 ---
-title: "Modified Gram-Schmidt vs Householder QR: A Performance Showdown in Eigen"
+title: 'Modified Gram-Schmidt vs Householder QR: A Performance Showdown in Eigen'
 date: 2026-03-21
 draft: false
-tags: ["C++", "Eigen", "linear-algebra", "benchmarking", "open-source"]
-keywords: ["Gram Schmidt vs Householder benchmark", "Modified Gram Schmidt QR", "Eigen QR decomposition comparison"]
+tags:
+- C++
+- Eigen
+- linear-algebra
+- benchmarking
+- open-source
+keywords:
+- Gram Schmidt vs Householder benchmark
+- Modified Gram Schmidt QR
+- Eigen QR decomposition comparison
 cover:
   image: /images/posts/gram-schmidt-qr.png
-  alt: "Modified Gram-Schmidt vs Householder QR"
-categories: ["deep-dive"]
-summary: "I submitted a Modified Gram-Schmidt QR decomposition to Eigen and a maintainer asked: why? Here's the benchmark data that answered the question."
+  alt: Modified Gram-Schmidt vs Householder QR
+categories:
+- deep-dive
+summary: 'I submitted a Modified Gram-Schmidt QR decomposition to Eigen and a maintainer
+  asked: why? Here''s the benchmark data that answered the question.'
 ShowToc: true
+audio:
+  pronunciation:
+    Eigen: Eye gen
+    Gram-Schmidt: Gram Schmidt
+    Householder: house holder
+    HouseholderQR: Householder Q R
+    GramSchmidtQR: Gram Schmidt Q R
+    MGS: M G S
+    BLAS-2: blass two
+    BLAS-3: blass three
+    matrixQ: matrix Q
+    MatrixXd: matrix X D
+    HouseholderSequence: Householder sequence
+    GitLab: git lab
+    Godbolt: god bolt
+    godbolt.org: god bolt dot org
+    Q^T: Q transpose
+    Q^TQ: Q transpose Q
+    Rasmus Munk Larsen: Rasmus Munk Larsen
 ---
 
 ## The Question

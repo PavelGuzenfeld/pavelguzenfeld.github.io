@@ -1,15 +1,71 @@
 ---
-title: "Migrating PX4's ROS Integration Tests from Gazebo Classic to SIH"
+title: Migrating PX4's ROS Integration Tests from Gazebo Classic to SIH
 date: 2026-03-20
 draft: false
-tags: ["PX4", "ROS2", "SITL", "SIH", "Docker", "CI-CD", "integration-testing", "open-source"]
-keywords: ["PX4 SIH migration", "PX4 ROS integration test SIH", "PX4 Gazebo Classic to SIH"]
+tags:
+- PX4
+- ROS2
+- SITL
+- SIH
+- Docker
+- CI-CD
+- integration-testing
+- open-source
+keywords:
+- PX4 SIH migration
+- PX4 ROS integration test SIH
+- PX4 Gazebo Classic to SIH
 cover:
   image: /images/posts/px4-sih-migration.png
-  alt: "Migrating PX4 ROS Tests from Gazebo Classic to SIH"
-categories: ["deep-dive"]
-summary: "PX4's MAVSDK tests were migrated to SIH but the ROS integration tests were left behind on Gazebo Classic. This post documents the complete migration — the config changes, the CI pipeline surgery, the parameter name pitfall that silently broke GlobalPositionInterfaceTest, and how to reproduce the full 14-test suite locally in Docker."
+  alt: Migrating PX4 ROS Tests from Gazebo Classic to SIH
+categories:
+- deep-dive
+summary: PX4's MAVSDK tests were migrated to SIH but the ROS integration tests were
+  left behind on Gazebo Classic. This post documents the complete migration — the
+  config changes, the CI pipeline surgery, the parameter name pitfall that silently
+  broke GlobalPositionInterfaceTest, and how to reproduce the full 14-test suite locally
+  in Docker.
 ShowToc: true
+audio:
+  pronunciation:
+    PX4: P X four
+    PX4-Autopilot: P X four autopilot
+    ROS 2: ross two
+    ROS2: ross two
+    ros2: ross two
+    Gazebo: gazebo
+    Gazebo Classic: gazebo classic
+    sitl_gazebo-classic: sittle gazebo classic
+    SIH: S I H
+    SITL: sittle
+    MAVSDK: mav S D K
+    MAVLink: mav link
+    uXRCE-DDS: micro X R C E D D S
+    MicroXRCEAgent: micro X R C E agent
+    Micro-XRCE-DDS-Agent: micro X R C E D D S agent
+    px4-ros2-interface-lib: P X four ross two interface lib
+    px4_msgs: P X four messages
+    px4_ros2_cpp: P X four ross two C plus plus
+    config.json: config dot J S O N
+    ros_test_runner.py: ross test runner dot pie
+    mavsdk_test_runner.py: mav S D K test runner dot pie
+    px4_sitl_default: P X four sittle default
+    PX4_PARAM_EKF2_AGP_CTRL: P X four param E K F two A G P control
+    PX4_PARAM_EKF2_EV_CTRL: P X four param E K F two E V control
+    EKF2_AGP_CTRL: E K F two A G P control
+    EKF2_AGP0_CTRL: E K F two A G P zero control
+    EKF2_AGP0_ID: E K F two A G P zero I D
+    AuxGlobalPosition: aux global position
+    GlobalPositionInterfaceTest: global position interface test
+    LocalPositionInterfaceTest: local position interface test
+    ModesTest: modes test
+    ros2cli: ross two C L I
+    Auterion: Auterion
+    config.get: config dot get
+    config[]: config bracket
+    px4io/px4-dev-ros2-galactic: P X four I O slash P X four dev ross two galactic
+    Galactic: galactic
+    colcon: coal con
 ---
 
 ## Background

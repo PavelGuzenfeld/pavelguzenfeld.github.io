@@ -1,15 +1,112 @@
 ---
-title: "PX4 Autopilot: A Practitioner's Guide to Troubleshooting, Debugging, Building, and Testing"
+title: 'PX4 Autopilot: A Practitioner''s Guide to Troubleshooting, Debugging, Building,
+  and Testing'
 date: 2026-03-22
 draft: false
-tags: ["PX4", "C++", "NuttX", "debugging", "Docker", "SITL", "uXRCE-DDS", "MAVLink", "ASan", "TSan", "integration-testing", "open-source"]
-keywords: ["PX4 Docker build guide", "PX4 SITL debugging", "PX4 uXRCE-DDS troubleshooting"]
+tags:
+- PX4
+- C++
+- NuttX
+- debugging
+- Docker
+- SITL
+- uXRCE-DDS
+- MAVLink
+- ASan
+- TSan
+- integration-testing
+- open-source
+keywords:
+- PX4 Docker build guide
+- PX4 SITL debugging
+- PX4 uXRCE-DDS troubleshooting
 cover:
   image: /images/posts/px4-guide.png
-  alt: "PX4 Autopilot: A Practitioner's Guide"
-categories: ["deep-dive"]
-summary: "Everything I learned contributing 6 PRs to PX4-Autopilot in a single session — from Docker-based builds and sanitizer workflows, through uXRCE-DDS session debugging and MAVLink signing analysis, to SITL integration testing. Real bugs, real fixes, real build output."
+  alt: 'PX4 Autopilot: A Practitioner''s Guide'
+categories:
+- deep-dive
+summary: Everything I learned contributing 6 PRs to PX4-Autopilot in a single session
+  — from Docker-based builds and sanitizer workflows, through uXRCE-DDS session debugging
+  and MAVLink signing analysis, to SITL integration testing. Real bugs, real fixes,
+  real build output.
 ShowToc: true
+audio:
+  pronunciation:
+    PX4: P X four
+    PX4-Autopilot: P X four autopilot
+    NuttX: nuts X
+    NXP: N X P
+    Pixhawk: pix hawk
+    Kinetis: Kinetis
+    STM32: S T M thirty two
+    STM32H7: S T M thirty two H seven
+    ESP32: E S P thirty two
+    RPI: R P I
+    io_timer: I O timer
+    io_timer.c: I O timer dot C
+    uORB: you orb
+    uXRCE-DDS: micro X R C E D D S
+    DDS: D D S
+    Fast-DDS: fast D D S
+    MicroXRCEAgent: micro X R C E agent
+    Micro-XRCE-DDS-Agent: micro X R C E D D S agent
+    Micro XRCE-DDS Agent: micro X R C E D D S agent
+    ASan: A san
+    TSan: T san
+    PX4_ASAN: P X four A san
+    PX4_TSAN: P X four T san
+    PX4_SIM_MODEL: P X four sim model
+    AddressSanitizer: address sanitizer
+    ThreadSanitizer: thread sanitizer
+    rcS: R C S
+    px4_sitl_default: P X four sittle default
+    SITL: sittle
+    SIH: S I H
+    SYS_HITL: sys hit L
+    SYS_AUTOSTART: sys auto start
+    ros2cli: ross two C L I
+    ROS2: ross two
+    ROS 2: ross two
+    MAVLink: mav link
+    MAV_SIGN_CFG: mav sign C F G
+    PROTO_SIGN_OPTIONAL: proto sign optional
+    PROTO_SIGN_NON_USB: proto sign non U S B
+    PROTO_SIGN_ALWAYS: proto sign always
+    accept_unsigned: accept unsigned
+    SETUP_SIGNING: setup signing
+    VEHICLE_CMD_INJECT_FAILURE: vehicle command inject failure
+    FAILURE_UNIT_SENSOR_GPS: failure unit sensor G P S
+    EKF2: E K F two
+    vehicle_thrust_setpoint: vehicle thrust setpoint
+    Werror: W error
+    Werror=unused-variable: W error unused variable
+    Werror=unused-function: W error unused function
+    rolling: rolling
+    TimeSource: time source
+    destroy_clock_sub: destroy clock sub
+    dds_topics.yaml: D D S topics dot yaml
+    dds_topics.h.em: D D S topics dot H dot E M
+    generate_dds_topics.py: generate D D S topics dot pie
+    uxrce_dds_client: micro X R C E D D S client
+    UxrceddsClient::run: micro X R C E D D S client run
+    setupSession: setup session
+    deleteSession: delete session
+    checkConnectivity: check connectivity
+    px4_poll: P X four poll
+    uxr_run_session: U X R run session
+    uxr_sync_session: U X R sync session
+    on_pong_flag: on pong flag
+    EmPy: em pie
+    ROMFS: rom F S
+    PARAM_SET: param set
+    PARAM_VALUE: param value
+    AUTOPILOT_VERSION: autopilot version
+    DCO: D C O
+    astyle: A style
+    DShot: D shot
+    S32K1xx: S thirty two K one X X
+    S32K3xx: S thirty two K three X X
+    GitHub: git hub
 ---
 
 ## Context

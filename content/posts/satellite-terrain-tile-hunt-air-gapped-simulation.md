@@ -1,15 +1,80 @@
 ---
-title: "The Satellite Tile Hunt: From 15m Blobs to 13cm Resolution in an Air-Gapped Simulation"
+title: 'The Satellite Tile Hunt: From 15m Blobs to 13cm Resolution in an Air-Gapped
+  Simulation'
 date: 2026-04-05
 draft: false
-tags: ["Unity", "Docker", "terrain", "satellite", "DTM", "GIS", "ESRI", "Google", "Mapzen", "simulation", "headless", "air-gapped", "Python"]
-keywords: ["satellite imagery Unity terrain", "download satellite tiles Python", "Google satellite tiles offline", "Mapzen terrain tiles DTM", "Unity heightmap resolution", "digital terrain model Unity", "SRTM vs Copernicus DTM", "tile stitching Python", "air-gapped terrain simulation", "ESRI World Imagery download"]
+tags:
+- Unity
+- Docker
+- terrain
+- satellite
+- DTM
+- GIS
+- ESRI
+- Google
+- Mapzen
+- simulation
+- headless
+- air-gapped
+- Python
+keywords:
+- satellite imagery Unity terrain
+- download satellite tiles Python
+- Google satellite tiles offline
+- Mapzen terrain tiles DTM
+- Unity heightmap resolution
+- digital terrain model Unity
+- SRTM vs Copernicus DTM
+- tile stitching Python
+- air-gapped terrain simulation
+- ESRI World Imagery download
 cover:
   image: /images/posts/satellite-tile-hunt.png
-  alt: "Satellite imagery comparison: 15m vs 0.13m resolution in headless Unity simulation"
-categories: ["deep-dive"]
-summary: "A practical guide to finding, downloading, and fusing satellite imagery and elevation data for an air-gapped Unity simulation. Covers every free tile provider (ESRI, Bing, Google), every free DTM source (SRTM, Copernicus, Mapzen), how to stitch thousands of tiles into Unity-ready textures, and the dead ends along the way."
+  alt: 'Satellite imagery comparison: 15m vs 0.13m resolution in headless Unity simulation'
+categories:
+- deep-dive
+summary: A practical guide to finding, downloading, and fusing satellite imagery and
+  elevation data for an air-gapped Unity simulation. Covers every free tile provider
+  (ESRI, Bing, Google), every free DTM source (SRTM, Copernicus, Mapzen), how to stitch
+  thousands of tiles into Unity-ready textures, and the dead ends along the way.
 ShowToc: true
+audio:
+  pronunciation:
+    ESRI: Ezri
+    Mapzen: map zen
+    OpenStreetMap: open street map
+    OSM: O S M
+    DTM: D T M
+    SRTM: S R T M
+    Copernicus: Copernicus
+    GLO-30: G L O thirty
+    GLO-10: G L O ten
+    OpenTopography: open topography
+    ALOS: ay loss
+    JAXA: Jaxa
+    GeoTIFF: geo tiff
+    gdalinfo: G dal info
+    GDAL: G dal
+    Terrarium: Terrarium
+    Web Mercator: web Mercator
+    tile_coords: tile coords
+    TerrainData: terrain data
+    TerrainLayer: terrain layer
+    Terrain.CreateTerrainGameObject: terrain dot create terrain game object
+    GetPixels: get pixels
+    Image.LANCZOS: image dot lanczos
+    WGS84: W G S eighty four
+    Bing: Bing
+    ArcGIS: arc G I S
+    arcgisonline.com: arc G I S online dot com
+    virtualearth.net: virtual earth dot net
+    quadkey: quad key
+    Unity: Unity
+    HDRP: H D R P
+    ESA Panda: E S A panda
+    AWS Terrain Tiles: A W S terrain tiles
+    elevation-tiles-prod: elevation tiles prod
+    ThreadPoolExecutor: thread pool executor
 ---
 
 ## Context

@@ -1,15 +1,58 @@
 ---
-title: "Why DDS Content Filter Parameters Silently Fail for Strings in ROS 2"
+title: Why DDS Content Filter Parameters Silently Fail for Strings in ROS 2
 date: 2026-04-04
 draft: false
-tags: ["ROS2", "DDS", "Fast-DDS", "content-filter", "debugging", "open-source", "rmw"]
-keywords: ["DDS content filter parameters", "Fast DDS DDSSQLFilter", "ROS 2 content filter string", "rmw_fastrtps content filter fix"]
+tags:
+- ROS2
+- DDS
+- Fast-DDS
+- content-filter
+- debugging
+- open-source
+- rmw
+keywords:
+- DDS content filter parameters
+- Fast DDS DDSSQLFilter
+- ROS 2 content filter string
+- rmw_fastrtps content filter fix
 cover:
   image: /images/posts/dds-content-filter.png
-  alt: "DDS Content Filter String Parameters in ROS 2"
-categories: ["deep-dive"]
-summary: "DDS content filter parameter substitution (%0, %1) silently fails for string fields in ROS 2 with Fast DDS. The root cause is three layers deep — the DDS SQL grammar requires quoted string literals, but no ROS 2 layer adds the quotes. Here's how I traced it and where to fix it."
+  alt: DDS Content Filter String Parameters in ROS 2
+categories:
+- deep-dive
+summary: DDS content filter parameter substitution (%0, %1) silently fails for string
+  fields in ROS 2 with Fast DDS. The root cause is three layers deep — the DDS SQL
+  grammar requires quoted string literals, but no ROS 2 layer adds the quotes. Here's
+  how I traced it and where to fix it.
 ShowToc: true
+audio:
+  pronunciation:
+    ROS 2: ross two
+    ROS2: ross two
+    ros2: ross two
+    DDS: D D S
+    Fast DDS: fast D D S
+    Fast-DDS: fast D D S
+    Cyclone DDS: cyclone D D S
+    rclpy: R C L pie
+    rcl: R C L
+    rmw: R M W
+    rmw_fastrtps: R M W fast R T P S
+    DDSFilterParameter: D D S filter parameter
+    DDSSQLFilter: D D S sequel filter
+    DDSFilterGrammar: D D S filter grammar
+    ros2cli: ross two C L I
+    ros2 topic echo: ross two topic echo
+    eProsima: ee Pro see ma
+    OMG: O M G standards body
+    create_content_filtered_topic: create content filtered topic
+    ContentFilterOptions: content filter options
+    PEG: P E G
+    '%0': percent zero
+    '%1': percent one
+    GitHub: git hub
+    GStreamer: G streamer
+    PR: P R
 ---
 
 ## The Problem

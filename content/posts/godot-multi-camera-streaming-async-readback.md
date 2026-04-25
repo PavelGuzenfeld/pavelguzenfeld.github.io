@@ -1,15 +1,94 @@
 ---
-title: "From Unity to Godot: Multi-Camera Streaming at 50 FPS with Async GPU Readback"
+title: 'From Unity to Godot: Multi-Camera Streaming at 50 FPS with Async GPU Readback'
 date: 2026-04-17
 draft: false
-tags: ["Godot", "GDExtension", "Vulkan", "GStreamer", "Docker", "simulation", "C++", "GPU", "NVENC", "rendering", "performance", "headless", "RTSP", "benchmarking", "drones", "TCP", "X11", "optimization"]
-keywords: ["Godot multi-camera streaming", "Godot RenderingDevice texture_get_data_async", "Godot GDExtension GStreamer", "Godot headless Vulkan Docker", "Godot Xvfb present cost"]
+tags:
+- Godot
+- GDExtension
+- Vulkan
+- GStreamer
+- Docker
+- simulation
+- C++
+- GPU
+- NVENC
+- rendering
+- performance
+- headless
+- RTSP
+- benchmarking
+- drones
+- TCP
+- X11
+- optimization
+keywords:
+- Godot multi-camera streaming
+- Godot RenderingDevice texture_get_data_async
+- Godot GDExtension GStreamer
+- Godot headless Vulkan Docker
+- Godot Xvfb present cost
 cover:
   image: /images/posts/o3de-migration-exploration.png
-  alt: "Three live Godot camera streams over RTP/UDP rendered by GStreamer clients"
-categories: ["deep-dive"]
-summary: "After O3DE's 18 ms frame-graph readback made 30 FPS streaming impossible, we tried Godot. It got us there — eventually. This is the full path from 105 FPS on nothing to 50 FPS per camera with three live RTP streams, including every wrong turn and every underdocumented Godot behavior we hit on the way."
+  alt: Three live Godot camera streams over RTP/UDP rendered by GStreamer clients
+categories:
+- deep-dive
+summary: After O3DE's 18 ms frame-graph readback made 30 FPS streaming impossible,
+  we tried Godot. It got us there — eventually. This is the full path from 105 FPS
+  on nothing to 50 FPS per camera with three live RTP streams, including every wrong
+  turn and every underdocumented Godot behavior we hit on the way.
 ShowToc: true
+audio:
+  pronunciation:
+    Godot: Go dough
+    godot: Go dough
+    GDExtension: G D extension
+    GDScript: G D script
+    gdscript: G D script
+    SubViewport: sub view port
+    SubViewports: sub view ports
+    Xvfb: X V F B
+    RenderingDevice: rendering device
+    RenderingServer: rendering server
+    texture_get_data_async: texture get data async
+    Callable.bind: callable dot bind
+    Callable: callable
+    GStreamer: G streamer
+    gst-launch: G S T launch
+    gst_parse_launch: G S T parse launch
+    appsrc: app source
+    videoconvert: video convert
+    x264enc: X two six four enc
+    h264parse: H two six four parse
+    mp4mux: M P four mux
+    filesink: file sink
+    rtph264pay: R T P H two six four pay
+    udpsink: U D P sink
+    udpsrc: U D P source
+    rtpjitterbuffer: R T P jitter buffer
+    rtph264depay: R T P H two six four de pay
+    avdec_h264: A V dec H two six four
+    autovideosink: auto video sink
+    textoverlay: text overlay
+    clockoverlay: clock overlay
+    auto-multicast: auto multicast
+    RTP: R T P
+    UDP: U D P
+    TCP: T C P
+    SO_REUSEADDR: S O reuse addr
+    RID: R I D
+    PackedByteArray: packed byte array
+    RTSP: R T S P
+    Vulkan: vulkan
+    OS.execute_with_pipe: O S dot execute with pipe
+    OS.create_process: O S dot create process
+    MAX_IN_FLIGHT: max in flight
+    _process: underscore process
+    _on_readback: underscore on readback
+    tee: tee
+    leaky=downstream: leaky equals downstream
+    O3DE: O three D E
+    RTX 3060: R T X thirty sixty
+    FPS: F P S
 ---
 
 > Third post in the simulation series. The first two covered the [Unity to O3DE migration](/posts/o3de-migration-exploration-multi-camera-streaming/) and the [O3DE readback deep dive](/posts/o3de-performance-deep-dive-readback-bottleneck/). This one covers what happened when we dropped O3DE and tried Godot.

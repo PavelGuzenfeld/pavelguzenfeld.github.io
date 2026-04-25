@@ -1,15 +1,61 @@
 ---
-title: "Persistent SMB Shares on Linux — From Manual Mount to Automount on Access"
+title: Persistent SMB Shares on Linux — From Manual Mount to Automount on Access
 date: 2026-03-24
 draft: false
-tags: ["Linux", "SMB", "CIFS", "systemd", "Nautilus", "networking", "DevOps"]
-keywords: ["mount SMB share Linux fstab", "persistent CIFS mount systemd", "SMB automount Linux"]
+tags:
+- Linux
+- SMB
+- CIFS
+- systemd
+- Nautilus
+- networking
+- DevOps
+keywords:
+- mount SMB share Linux fstab
+- persistent CIFS mount systemd
+- SMB automount Linux
 cover:
   image: /images/posts/smb-linux.png
-  alt: "Persistent SMB Shares on Linux"
-categories: ["deep-dive"]
-summary: "A step-by-step guide to mounting SMB/CIFS network shares on Linux — from one-off access in a file manager to persistent fstab entries with systemd automount that connect only when needed and gracefully handle VPN disconnects."
+  alt: Persistent SMB Shares on Linux
+categories:
+- deep-dive
+summary: A step-by-step guide to mounting SMB/CIFS network shares on Linux — from
+  one-off access in a file manager to persistent fstab entries with systemd automount
+  that connect only when needed and gracefully handle VPN disconnects.
 ShowToc: true
+audio:
+  pronunciation:
+    SMB: S M B
+    CIFS: ciffs
+    smbclient: S M B client
+    cifs-utils: ciffs utils
+    fstab: F S tab
+    /etc/fstab: etc slash F S tab
+    systemd: system D
+    systemctl: system C T L
+    x-systemd.automount: X system D auto mount
+    x-systemd.idle-timeout: X system D idle timeout
+    /etc/smbcredentials: etc slash S M B credentials
+    Nautilus: Nautilus
+    Dolphin: Dolphin
+    Thunar: Thunar
+    Nemo: Nemo
+    GVFS: G V F S
+    gvfs-backends: G V F S backends
+    noauto: no auto
+    nofail: no fail
+    iocharset=utf8: I O charset U T F eight
+    uid=1000: U I D ten hundred
+    gid=1000: G I D ten hundred
+    smb://: S M B colon slash slash
+    file://: file colon slash slash
+    file:///: file triple slash
+    NT_STATUS_ACCESS_DENIED: N T status access denied
+    NT_STATUS_LOGON_FAILURE: N T status logon failure
+    ADMIN$: admin dollar
+    C$: C dollar
+    IPC$: I P C dollar
+    VPN: V P N
 ---
 
 ## The Situation
