@@ -1,0 +1,91 @@
+name: Generate post audio
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "content/posts/**.md"
+      - "scripts/generate_audio.py"
+      - "scripts/Dockerfile"
+      - ".github/workflows/audio.yaml"
+  workflow_dispatch:
+    inputs:
+      regenerate_all:
+        description: "Regenerate every post regardless of git changes"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: audio
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2          # need HEAD~1 for the changed-file diff
+
+      - name: Build the TTS image
+        run: docker build -t blog-tts -f scripts/Dockerfile scripts/
+
+      - name: List posts to (re)generate
+        id: targets
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event.inputs.regenerate_all }}" == "true" ]]; then
+            posts=$(ls content/posts/*.md | grep -v '_index.md' || true)
+          else
+            posts=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD \
+                    | grep -E '^content/posts/[^/]+\.md$' || true)
+          fi
+          if [[ -z "$posts" ]]; then
+            echo "No posts to process."
+            echo "list=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          {
+            echo "list<<EOF"
+            echo "$posts"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Will process:"
+          echo "$posts"
+
+      - name: Generate MP3s
+        if: steps.targets.outputs.list != ''
+        run: |
+          set -euo pipefail
+          mkdir -p static/audio
+          while IFS= read -r post; do
+            [[ -z "$post" ]] && continue
+            slug=$(basename "$post" .md)
+            echo "::group::Synthesizing $slug"
+            docker run --rm -v "$PWD":/work blog-tts \
+              python3 /scripts/generate_audio.py \
+                "/work/$post" "/work/static/audio/${slug}.mp3"
+            echo "::endgroup::"
+          done <<< "${{ steps.targets.outputs.list }}"
+
+      - name: Commit MP3s back to main
+        if: steps.targets.outputs.list != ''
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add static/audio/*.mp3 || true
+          if git diff --cached --quiet; then
+            echo "No audio changes to commit."
+            exit 0
+          fi
+          # Note: no [skip ci] — we *want* the deploy workflow to pick up the
+          # new MP3s.  The audio workflow itself only re-triggers on changes to
+          # content/posts/**.md or its own files, so committing MP3s to
+          # static/audio/ doesn't cause a loop.
+          git commit -m "audio: regenerate MP3s for changed posts"
+          git push
