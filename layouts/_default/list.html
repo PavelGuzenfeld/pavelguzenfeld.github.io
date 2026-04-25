@@ -65,18 +65,28 @@
     border: 1px solid var(--border);
     background: var(--theme);
     color: var(--primary);
-    border-radius: 6px;
-    padding: 0.25rem 0.55rem;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    padding: 0;
     margin-left: 0.5rem;
-    font-size: 0.85em;
+    font-size: 0.8em;
+    line-height: 1;
     cursor: pointer;
     vertical-align: middle;
-    transition: background 0.15s, color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s, transform 0.15s;
     z-index: 2;
     position: relative;
   }
-  .entry-play:hover { background: var(--primary); color: var(--theme); }
-  .entry-play[aria-pressed="true"] { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+  .entry-play__icon { display: inline-block; transform: translateX(1px); }
+  .entry-play:hover { background: var(--primary); color: var(--theme); transform: scale(1.06); }
+  .entry-play[aria-pressed="true"] {
+    background: var(--primary); color: var(--theme); border-color: var(--primary);
+  }
+  .entry-play[aria-pressed="true"] .entry-play__icon { transform: translateX(0); }
   .entry-mini-audio {
     display: none;
     margin: 0.5rem 0 0 0;
@@ -122,8 +132,10 @@
       {{- end }}
       {{- if $audioSrc }}
       <button type="button" class="entry-play" data-audio-src="{{ $audioSrc }}"
-              aria-pressed="false" aria-label="Play audio for {{ .Title | plainify }}">
-        ▶ Listen
+              aria-pressed="false"
+              aria-label="Play audio narration of {{ .Title | plainify }}"
+              title="Play audio narration">
+        <span class="entry-play__icon" aria-hidden="true">▶</span>
       </button>
       {{- end }}
     </h2>
@@ -178,23 +190,25 @@
         var slot = article.querySelector('.entry-mini-audio');
         if (!slot) return;
         var pressed = btn.getAttribute('aria-pressed') === 'true';
+        var icon = btn.querySelector('.entry-play__icon');
         if (pressed) {
           slot.dataset.open = 'false';
           slot.innerHTML = '';
           btn.setAttribute('aria-pressed', 'false');
-          btn.firstChild.nodeValue = '▶ Listen';
+          if (icon) icon.textContent = '▶';
         } else {
           // Stop any other playing entry-mini-audio.
           document.querySelectorAll('.entry-play[aria-pressed="true"]').forEach(function (b) {
             var s = b.closest('article').querySelector('.entry-mini-audio');
             if (s) { s.dataset.open = 'false'; s.innerHTML = ''; }
             b.setAttribute('aria-pressed', 'false');
-            b.firstChild.nodeValue = '▶ Listen';
+            var i = b.querySelector('.entry-play__icon');
+            if (i) i.textContent = '▶';
           });
           slot.innerHTML = '<audio controls autoplay preload="auto" src="' + btn.dataset.audioSrc + '"></audio>';
           slot.dataset.open = 'true';
           btn.setAttribute('aria-pressed', 'true');
-          btn.firstChild.nodeValue = '⏸ Pause';
+          if (icon) icon.textContent = '⏸';
         }
       });
     });
