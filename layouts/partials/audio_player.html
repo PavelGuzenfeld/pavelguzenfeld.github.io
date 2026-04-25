@@ -1,17 +1,7 @@
 {{- /*
-  Embed an <audio> player when a matching MP3 lives at static/audio/<slug>.mp3.
-
-  preload="none" keeps page weight down — the browser only fetches the
-  ~10–20 MB MP3 when the reader presses play.
-
-  Two custom controls beneath the audio:
-    - Speed: pill-button group (0.75× to 2×) bound to playbackRate.
-    - Pin:   sticky-position toggle, the player follows the reader as they
-             scroll the post body.
-
-  Styling: theme-aware (uses PaperMod's --theme / --primary / --secondary /
-  --tertiary / --content / --border / --hljs-bg variables).  Mobile target
-  size is ≥ 40 px tall; controls wrap below the audio on narrow screens.
+  Audio player for single posts.  Collapsible "Options" panel keeps the
+  card compact by default — only the audio bar is visible until the
+  reader opens the gear.
 */ -}}
 {{- $slug := .File.BaseFileName -}}
 {{- $audioPath := printf "static/audio/%s.mp3" $slug -}}
@@ -20,38 +10,53 @@
 <style>
   .post-audio {
     margin: 1.25rem 0 2rem 0;
-    padding: 0.85rem 1rem 0.75rem 1rem;
+    padding: 0.7rem 0.85rem 0.6rem 0.85rem;
     border: 1px solid var(--border);
     border-radius: 8px;
     background: var(--code-bg);
-    transition: box-shadow 0.2s, padding 0.2s;
+    transition: padding 0.2s, box-shadow 0.2s;
   }
-  .post-audio figcaption {
-    font-size: 0.85em;
-    font-weight: 600;
-    color: var(--secondary);
-    margin: 0 0 0.55rem 0;
-    letter-spacing: 0.02em;
+  .post-audio__row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
   }
-  .post-audio audio {
+  .post-audio__row audio {
+    flex: 1 1 auto;
     width: 100%;
-    display: block;
-    margin: 0 0 0.7rem 0;
     height: 38px;
+    display: block;
   }
-  .post-audio__controls {
+  .post-audio__more { flex: 0 0 auto; }
+  .post-audio__more summary {
+    cursor: pointer;
+    list-style: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.35rem 0.55rem;
+    min-height: 36px;
+    min-width: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--secondary);
+    background: var(--theme);
+    transition: background 0.15s, color 0.15s;
+  }
+  .post-audio__more summary::-webkit-details-marker { display: none; }
+  .post-audio__more summary:hover { background: var(--tertiary); }
+  .post-audio__more[open] summary { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+  .post-audio__panel {
+    margin-top: 0.6rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--border);
     display: flex;
     flex-wrap: wrap;
     gap: 0.85rem 1.25rem;
     align-items: center;
     justify-content: space-between;
   }
-  .post-audio__group {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
+  .post-audio__group { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
   .post-audio__label {
     font-size: 0.78em;
     font-weight: 600;
@@ -68,69 +73,46 @@
     background: var(--theme);
   }
   .post-audio__pills button {
-    appearance: none;
-    border: none;
-    background: transparent;
-    color: var(--primary);
-    font: inherit;
-    font-size: 0.85em;
-    padding: 0.45rem 0.7rem;
-    min-height: 36px;
-    min-width: 42px;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+    appearance: none; border: none; background: transparent;
+    color: var(--primary); font: inherit; font-size: 0.85em;
+    padding: 0.4rem 0.65rem; min-height: 36px; min-width: 42px;
+    cursor: pointer; transition: background 0.15s, color 0.15s;
     border-right: 1px solid var(--border);
   }
   .post-audio__pills button:last-child { border-right: none; }
   .post-audio__pills button:hover { background: var(--tertiary); }
-  .post-audio__pills button[aria-pressed="true"] {
-    background: var(--primary);
-    color: var(--theme);
-  }
+  .post-audio__pills button[aria-pressed="true"] { background: var(--primary); color: var(--theme); }
   .post-audio__pin {
-    appearance: none;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--theme);
-    color: var(--primary);
-    font: inherit;
-    font-size: 0.85em;
-    padding: 0.45rem 0.85rem;
-    min-height: 36px;
-    cursor: pointer;
+    appearance: none; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--theme); color: var(--primary); font: inherit; font-size: 0.85em;
+    padding: 0.4rem 0.8rem; min-height: 36px; cursor: pointer;
     transition: background 0.15s, color 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
+    display: inline-flex; align-items: center; gap: 0.4rem;
   }
   .post-audio__pin:hover { background: var(--tertiary); }
   .post-audio__pin[aria-pressed="true"] {
-    background: var(--primary);
-    color: var(--theme);
-    border-color: var(--primary);
+    background: var(--primary); color: var(--theme); border-color: var(--primary);
   }
   .post-audio.sticky {
-    position: sticky;
-    top: 0.5rem;
-    z-index: 50;
+    position: sticky; top: 0.5rem; z-index: 50;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    padding: 0.55rem 0.85rem 0.5rem 0.85rem;
   }
-  .post-audio.sticky figcaption { display: none; }
-  .post-audio.sticky audio { margin-bottom: 0.45rem; }
   @media (max-width: 540px) {
-    .post-audio { padding: 0.7rem 0.75rem 0.65rem 0.75rem; }
-    .post-audio__controls { gap: 0.6rem 0.85rem; }
+    .post-audio { padding: 0.55rem 0.65rem; }
     .post-audio__pills button { padding: 0.4rem 0.55rem; min-width: 40px; font-size: 0.8em; }
     .post-audio__label { font-size: 0.72em; }
   }
 </style>
 <figure class="post-audio" id="post-audio-{{ $slug }}">
-  <figcaption>🔊 Listen to this post</figcaption>
-  <audio controls preload="none" src="{{ $src }}">
-    Your browser doesn't support HTML5 audio. <a href="{{ $src }}">Download the MP3</a>.
-  </audio>
-  <div class="post-audio__controls">
+  <div class="post-audio__row">
+    <audio controls preload="none" src="{{ $src }}">
+      Your browser doesn't support HTML5 audio. <a href="{{ $src }}">Download the MP3</a>.
+    </audio>
+    <details class="post-audio__more">
+      <summary aria-label="Playback options">⚙</summary>
+    </details>
+  </div>
+  <div class="post-audio__panel" hidden>
     <div class="post-audio__group">
       <span class="post-audio__label">Speed</span>
       <div class="post-audio__pills" role="group" aria-label="Playback speed">
@@ -143,8 +125,8 @@
       </div>
     </div>
     <button type="button" class="post-audio__pin" aria-pressed="false"
-            aria-label="Pin player to top of the page">
-      <span aria-hidden="true">📌</span> Pin to top
+            aria-label="Pin player to top">
+      <span aria-hidden="true">📌</span> Pin
     </button>
   </div>
 </figure>
@@ -152,9 +134,15 @@
   (function () {
     var fig = document.getElementById('post-audio-{{ $slug }}');
     if (!fig) return;
-    var audio = fig.querySelector('audio');
-    var pills = fig.querySelectorAll('.post-audio__pills button');
-    var pin   = fig.querySelector('.post-audio__pin');
+    var audio  = fig.querySelector('audio');
+    var more   = fig.querySelector('.post-audio__more');
+    var panel  = fig.querySelector('.post-audio__panel');
+    var pills  = fig.querySelectorAll('.post-audio__pills button');
+    var pin    = fig.querySelector('.post-audio__pin');
+
+    more.addEventListener('toggle', function () {
+      panel.hidden = !more.open;
+    });
 
     pills.forEach(function (btn) {
       btn.addEventListener('click', function () {
