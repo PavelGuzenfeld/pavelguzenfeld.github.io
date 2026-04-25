@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir edge-tts==7.2.8
+RUN pip install --no-cache-dir edge-tts==7.2.8 pyyaml==6.0.2
 
 COPY generate_audio.py /scripts/generate_audio.py
 RUN chmod +x /scripts/generate_audio.py

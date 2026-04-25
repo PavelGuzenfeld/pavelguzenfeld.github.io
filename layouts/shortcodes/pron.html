@@ -1,0 +1,10 @@
+{{- /*
+  Inline pronunciation override for the audio narrator.
+
+      {{< pron "ns/op" "nanoseconds per operation" >}}
+
+  Sighted readers see only the first arg.  The audio-generation script reads
+  the source markdown directly and substitutes the second arg before sending
+  the text to the TTS engine.
+*/ -}}
+{{- index .Params 0 -}}
