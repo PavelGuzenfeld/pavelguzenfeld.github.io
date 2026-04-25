@@ -1,15 +1,63 @@
 ---
-title: "Contributing to ROS 2 — A Practical Guide from Four Accepted PRs"
+title: Contributing to ROS 2 — A Practical Guide from Four Accepted PRs
 date: 2026-03-22
 draft: false
-tags: ["ROS2", "open-source", "Docker", "C++", "Python", "testing", "git", "contributing"]
-keywords: ["how to contribute to ROS 2", "ROS 2 pull request guide", "ROS 2 DCO check"]
+tags:
+- ROS2
+- open-source
+- Docker
+- C++
+- Python
+- testing
+- git
+- contributing
+keywords:
+- how to contribute to ROS 2
+- ROS 2 pull request guide
+- ROS 2 DCO check
 cover:
   image: /images/posts/contributing-ros2.png
-  alt: "Contributing to ROS 2 — A Practical Guide"
-categories: ["deep-dive"]
-summary: "Everything I learned submitting four pull requests to ROS 2 core repositories — from finding issues and building in Docker to passing DCO checks, handling OSRF's AI disclosure policy, rebasing across distro branches, and running the full test suites. A warts-and-all field guide."
+  alt: Contributing to ROS 2 — A Practical Guide
+categories:
+- deep-dive
+summary: Everything I learned submitting four pull requests to ROS 2 core repositories
+  — from finding issues and building in Docker to passing DCO checks, handling OSRF's
+  AI disclosure policy, rebasing across distro branches, and running the full test
+  suites. A warts-and-all field guide.
 ShowToc: true
+audio:
+  pronunciation:
+    ROS 2: ross two
+    ROS2: ross two
+    ros2: ross two
+    rclcpp: R C L C plus plus
+    rclpy: R C L pie
+    ros2cli: ross two C L I
+    geometry2: geometry two
+    ros2 topic echo: ross two topic echo
+    rmw_fastrtps: R M W fast R T P S
+    rmw: R M W
+    DDS: D D S
+    colcon: coal con
+    ament: ament
+    ctest: C test
+    DCO: D C O
+    OSRF: oh S R F
+    rolling: rolling
+    humble: humble
+    jazzy: jazzy
+    CallbackGroup: callback group
+    TimeSource: time source
+    StaticCache: static cache
+    TransformStorage: transform storage
+    ContentFilterOptions: content filter options
+    weak_ptr: weak pointer
+    weak_ptrs: weak pointers
+    SharedPtr: shared pointer
+    WeakPtr: weak pointer
+    SingleThreadedExecutor: single threaded executor
+    GitHub: git hub
+    ros:rolling: ross rolling docker image
 ---
 
 ## Why This Post Exists

@@ -1,15 +1,50 @@
 ---
-title: "Fixing O(N²) Entity Addition in ROS 2's CallbackGroup"
+title: Fixing O(N²) Entity Addition in ROS 2's CallbackGroup
 date: 2026-03-23
 draft: false
-tags: ["ROS2", "C++", "performance", "open-source", "rclcpp"]
-keywords: ["rclcpp CallbackGroup performance", "ROS 2 O(N²) bug", "rclcpp entity registration slow"]
+tags:
+- ROS2
+- C++
+- performance
+- open-source
+- rclcpp
+keywords:
+- rclcpp CallbackGroup performance
+- ROS 2 O(N²) bug
+- rclcpp entity registration slow
 cover:
   image: /images/posts/rclcpp-callbackgroup.png
-  alt: "Fixing O(N²) Entity Addition in ROS 2's CallbackGroup"
-categories: ["deep-dive"]
-summary: "How a simple erase-remove in every add_timer() call turned entity registration into a quadratic bottleneck — and the 71x speedup from moving cleanup to the right place."
+  alt: Fixing O(N²) Entity Addition in ROS 2's CallbackGroup
+categories:
+- deep-dive
+summary: How a simple erase-remove in every add_timer() call turned entity registration
+  into a quadratic bottleneck — and the 71x speedup from moving cleanup to the right
+  place.
 ShowToc: true
+audio:
+  pronunciation:
+    ROS 2: ross two
+    ROS2: ross two
+    rclcpp: R C L C plus plus
+    CallbackGroup: callback group
+    add_timer: add timer
+    add_subscription: add subscription
+    add_service: add service
+    add_client: add client
+    add_waitable: add waitable
+    collect_all_ptrs: collect all pointers
+    collect_and_compact: collect and compact
+    find_*_ptrs_if: find pointers if
+    weak_ptr: weak pointer
+    weak_ptrs: weak pointers
+    remove_if: remove if
+    TimerBase: timer base
+    SharedPtr: shared pointer
+    WeakPtr: weak pointer
+    AddressSanitizer: address sanitizer
+    UndefinedBehaviorSanitizer: undefined behavior sanitizer
+    GitHub: git hub
+    MutuallyExclusive: mutually exclusive
 ---
 
 ## The Bug

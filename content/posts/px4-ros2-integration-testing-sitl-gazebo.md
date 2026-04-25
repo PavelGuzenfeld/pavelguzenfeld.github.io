@@ -1,15 +1,99 @@
 ---
-title: "Running px4-ros2-interface-lib Integration Tests Against PX4 SITL: A Deep Technical Journey"
+title: 'Running px4-ros2-interface-lib Integration Tests Against PX4 SITL: A Deep
+  Technical Journey'
 date: 2026-03-19
 draft: false
-tags: ["PX4", "ROS2", "SITL", "Gazebo", "Docker", "DDS", "uXRCE-DDS", "integration-testing", "MicroXRCEAgent", "Fast-DDS"]
-keywords: ["PX4 ROS 2 integration test", "px4-ros2-interface-lib SITL", "PX4 Gazebo DDS testing"]
+tags:
+- PX4
+- ROS2
+- SITL
+- Gazebo
+- Docker
+- DDS
+- uXRCE-DDS
+- integration-testing
+- MicroXRCEAgent
+- Fast-DDS
+keywords:
+- PX4 ROS 2 integration test
+- px4-ros2-interface-lib SITL
+- PX4 Gazebo DDS testing
 cover:
   image: /images/posts/px4-ros2-sitl.png
-  alt: "Running px4-ros2-interface-lib Tests Against PX4 SITL"
-categories: ["deep-dive"]
-summary: "A detailed technical account of running px4-ros2-interface-lib integration tests against PX4 SITL — from discovering that the project's CI never runs them, through three different simulator backends, five distinct failure modes, and the surprising DDS payload mismatch that blocked everything. Every dead end documented."
+  alt: Running px4-ros2-interface-lib Tests Against PX4 SITL
+categories:
+- deep-dive
+summary: A detailed technical account of running px4-ros2-interface-lib integration
+  tests against PX4 SITL — from discovering that the project's CI never runs them,
+  through three different simulator backends, five distinct failure modes, and the
+  surprising DDS payload mismatch that blocked everything. Every dead end documented.
 ShowToc: true
+audio:
+  pronunciation:
+    PX4: P X four
+    px4-ros2-interface-lib: P X four ross two interface lib
+    px4_msgs: P X four messages
+    px4_ros2_cpp: P X four ross two C plus plus
+    ROS 2: ross two
+    ROS2: ross two
+    ros2: ross two
+    rclcpp: R C L C plus plus
+    rclpy: R C L pie
+    DDS: D D S
+    Fast-DDS: fast D D S
+    FastDDS: fast D D S
+    uXRCE-DDS: micro X R C E D D S
+    uXRCE-DDS Agent: micro X R C E D D S agent
+    MicroXRCEAgent: micro X R C E agent
+    MicroXRCE-DDS: micro X R C E D D S
+    MAVLink: mav link
+    MAVSDK: mav S D K
+    Gazebo: gazebo
+    Gazebo Harmonic: gazebo harmonic
+    Gazebo Classic: gazebo classic
+    gz_bridge: gazebo bridge
+    gzserver: gazebo server
+    gzclient: gazebo client
+    gz sim: gazebo sim
+    SITL: sittle
+    SIH: S I H
+    PX4_SIM_MODEL: P X four sim model
+    PX4_GZ_MODEL: P X four gazebo model
+    PX4_SYS_AUTOSTART: P X four sys auto start
+    GZ_SIM_RESOURCE_PATH: gazebo sim resource path
+    Xvfb: X V F B
+    EKF: E K F
+    EKF2: E K F two
+    VehicleCommandSender: vehicle command sender
+    ModeExecutorBase: mode executor base
+    sendCommandSync: send command sync
+    waitForFMU: wait for F M U
+    AUTO.MISSION: auto mission
+    AUTO.LOITER: auto loiter
+    AUTO.TAKEOFF: auto takeoff
+    AUTO.RTL: auto R T L
+    RTL: R T L
+    VEHICLE_CMD_INJECT_FAILURE: vehicle command inject failure
+    FAILURE_UNIT_SENSOR_GPS: failure unit sensor G P S
+    VEHICLE_CMD_COMPONENT_ARM_DISARM: vehicle command component arm disarm
+    PX4_PARAM_EKF2_AGP_CTRL: P X four param E K F two A G P control
+    EKF2_AGP_CTRL: E K F two A G P control
+    NAV_DLL_ACT: nav D L L act
+    NAV_RCL_ACT: nav R C L act
+    COM_RCL_EXCEPT: com R C L except
+    rclcpp::shutdown: R C L C plus plus shutdown
+    rclcpp::init: R C L C plus plus init
+    TestTesterInterfaceRos: tester interface ross
+    fiber-nav-sim: fiber nav sim
+    x500: X five hundred
+    iris: iris
+    quadtailsitter: quad tail sitter
+    Auterion: Auterion
+    RTPS_READER_HISTORY: R T P S reader history
+    ros2 topic hz: ross two topic hertz
+    ros2 topic list: ross two topic list
+    ros2 topic echo: ross two topic echo
+    ROCX: ROCX
 ---
 
 ## The Goal

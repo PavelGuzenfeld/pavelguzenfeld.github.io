@@ -1,14 +1,36 @@
 ---
-title: "Why You Should Use stableNorm() Instead of norm(): A Lesson from Eigen Code Review"
+title: 'Why You Should Use stableNorm() Instead of norm(): A Lesson from Eigen Code
+  Review'
 date: 2026-03-27
 draft: false
-tags: ["C++", "Eigen", "linear-algebra", "numerical-stability", "open-source"]
-categories: ["deep-dive"]
+tags:
+- C++
+- Eigen
+- linear-algebra
+- numerical-stability
+- open-source
+categories:
+- deep-dive
 cover:
   image: /images/posts/eigen-stablenorm.png
-  alt: "Why You Should Use stableNorm() Instead of norm()"
-summary: "A one-word review comment on my Eigen MR revealed that hand-rolling normalization with .norm() silently breaks on extreme inputs. Eigen already had the fix — I just wasn't using it."
+  alt: Why You Should Use stableNorm() Instead of norm()
+summary: A one-word review comment on my Eigen MR revealed that hand-rolling normalization
+  with .norm() silently breaks on extreme inputs. Eigen already had the fix — I just
+  wasn't using it.
 ShowToc: true
+audio:
+  pronunciation:
+    Eigen: Eye gen
+    stableNorm: stable norm
+    stableNorm(): stable norm
+    squaredNorm: squared norm
+    Gram-Schmidt: Gram Schmidt
+    MGS: M G S
+    std::hypot: S T D hypot
+    std::log1p: S T D log one P
+    log(1 + x): log of one plus X
+    ULP: U L P
+    GitLab: git lab
 ---
 
 ## The Review Comment

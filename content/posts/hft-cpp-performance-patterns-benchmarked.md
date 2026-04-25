@@ -1,15 +1,96 @@
 ---
-title: "C++ Low-Latency Patterns, Benchmarked: 15 Tricks from HFT and CppCon 2025 (and Which Claims Don't Reproduce)"
+title: 'C++ Low-Latency Patterns, Benchmarked: 15 Tricks from HFT and CppCon 2025
+  (and Which Claims Don''t Reproduce)'
 date: 2026-04-23
 draft: false
-tags: ["C++", "optimization", "performance", "benchmarking", "profiling", "compilers", "concurrency"]
-keywords: ["C++ HFT performance patterns", "low latency C++ benchmark", "nanobench Godbolt", "cache friendly C++", "LMAX disruptor C++", "CRTP virtual dispatch benchmark", "false sharing hardware_destructive_interference_size", "constexpr vs runtime factorial", "AoS vs SoA benchmark", "string_view const reference benchmark", "emplace_back reserve nanobench"]
+tags:
+- C++
+- optimization
+- performance
+- benchmarking
+- profiling
+- compilers
+- concurrency
+keywords:
+- C++ HFT performance patterns
+- low latency C++ benchmark
+- nanobench Godbolt
+- cache friendly C++
+- LMAX disruptor C++
+- CRTP virtual dispatch benchmark
+- false sharing hardware_destructive_interference_size
+- constexpr vs runtime factorial
+- AoS vs SoA benchmark
+- string_view const reference benchmark
+- emplace_back reserve nanobench
 cover:
   image: /images/posts/hft-cpp-performance-patterns.png
-  alt: "C++ low-latency patterns benchmarked — HFT, cache-friendly layouts, and the tricks that don't reproduce"
-categories: ["deep-dive"]
-summary: "Fifteen C++ performance patterns from three sources — Bilokon & Gunduz's HFT paper at Imperial, Jonathan Müller's Cache-Friendly C++ deck at CppCon 2025, and Okade & Baker's C++ Performance Tips at CppCon 2025 — implemented as single-file nanobench programs, run under Docker on GCC 14 with -O2 -std=c++23, every one of them linked to a working Godbolt session. The surprising half: three of the 'textbook' speedups do not reproduce on a modern CPU. Cache warming is 7x slower than cold. Bitmask branch reduction is slower than the cascade it replaces. This post is the full runbook, numbers included, with the nuance that explains when each pattern actually earns its keep."
+  alt: C++ low-latency patterns benchmarked — HFT, cache-friendly layouts, and the
+    tricks that don't reproduce
+categories:
+- deep-dive
+summary: 'Fifteen C++ performance patterns from three sources — Bilokon & Gunduz''s
+  HFT paper at Imperial, Jonathan Müller''s Cache-Friendly C++ deck at CppCon 2025,
+  and Okade & Baker''s C++ Performance Tips at CppCon 2025 — implemented as single-file
+  nanobench programs, run under Docker on GCC 14 with -O2 -std=c++23, every one of
+  them linked to a working Godbolt session. The surprising half: three of the ''textbook''
+  speedups do not reproduce on a modern CPU. Cache warming is 7x slower than cold.
+  Bitmask branch reduction is slower than the cascade it replaces. This post is the
+  full runbook, numbers included, with the nuance that explains when each pattern
+  actually earns its keep.'
 ShowToc: true
+audio:
+  pronunciation:
+    nanobench: nano bench
+    Godbolt: god bolt
+    godbolt.org: god bolt dot org
+    libstdc++: lib S T D C plus plus
+    doNotOptimizeAway: do not optimize away
+    fetch_add: fetch add
+    memory_order_relaxed: memory order relaxed
+    lock_guard: lock guard
+    emplace_back: em place back
+    push_back: push back
+    string_view: string view
+    std::popcount: S T D pop count
+    std::byteswap: S T D byte swap
+    std::countl_zero: S T D count L zero
+    std::unreachable: S T D unreachable
+    std::hardware_destructive_interference_size: S T D hardware destructive interference
+      size
+    std::less<>: S T D less
+    std::atomic: S T D atomic
+    std::atomic_ref: S T D atomic ref
+    std::string_view: S T D string view
+    std::vector: S T D vector
+    std::set: S T D set
+    std::mutex: S T D mutex
+    std::map: S T D map
+    std::pair: S T D pair
+    std::source_location: S T D source location
+    std::is_same_v: S T D is same V
+    std::abort: S T D abort
+    std::bitset: S T D bit set
+    std::print: S T D print
+    std::println: S T D print line
+    Bilokon: Billa kon
+    Gunduz: Goon dooz
+    Müller: Mueller
+    Okade: Oh kah day
+    CppCon: C plus plus con
+    Imperial College: Imperial College
+    Rasovsky: Rasovsky
+    LMAX: L MAX
+    i-cache: I cache
+    i-cache,: I cache,
+    L1i: L one I
+    x86-64-v3: x eighty six dash sixty four dash V three
+    x86-64-v4: x eighty six dash sixty four dash V four
+    x86-64-v2: x eighty six dash sixty four dash V two
+    x86-64: x eighty six dash sixty four
+    cartesian_product: cartesian product
+    operator<: operator less than
+    operator<=>: operator spaceship
 ---
 
 I spent a week going through three C++ performance sources — Paul Bilokon and Burak Gunduz's 2023 paper "[C++ Design Patterns for Low-Latency Applications Including High-Frequency Trading](https://arxiv.org/abs/2309.04259)" (Imperial College, with the companion [0burak/imperial_hft](https://github.com/0burak/imperial_hft) repo), Jonathan Müller's "Cache-Friendly C++" deck from CppCon 2025, and Prithvi Okade and Kathleen Baker's "C++ Performance Tips: Cutting Down on Unnecessary Objects" also from CppCon 2025. Together they cover the full low-latency stack: compile-time dispatch, cache layout, allocation avoidance, concurrency primitives, the LMAX Disruptor. Every one of them cites benchmark numbers. None of them publish a runnable harness.

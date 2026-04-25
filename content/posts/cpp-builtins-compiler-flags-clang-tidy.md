@@ -1,15 +1,144 @@
 ---
-title: "C++ Low-Latency, Enforced: __builtin_*, Compiler Flags, and clang-tidy, Benchmarked"
+title: 'C++ Low-Latency, Enforced: __builtin_*, Compiler Flags, and clang-tidy, Benchmarked'
 date: 2026-04-23
 draft: false
-tags: ["C++", "optimization", "performance", "benchmarking", "profiling", "compilers", "GCC"]
-keywords: ["__builtin_popcount benchmark", "likely unlikely C++20", "__builtin_unreachable switch", "__builtin_bswap64", "march native benchmark", "ffast-math danger", "clang-tidy performance checks", "performance-for-range-copy", "clang-tidy CMake integration"]
+tags:
+- C++
+- optimization
+- performance
+- benchmarking
+- profiling
+- compilers
+- GCC
+keywords:
+- __builtin_popcount benchmark
+- likely unlikely C++20
+- __builtin_unreachable switch
+- __builtin_bswap64
+- march native benchmark
+- ffast-math danger
+- clang-tidy performance checks
+- performance-for-range-copy
+- clang-tidy CMake integration
 cover:
   image: /images/posts/cpp-builtins-clang-tidy.png
-  alt: "C++ tools that enforce low-latency patterns — builtins, compiler flags, clang-tidy checks"
-categories: ["deep-dive"]
-summary: "Follow-up to the 15-pattern HFT post. The first post asked 'which patterns work?' This post answers 'how do you force your team to keep using them?' Seven new nanobench programs, each with a working Godbolt link, covering __builtin_popcountll (24x faster than a bit-count loop), __builtin_unreachable in switch defaults (1.55x), __builtin_bswap64 (same speed as the portable idiom — GCC already folds it), [[likely]] and [[unlikely]] (no measurable effect on tight loops — an honest null result), and a flags matrix showing -ffast-math + -march=x86-64-v3 giving 6.9x over -O2. Then a .clang-tidy config that fails CI on every common perf regression, with the performance-for-range-copy warning demonstrated at 41x real runtime cost."
+  alt: C++ tools that enforce low-latency patterns — builtins, compiler flags, clang-tidy
+    checks
+categories:
+- deep-dive
+summary: Follow-up to the 15-pattern HFT post. The first post asked 'which patterns
+  work?' This post answers 'how do you force your team to keep using them?' Seven
+  new nanobench programs, each with a working Godbolt link, covering __builtin_popcountll
+  (24x faster than a bit-count loop), __builtin_unreachable in switch defaults (1.55x),
+  __builtin_bswap64 (same speed as the portable idiom — GCC already folds it), [[likely]]
+  and [[unlikely]] (no measurable effect on tight loops — an honest null result),
+  and a flags matrix showing -ffast-math + -march=x86-64-v3 giving 6.9x over -O2.
+  Then a .clang-tidy config that fails CI on every common perf regression, with the
+  performance-for-range-copy warning demonstrated at 41x real runtime cost.
 ShowToc: true
+audio:
+  pronunciation:
+    clang-tidy: clang tidy
+    .clang-tidy: dot clang tidy
+    nanobench: nano bench
+    Godbolt: god bolt
+    godbolt.org: god bolt dot org
+    popcntq: pop count Q
+    popcnt: pop count
+    lzcnt: L Z count
+    tzcnt: T Z count
+    bsf: B S F
+    bswap: byte swap
+    __builtin_popcountll: built in pop count L L
+    __builtin_popcount: built in pop count
+    __builtin_clzll: built in C L Z L L
+    __builtin_ctzll: built in C T Z L L
+    __builtin_ffsll: built in F F S L L
+    __builtin_bswap64: built in byte swap sixty four
+    __builtin_bswap32: built in byte swap thirty two
+    __builtin_bswap16: built in byte swap sixteen
+    __builtin_unreachable: built in unreachable
+    __builtin_expect: built in expect
+    __builtin_prefetch: built in prefetch
+    __builtin_assume_aligned: built in assume aligned
+    __builtin_constant_p: built in constant P
+    __builtin_trap: built in trap
+    __builtin_assume: built in assume
+    __builtin_FILE: built in file
+    __builtin_LINE: built in line
+    __builtin_FUNCTION: built in function
+    __builtin_types_compatible_p: built in types compatible P
+    std::popcount: S T D pop count
+    std::byteswap: S T D byte swap
+    std::countl_zero: S T D count L zero
+    std::countr_zero: S T D count R zero
+    std::unreachable: S T D unreachable
+    std::assume_aligned: S T D assume aligned
+    std::has_single_bit: S T D has single bit
+    std::bit_floor: S T D bit floor
+    std::is_constant_evaluated: S T D is constant evaluated
+    std::source_location: S T D source location
+    std::is_same_v: S T D is same V
+    std::abort: S T D abort
+    std::bitset::count: S T D bitset count
+    Wpessimizing-move: W pessimizing move
+    Wrange-loop-construct: W range loop construct
+    Wexit-time-destructors: W exit time destructors
+    Wglobal-constructors: W global constructors
+    Wmove: W move
+    Wswitch-enum: W switch enum
+    Wswitch: W switch
+    Wnrvo: W N R V O
+    performance-for-range-copy: performance for range copy
+    performance-unnecessary-value-param: performance unnecessary value param
+    performance-unnecessary-copy-initialization: performance unnecessary copy initialization
+    performance-inefficient-vector-operation: performance inefficient vector operation
+    performance-noexcept-move-constructor: performance no except move constructor
+    performance-move-const-arg: performance move const arg
+    performance-implicit-conversion-in-loop: performance implicit conversion in loop
+    modernize-use-emplace: modernize use em place
+    modernize-pass-by-value: modernize pass by value
+    bugprone-implicit-widening-of-multiplication-result: bug prone implicit widening
+      of multiplication result
+    x86-64-v3: x eighty six dash sixty four dash V three
+    x86-64-v4: x eighty six dash sixty four dash V four
+    x86-64-v2: x eighty six dash sixty four dash V two
+    x86-64: x eighty six dash sixty four
+    Nehalem: Nay hay lem
+    Haswell: Haswell
+    Skylake-X: Skylake X
+    Okade: Oh kah day
+    CppCon: C plus plus con
+    CMakeLists.txt: C make lists dot T X T
+    CXX_CLANG_TIDY: C X X clang tidy
+    CMAKE_CXX_CLANG_TIDY: C make C X X clang tidy
+    CMAKE_EXPORT_COMPILE_COMMANDS: C make export compile commands
+    fno-exceptions: F no exceptions
+    fno-rtti: F no R T T I
+    ffast-math: F fast math
+    fassociative-math: F associative math
+    ffinite-math-only: F finite math only
+    fno-signed-zeros: F no signed zeros
+    Ofast: O fast
+    Werror: W error
+    WarningsAsErrors: warnings as errors
+    HeaderFilterRegex: header filter regex
+    CheckOptions: check options
+    Bilokon: Billa kon
+    Müller: Mueller
+    i-cache: I cache
+    L1i: L one I
+    fmt: F M T
+    '{fmt}': F M T
+    MSVC: M S V C
+    _MSC_VER: underscore M S C V E R
+    _byteswap_uint64: byte swap U int sixty four
+    _forceinline: force inline
+    __forceinline: force inline
+    _declspec: decl spec
+    __declspec: decl spec
+    rep movs: rep movs
+    PGO: P G O
 ---
 
 The [last post](/posts/hft-cpp-performance-patterns-benchmarked/) was about which C++ low-latency patterns actually reproduce on a modern CPU. Fifteen techniques from Bilokon & Gunduz's HFT paper, Jonathan Müller's Cache-Friendly C++ deck, and Okade & Baker's C++ Performance Tips deck, all run through [nanobench](https://github.com/martinus/nanobench) and published as working Godbolt links with measured ns/op numbers. Three of them didn't reproduce. Twelve did.

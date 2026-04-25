@@ -41,8 +41,22 @@ jobs:
           if [[ "${{ github.event.inputs.regenerate_all }}" == "true" ]]; then
             posts=$(ls content/posts/*.md | grep -v '_index.md' || true)
           else
-            posts=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD \
-                    | grep -E '^content/posts/[^/]+\.md$' || true)
+            changed=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD \
+                      | grep -E '^content/posts/[^/]+\.md$' || true)
+            # Skip a post when its matching mp3 was also touched in the same
+            # commit — the author bundled fresh audio with the post change.
+            posts=""
+            while IFS= read -r p; do
+              [[ -z "$p" ]] && continue
+              slug=$(basename "$p" .md)
+              if git diff --name-only --diff-filter=AM HEAD~1 HEAD \
+                  | grep -qx "static/audio/${slug}.mp3"; then
+                echo "skip $slug — mp3 committed alongside the .md"
+              else
+                posts+="$p"$'\n'
+              fi
+            done <<< "$changed"
+            posts=$(echo "$posts" | sed '/^$/d')
           fi
           if [[ -z "$posts" ]]; then
             echo "No posts to process."

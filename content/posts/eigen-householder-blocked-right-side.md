@@ -1,15 +1,47 @@
 ---
-title: "Upgrading Eigen's Householder Right-Side Application from BLAS-2 to BLAS-3"
+title: Upgrading Eigen's Householder Right-Side Application from BLAS-2 to BLAS-3
 date: 2026-03-23
 draft: false
-tags: ["C++", "Eigen", "linear-algebra", "performance", "open-source"]
-keywords: ["Eigen Householder blocked application", "Householder right side multiply", "Eigen QR performance"]
+tags:
+- C++
+- Eigen
+- linear-algebra
+- performance
+- open-source
+keywords:
+- Eigen Householder blocked application
+- Householder right side multiply
+- Eigen QR performance
 cover:
   image: /images/posts/eigen-householder.png
-  alt: "Upgrading Householder Right-Side: BLAS-2 to BLAS-3"
-categories: ["deep-dive"]
-summary: "Eigen's blocked Householder path only existed for left-side application. I added the right-side equivalent, upgrading M*Q from O(n) rank-1 updates to cache-friendly blocked matrix multiplies."
+  alt: 'Upgrading Householder Right-Side: BLAS-2 to BLAS-3'
+categories:
+- deep-dive
+summary: Eigen's blocked Householder path only existed for left-side application.
+  I added the right-side equivalent, upgrading M*Q from O(n) rank-1 updates to cache-friendly
+  blocked matrix multiplies.
 ShowToc: true
+audio:
+  pronunciation:
+    Eigen: Eye gen
+    Householder: house holder
+    HouseholderQR: Householder Q R
+    HouseholderSequence: Householder sequence
+    BLAS-2: blass two
+    BLAS-3: blass three
+    BLAS-2.: blass two.
+    BLAS-3.: blass three.
+    applyThisOnTheLeft: apply this on the left
+    applyThisOnTheRight: apply this on the right
+    applyHouseholderOnTheRight: apply Householder on the right
+    apply_block_householder_on_the_right: apply block Householder on the right
+    apply_block_householder_on_the_left: apply block Householder on the left
+    make_block_householder_triangular_factor: make block Householder triangular factor
+    BlockHouseholder.h: block Householder dot H
+    TriangularView: triangular view
+    BlockSize: block size
+    Schur: Shoor
+    GitLab: git lab
 ---
 
 ## The Asymmetry

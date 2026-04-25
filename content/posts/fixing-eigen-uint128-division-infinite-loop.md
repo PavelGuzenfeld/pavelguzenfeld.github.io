@@ -1,15 +1,39 @@
 ---
-title: "Fixing an Infinite Loop in Eigen's 128-bit Integer Division"
+title: Fixing an Infinite Loop in Eigen's 128-bit Integer Division
 date: 2026-03-20
 draft: false
-tags: ["C++", "Eigen", "debugging", "open-source", "integer-arithmetic"]
-keywords: ["Eigen TensorUInt128 infinite loop", "uint128 division overflow bug", "Eigen tensor division fix"]
+tags:
+- C++
+- Eigen
+- debugging
+- open-source
+- integer-arithmetic
+keywords:
+- Eigen TensorUInt128 infinite loop
+- uint128 division overflow bug
+- Eigen tensor division fix
 cover:
   image: /images/posts/eigen-uint128.png
-  alt: "Fixing an Infinite Loop in Eigen's 128-bit Division"
-categories: ["deep-dive"]
-summary: "How a missing overflow check in Eigen's TensorUInt128 division operator caused an infinite loop for any dividend above 2^127 — and the one-line fix that stopped it."
+  alt: Fixing an Infinite Loop in Eigen's 128-bit Division
+categories:
+- deep-dive
+summary: How a missing overflow check in Eigen's TensorUInt128 division operator caused
+  an infinite loop for any dividend above 2^127 — and the one-line fix that stopped
+  it.
 ShowToc: true
+audio:
+  pronunciation:
+    Eigen: Eye gen
+    TensorUInt128: tensor U int one twenty eight
+    uint128_t: U int one twenty eight
+    UINT128_MAX: U int one twenty eight max
+    uint64_t: U int sixty four
+    UINT64_MAX: U int sixty four max
+    __int128: underscore underscore int one twenty eight
+    2^127: two to the one twenty seventh
+    2^63: two to the sixty third
+    1ULL: one U L L
+    GitLab: git lab
 ---
 
 ## The Problem

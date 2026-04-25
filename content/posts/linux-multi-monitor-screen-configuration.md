@@ -1,15 +1,79 @@
 ---
-title: "Linux Multi-Monitor Setup — A Practical Guide to xrandr, Lid Close, and Persistent Configuration"
+title: Linux Multi-Monitor Setup — A Practical Guide to xrandr, Lid Close, and Persistent
+  Configuration
 date: 2026-03-23
 draft: false
-tags: ["Linux", "xrandr", "multi-monitor", "systemd", "X11", "Wayland", "DevOps"]
-keywords: ["Linux multi monitor xrandr", "disable laptop screen Linux", "xrandr persistent configuration"]
+tags:
+- Linux
+- xrandr
+- multi-monitor
+- systemd
+- X11
+- Wayland
+- DevOps
+keywords:
+- Linux multi monitor xrandr
+- disable laptop screen Linux
+- xrandr persistent configuration
 cover:
   image: /images/posts/linux-multimonitor.png
-  alt: "Linux Multi-Monitor Setup with xrandr"
-categories: ["deep-dive"]
-summary: "A hands-on walkthrough of configuring multiple monitors on Linux — from identifying displays with xrandr, turning off the laptop screen, ignoring lid close, to making it all survive a reboot. Every command explained."
+  alt: Linux Multi-Monitor Setup with xrandr
+categories:
+- deep-dive
+summary: A hands-on walkthrough of configuring multiple monitors on Linux — from identifying
+  displays with xrandr, turning off the laptop screen, ignoring lid close, to making
+  it all survive a reboot. Every command explained.
 ShowToc: true
+audio:
+  pronunciation:
+    xrandr: X rand R
+    arandr: A rand R
+    Xorg: X org
+    Wayland: way land
+    wlr-randr: W L R rand R
+    gnome-randr: gnome rand R
+    swaymsg: sway message
+    kscreen-doctor: K screen doctor
+    Sway: sway
+    Hyprland: Hypr land
+    wlroots: W L roots
+    logind: log in D
+    systemd-logind: system D log in D
+    systemctl: system C T L
+    systemd: system D
+    GVFS: G V F S
+    gvfs-backends: G V F S backends
+    gsettings: G settings
+    loginctl: log in C T L
+    udev: U dev
+    udevadm: U dev adm
+    eDP: E D P
+    eDP-1: E D P one
+    DVI-I-2-1: D V I I two one
+    DVI-I-3-2: D V I I three two
+    DisplayPort: display port
+    HDMI: H D M I
+    VGA: V G A
+    DVI-I: D V I I
+    LVDS-1: L V D S one
+    DP-0: D P zero
+    monitors.xml: monitors dot X M L
+    logind.conf: log in D dot conf
+    HandleLidSwitch: handle lid switch
+    HandleLidSwitchExternalPower: handle lid switch external power
+    HandleLidSwitchDocked: handle lid switch docked
+    nvidia-settings: N V I D I A settings
+    /etc/X11/xorg.conf.d: etc slash X eleven slash X org dot conf dot D
+    .desktop: dot desktop
+    GTK: G T K
+    gtk-3.0: G T K three dot zero
+    Nautilus: Nautilus
+    Dolphin: Dolphin
+    Thunar: Thunar
+    Nemo: Nemo
+    smb://: S M B colon slash slash
+    file://: file colon slash slash
+    $XDG_SESSION_TYPE: X D G session type
 ---
 
 ## The Situation

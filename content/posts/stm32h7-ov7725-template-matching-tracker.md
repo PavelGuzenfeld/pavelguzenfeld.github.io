@@ -1,15 +1,126 @@
 ---
-title: "Building a Template-Matching Tracker on an STM32H750: What Worked, What Didn't"
+title: 'Building a Template-Matching Tracker on an STM32H750: What Worked, What Didn''t'
 date: 2026-04-21
 draft: false
-tags: ["ARM", "C", "C++", "embedded", "debugging", "hardware-testing", "Docker", "Linux", "performance"]
-keywords: ["STM32H750 camera tracker", "OV7725 DCMI STM32", "USB CDC STM32H7 tutorial", "template matching tracker embedded", "SAD pyramid tracker Cortex-M7"]
+tags:
+- ARM
+- C
+- C++
+- embedded
+- debugging
+- hardware-testing
+- Docker
+- Linux
+- performance
+keywords:
+- STM32H750 camera tracker
+- OV7725 DCMI STM32
+- USB CDC STM32H7 tutorial
+- template matching tracker embedded
+- SAD pyramid tracker Cortex-M7
 cover:
   image: /images/posts/stm32h7-tracker.png
-  alt: "Building a Template-Matching Tracker on an STM32H750"
-categories: ["deep-dive"]
-summary: "A long, honest retrospective on turning a WeAct STM32H750 board, a cheap OV7725 IR camera, and an Xbox controller into a live template-matching tracker. Every dead end, every wrong assumption, every fix — and what I'd do differently next time."
+  alt: Building a Template-Matching Tracker on an STM32H750
+categories:
+- deep-dive
+summary: A long, honest retrospective on turning a WeAct STM32H750 board, a cheap
+  OV7725 IR camera, and an Xbox controller into a live template-matching tracker.
+  Every dead end, every wrong assumption, every fix — and what I'd do differently
+  next time.
 ShowToc: true
+audio:
+  pronunciation:
+    STM32H750: S T M thirty two H seven fifty
+    STM32H7: S T M thirty two H seven
+    STM32H750VBT6: S T M thirty two H seven fifty V B T six
+    STM32: S T M thirty two
+    OV7725: O V seventy seven twenty five
+    OV2640: O V twenty six forty
+    OV5640: O V fifty six forty
+    OV7670: O V seventy six seventy
+    WeAct: we act
+    DCMI: D C M I
+    DMA: D M A
+    DMA1: D M A one
+    DTCM: D T C M
+    AXI SRAM: A X I S RAM
+    AXI: A X I
+    DCMI/DMA/USB: D C M I D M A U S B
+    ST7735: S T seventy seven thirty five
+    SCCB: S C C B
+    I²C: I squared C
+    I2C: I two C
+    USB CDC: U S B C D C
+    CDC: C D C
+    USART1: U sart one
+    USB-UART: U S B U art
+    SysTick: sys tick
+    Cortex-M7: Cortex M seven
+    Cortex: Cortex
+    MCU: M C U
+    QSPI: Q S P I
+    FFC: F F C
+    SAD: S A D
+    α-β: alpha beta
+    α: alpha
+    β: beta
+    TIM1: tim one
+    MCO1: M C O one
+    PB8/PB9: P B eight P B nine
+    PA7: P A seven
+    PA8: P A eight
+    TIMINGR: timing R
+    HAL: hal
+    CMSIS: C M sis
+    FetchContent: fetch content
+    ExternalProject: external project
+    RGB565: R G B five six five
+    RGB: R G B
+    framebuffer: frame buffer
+    EMA: E M A
+    BFS: B F S
+    stlink-tools: S T link tools
+    WeAct MiniSTM32H7xx: we act mini S T M thirty two H seven X X
+    MiniSTM32H7xx: mini S T M thirty two H seven X X
+    Xbox: Xbox
+    pygame: pie game
+    MOSSE: MOSSE
+    KCF: K C F
+    MX_USB_OTG_FS_PCD_Init: M X U S B O T G F S P C D init
+    USB_OTG_HS: U S B O T G H S
+    USB2_OTG_FS: U S B two O T G F S
+    USB1_OTG_HS: U S B one O T G H S
+    USBD: U S B D
+    ULPI: U L P I
+    PHY: fie
+    VID: V I D
+    PID: P I D
+    BB,L=: B B L equals
+    BB: B B
+    TPL_W: template W
+    LCD_W: L C D W
+    COARSE_R: coarse R
+    ODR: O D R
+    MODER: moder
+    GPIO_NOPULL: G P I O no pull
+    GPIO_PULLUP: G P I O pull up
+    PWDN: power down
+    MCLK: M clock
+    XCLK: X clock
+    HSE: H S E
+    HSI48: H S I forty eight
+    PLL1Q: P L L one Q
+    VOS0: V O S zero
+    JEDEC: Jedeck
+    L1i: L one I
+    Camera_Init_Device: camera init device
+    stm32h7xx_it.c: S T M thirty two H seven X X I T dot C
+    stm32h7xx_hal_msp.c: S T M thirty two H seven X X hal M S P dot C
+    stm32h7xx_hal_i2c.c: S T M thirty two H seven X X hal I two C dot C
+    startup_stm32h750xx.s: startup S T M thirty two H seven fifty X X dot S
+    cmsis_device_h7: C M sis device H seven
+    '0x40805E8A': hex four zero eight zero five E eight A
+    '0x7721': hex seven seven two one
 ---
 
 ## Solution architecture

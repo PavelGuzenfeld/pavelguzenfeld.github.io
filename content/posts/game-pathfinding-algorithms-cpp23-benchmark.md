@@ -1,15 +1,79 @@
 ---
-title: "Game Pathfinding Algorithms, Benchmarked: A*, JPS, Theta*, Flow Fields, Visibility Graphs"
+title: 'Game Pathfinding Algorithms, Benchmarked: A*, JPS, Theta*, Flow Fields, Visibility
+  Graphs'
 date: 2026-04-18
 draft: false
-tags: ["C++", "pathfinding", "benchmarking", "performance", "optimization", "simulation", "integer-arithmetic"]
-keywords: ["game pathfinding C++ benchmark", "jump point search vs A*", "Theta star any-angle pathfinding", "flow field pathfinding Supreme Commander", "StarCraft pathfinding algorithm", "visibility graph Age of Empires"]
+tags:
+- C++
+- pathfinding
+- benchmarking
+- performance
+- optimization
+- simulation
+- integer-arithmetic
+keywords:
+- game pathfinding C++ benchmark
+- jump point search vs A*
+- Theta star any-angle pathfinding
+- flow field pathfinding Supreme Commander
+- StarCraft pathfinding algorithm
+- visibility graph Age of Empires
 cover:
   image: /images/posts/pathfinding-games.png
-  alt: "Pathfinding algorithms for games — A*, JPS, Theta*, flow fields, visibility graphs"
-categories: ["deep-dive"]
-summary: "Five pathfinders implemented in C++23, each in a single Godbolt-ready file, benchmarked on the same grids. A* is the baseline. JPS expands 22x fewer nodes on open maps yet runs slower than A* in naive form. Theta* produces shorter any-angle paths at 2-8x the cost. Flow fields dominate when many agents share a goal. Visibility graphs — AoE II DE's approach — need 5 waypoints where A* needs 600. Plus the StarCraft 'harvesters ignore collisions' hack and why SC2 switched to navmeshes."
+  alt: Pathfinding algorithms for games — A*, JPS, Theta*, flow fields, visibility
+    graphs
+categories:
+- deep-dive
+summary: Five pathfinders implemented in C++23, each in a single Godbolt-ready file,
+  benchmarked on the same grids. A* is the baseline. JPS expands 22x fewer nodes on
+  open maps yet runs slower than A* in naive form. Theta* produces shorter any-angle
+  paths at 2-8x the cost. Flow fields dominate when many agents share a goal. Visibility
+  graphs — AoE II DE's approach — need 5 waypoints where A* needs 600. Plus the StarCraft
+  'harvesters ignore collisions' hack and why SC2 switched to navmeshes.
 ShowToc: true
+audio:
+  pronunciation:
+    A*: A star
+    JPS: J P S
+    JPS+: J P S plus
+    Theta*: theta star
+    Theta*'s: theta star's
+    HPA*: H P A star
+    Dijkstra: Dijkstra
+    Bresenham: Bress en ham
+    navmesh: nav mesh
+    navmeshes: nav meshes
+    Recast: re cast
+    Detour: detour
+    Voronoi: Vor o noy
+    Klingers: Klingers
+    AAAI: triple A I
+    AoE: age of empires
+    AoE II DE: age of empires two D E
+    BWAPI: B W A P I
+    BWTA: B W T A
+    OpenBW: open B W
+    BW: B W
+    SC2: star craft two
+    Godbolt: god bolt
+    godbolt.org: god bolt dot org
+    C++23: C plus plus twenty three
+    C++17: C plus plus seventeen
+    Mononen: Mononen
+    Mikko: Mikko
+    GDC: G D C
+    ICAPS: I caps
+    GPPC: G P P C
+    navmesh.: nav mesh.
+    Sturtevant: Sturtevant
+    Harabor: Harabor
+    Grastien: Gras tee an
+    orient2d: orient two D
+    AABBs: A A B Bs
+    AABB: A A B B
+    Boids: boyds
+    octile: octile
+    Wyatt: Wyatt
 ---
 
 I watched Raymi Klingers' Meeting C++ 2025 talk [Age of Empires: 25+ years of pathfinding problems with C++](https://www.youtube.com/@MeetingCPP) last week and came away with two thoughts. First: pathfinding is a 40-year-old problem that still ships with fresh bugs in modern game engines. Second: nobody writes a single post that lines up the actual algorithms — A*, JPS, Theta*, flow fields, visibility graphs — with code you can paste into Godbolt and benchmarks that let you reason about tradeoffs.

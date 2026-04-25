@@ -1,15 +1,63 @@
 ---
-title: "Debugging Doxygen: How .inc Files Silently Break C++ Documentation"
+title: 'Debugging Doxygen: How .inc Files Silently Break C++ Documentation'
 date: 2026-03-21
 draft: false
-tags: ["C++", "Eigen", "Doxygen", "debugging", "documentation", "open-source", "Docker"]
-keywords: ["Doxygen inc file extension", "Eigen Doxygen configuration", "EXTENSION_MAPPING Doxygen"]
+tags:
+- C++
+- Eigen
+- Doxygen
+- debugging
+- documentation
+- open-source
+- Docker
+keywords:
+- Doxygen inc file extension
+- Eigen Doxygen configuration
+- EXTENSION_MAPPING Doxygen
 cover:
   image: /images/posts/doxygen-eigen.png
-  alt: "Debugging Doxygen: How .inc Files Break C++ Docs"
-categories: ["deep-dive"]
-summary: "Eigen's .inc plugin headers were read by Doxygen but never preprocessed as C++ — meaning macros like EIGEN_PARSED_BY_DOXYGEN were silently ignored. Here's how I verified it in Docker and what the one-line fix looks like."
+  alt: 'Debugging Doxygen: How .inc Files Break C++ Docs'
+categories:
+- deep-dive
+summary: Eigen's .inc plugin headers were read by Doxygen but never preprocessed as
+  C++ — meaning macros like EIGEN_PARSED_BY_DOXYGEN were silently ignored. Here's
+  how I verified it in Docker and what the one-line fix looks like.
 ShowToc: true
+audio:
+  pronunciation:
+    Doxygen: doxy gen
+    doxygen: doxy gen
+    Doxyfile: doxy file
+    Doxyfile.in: doxy file dot in
+    Eigen: Eye gen
+    DenseBase: dense base
+    MatrixBase: matrix base
+    ArrayBase: array base
+    BlockMethods.inc: block methods dot inc
+    CommonCwiseUnaryOps.inc: common C wise unary ops dot inc
+    CommonCwiseBinaryOps.inc: common C wise binary ops dot inc
+    ArrayCwiseBinaryOps.inc: array C wise binary ops dot inc
+    ArrayCwiseUnaryOps.inc: array C wise unary ops dot inc
+    MatrixCwiseBinaryOps.inc: matrix C wise binary ops dot inc
+    MatrixCwiseUnaryOps.inc: matrix C wise unary ops dot inc
+    IndexedViewMethods.inc: indexed view methods dot inc
+    ReshapedMethods.inc: reshaped methods dot inc
+    InternalHeaderCheck.inc: internal header check dot inc
+    TrsmUnrolls.inc: T R S M unrolls dot inc
+    .inc: dot inc
+    EXTENSION_MAPPING: extension mapping
+    FILE_PATTERNS: file patterns
+    PREDEFINED: predefined
+    MACRO_EXPANSION: macro expansion
+    EIGEN_PARSED_BY_DOXYGEN: Eigen parsed by doxygen
+    EIGEN_DEVICE_FUNC: Eigen device func
+    EIGEN_STRONG_INLINE: Eigen strong inline
+    GitLab: git lab
+    tuxfamily.org: tux family dot org
+    GpuHipCudaDefines.inc: G P U hip CUDA defines dot inc
+    MatrixVectorProduct.inc: matrix vector product dot inc
+    naryExpr: N ary expression
+    '*naryExpr': star N ary expression
 ---
 
 ## The Symptom

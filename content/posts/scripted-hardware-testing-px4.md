@@ -1,15 +1,74 @@
 ---
-title: "Scripted Hardware Testing for PX4 — MAVLink Shell, Docker, and pymavlink"
+title: Scripted Hardware Testing for PX4 — MAVLink Shell, Docker, and pymavlink
 date: 2026-04-07
 draft: false
-tags: ["PX4", "MAVLink", "Docker", "Python", "hardware-testing", "pymavlink", "embedded", "CI-CD"]
-keywords: ["PX4 hardware testing", "MAVLink shell scripting", "pymavlink serial control", "PX4 firmware verification", "CubeOrange testing", "Docker embedded testing"]
+tags:
+- PX4
+- MAVLink
+- Docker
+- Python
+- hardware-testing
+- pymavlink
+- embedded
+- CI-CD
+keywords:
+- PX4 hardware testing
+- MAVLink shell scripting
+- pymavlink serial control
+- PX4 firmware verification
+- CubeOrange testing
+- Docker embedded testing
 cover:
   image: /images/posts/px4-hardware-testing.png
-  alt: "Scripted Hardware Testing for PX4"
-categories: ["deep-dive"]
-summary: "How to script PX4 hardware verification using pymavlink's SERIAL_CONTROL protocol over a USB connection — download CI firmware, flash from the command line, and run NSH commands programmatically. No QGroundControl required."
+  alt: Scripted Hardware Testing for PX4
+categories:
+- deep-dive
+summary: How to script PX4 hardware verification using pymavlink's SERIAL_CONTROL
+  protocol over a USB connection — download CI firmware, flash from the command line,
+  and run NSH commands programmatically. No QGroundControl required.
 ShowToc: true
+audio:
+  pronunciation:
+    PX4: P X four
+    PX4-Autopilot: P X four autopilot
+    px4_uploader.py: P X four uploader dot pie
+    px_uploader.py: P X uploader dot pie
+    px_uploader: P X uploader
+    px4_uploader: P X four uploader
+    px_mkfw.py: P X make F W dot pie
+    MAVLink: mav link
+    pymavlink: pie mav link
+    pyserial: pie serial
+    SERIAL_CONTROL: serial control
+    SERIAL_CONTROL_DEV_SHELL: serial control dev shell
+    SERIAL_CONTROL_FLAG_RESPOND: serial control flag respond
+    SERIAL_CONTROL_FLAG_EXCLUSIVE: serial control flag exclusive
+    NSH: N S H
+    STM32H7: S T M thirty two H seven
+    STM32H743/753: S T M thirty two H seven forty three slash seven fifty three
+    Cube Orange: Cube Orange
+    CubeOrange: Cube Orange
+    Pixhawk: pix hawk
+    Kconfig: K config
+    QGroundControl: Q ground control
+    QGC: Q G C
+    DFU: D F U
+    /dev/ttyACM0: dev slash T T Y A C M zero
+    ttyACM0: T T Y A C M zero
+    SITL: sittle
+    io_timer: I O timer
+    timer_io_channels: timer I O channels
+    timer_channel: timer channel
+    pwm_out: P W M out
+    actuator_outputs: actuator outputs
+    mkkconfig.sh: make K config dot S H
+    FETCH_HEAD: fetch head
+    px4io/px4-dev: P X four I O slash P X four dev
+    GitHub Actions: git hub actions
+    CCR: C C R
+    DMA: D M A
+    gh api: G H A P I
+    gh auth login: G H auth login
 ---
 
 ## The Problem

@@ -1,15 +1,54 @@
 ---
-title: "Fixing a GStreamer Bug: Why shmsink Always Exits with Code 1"
+title: 'Fixing a GStreamer Bug: Why shmsink Always Exits with Code 1'
 date: 2026-03-24
 draft: false
-tags: ["GStreamer", "debugging", "shared-memory", "C", "open-source", "contributing"]
-keywords: ["GStreamer shmsink exit code 1", "GStreamer shared memory pipeline error", "shmsink race condition fix"]
+tags:
+- GStreamer
+- debugging
+- shared-memory
+- C
+- open-source
+- contributing
+keywords:
+- GStreamer shmsink exit code 1
+- GStreamer shared memory pipeline error
+- shmsink race condition fix
 cover:
   image: /images/posts/gst-shmsink-exit.png
-  alt: "Why GStreamer shmsink Always Exits with Code 1"
-categories: ["deep-dive"]
-summary: "A 2-line fix for a race condition in GStreamer's shmsink that causes every pipeline using shared memory to exit with an error. How I found it, proved it, and verified the fix with sanitizers."
+  alt: Why GStreamer shmsink Always Exits with Code 1
+categories:
+- deep-dive
+summary: A 2-line fix for a race condition in GStreamer's shmsink that causes every
+  pipeline using shared memory to exit with an error. How I found it, proved it, and
+  verified the fix with sanitizers.
 ShowToc: true
+audio:
+  pronunciation:
+    GStreamer: G streamer
+    shmsink: S H M sink
+    shmsrc: S H M source
+    gst-launch-1.0: G S T launch one dot zero
+    gst_poll_wait: G S T poll wait
+    gst_poll_set_flushing: G S T poll set flushing
+    gst_shm_sink_stop: G S T S H M sink stop
+    GstPipeline: G S T pipeline
+    GstShmSink: G S T S H M sink
+    gstshmsink.c: G S T S H M sink dot C
+    gstpoll.c: G S T poll dot C
+    GST_ELEMENT_ERROR: G S T element error
+    EBUSY: E busy
+    EINTR: E in t r
+    EPERM: E perm
+    EIO: E I O
+    AddressSanitizer: address sanitizer
+    ThreadSanitizer: thread sanitizer
+    TSAN: T san
+    ASAN: A san
+    videotestsrc: video test source
+    freedesktop.org: free desktop dot org
+    errno: err no
+    EOS: E O S
+    GitLab: git lab
 ---
 
 ## The Bug

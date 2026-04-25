@@ -1,15 +1,48 @@
 ---
-title: "Fixing GCC False-Positive Warnings in Eigen: A Deep Dive into -Warray-bounds at -O3"
+title: 'Fixing GCC False-Positive Warnings in Eigen: A Deep Dive into -Warray-bounds
+  at -O3'
 date: 2026-03-18
 draft: false
-tags: ["C++", "Eigen", "GCC", "compilers", "open-source"]
-keywords: ["GCC Warray-bounds false positive", "Eigen GCC 13 warning", "suppress compiler warning Eigen"]
+tags:
+- C++
+- Eigen
+- GCC
+- compilers
+- open-source
+keywords:
+- GCC Warray-bounds false positive
+- Eigen GCC 13 warning
+- suppress compiler warning Eigen
 cover:
   image: /images/posts/gcc-eigen.png
-  alt: "Fixing GCC False-Positive Warnings in Eigen"
-categories: ["deep-dive"]
-summary: "How a GCC 13 false-positive -Warray-bounds warning in Eigen's TensorContraction led to a lesson about if constexpr, C++14 portability, and the right way to suppress compiler warnings in a large codebase."
+  alt: Fixing GCC False-Positive Warnings in Eigen
+categories:
+- deep-dive
+summary: How a GCC 13 false-positive -Warray-bounds warning in Eigen's TensorContraction
+  led to a lesson about if constexpr, C++14 portability, and the right way to suppress
+  compiler warnings in a large codebase.
 ShowToc: true
+audio:
+  pronunciation:
+    Eigen: Eye gen
+    TensorContraction: tensor contraction
+    TensorContraction.h: tensor contraction dot H
+    DSizes: D sizes
+    left_nocontract_t: left no contract T
+    nocontract_idx: no contract index
+    m_i_strides: M I strides
+    m_j_strides: M J strides
+    m_k_strides: M K strides
+    m_i_size: M I size
+    EIGEN_IF_CONSTEXPR: Eigen if const expr
+    if constexpr: if const expr
+    EIGEN_DIAGNOSTICS: Eigen diagnostics
+    EIGEN_DIAGNOSTICS_OFF: Eigen diagnostics off
+    Warray-bounds: W array bounds
+    -Warray-bounds: dash W array bounds
+    -Wpessimizing-move: dash W pessimizing move
+    Wpessimizing-move: W pessimizing move
+    GitLab: git lab
 ---
 
 ## The Warning

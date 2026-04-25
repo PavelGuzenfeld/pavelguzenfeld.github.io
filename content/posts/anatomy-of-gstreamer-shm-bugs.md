@@ -1,15 +1,52 @@
 ---
-title: "Anatomy of Four GStreamer Shared Memory Bugs"
+title: Anatomy of Four GStreamer Shared Memory Bugs
 date: 2026-03-24
 draft: false
-tags: ["GStreamer", "debugging", "shared-memory", "C", "concurrency", "open-source"]
-keywords: ["GStreamer shmsink bug", "GStreamer shared memory race condition", "shmsrc use after free"]
+tags:
+- GStreamer
+- debugging
+- shared-memory
+- C
+- concurrency
+- open-source
+keywords:
+- GStreamer shmsink bug
+- GStreamer shared memory race condition
+- shmsrc use after free
 cover:
   image: /images/posts/gst-shm-bugs.png
-  alt: "Anatomy of Four GStreamer Shared Memory Bugs"
-categories: ["deep-dive"]
-summary: "Four bugs in GStreamer's shmsink/shmsrc elements — a race condition, a use-after-free, a wrong-pointer dereference, and a page alignment mismatch. What they have in common, how to find them, and what they teach about writing correct GStreamer elements."
+  alt: Anatomy of Four GStreamer Shared Memory Bugs
+categories:
+- deep-dive
+summary: Four bugs in GStreamer's shmsink/shmsrc elements — a race condition, a use-after-free,
+  a wrong-pointer dereference, and a page alignment mismatch. What they have in common,
+  how to find them, and what they teach about writing correct GStreamer elements.
 ShowToc: true
+audio:
+  pronunciation:
+    GStreamer: G streamer
+    shmsink: S H M sink
+    shmsrc: S H M source
+    GstShmAllocator: G S T S H M allocator
+    gst_poll_wait: G S T poll wait
+    gst_poll_set_flushing: G S T poll set flushing
+    GST_ELEMENT_ERROR: G S T element error
+    GST_CLOCK_TIME_NONE: G S T clock time none
+    GST_SECOND: G S T second
+    EBUSY: E busy
+    EINTR: E in t r
+    shmpipe.c: S H M pipe dot C
+    gstshmsink.c: G S T S H M sink dot C
+    memfd_create: mem F D create
+    ftruncate: F truncate
+    mmap: M map
+    AddressSanitizer: address sanitizer
+    ThreadSanitizer: thread sanitizer
+    videotestsrc: video test source
+    GitLab: git lab
+    freedesktop.org: free desktop dot org
+    gst-nvmm-cpp: G S T N V M M C plus plus
+    Jetson: Jetson
 ---
 
 ## Introduction

@@ -1,15 +1,139 @@
 ---
-title: "Running PX4 SIH on Real Hardware: Custom Firmware for In-the-Loop Flight Simulation"
+title: 'Running PX4 SIH on Real Hardware: Custom Firmware for In-the-Loop Flight Simulation'
 date: 2026-04-14
 draft: false
-tags: ["Unity", "Docker", "PX4", "SITL", "SIH", "MAVLink", "simulation", "headless", "integration-testing", "open-source"]
-keywords: ["PX4 SIH custom firmware", "PX4 hardware in the loop", "mavlink-router PX4 serial", "PX4 SIH tailsitter Cube Orange", "PX4 simulator_sih Kconfig", "flash PX4 board_id mismatch", "pymavlink SIH flight test"]
+tags:
+- Unity
+- Docker
+- PX4
+- SITL
+- SIH
+- MAVLink
+- simulation
+- headless
+- integration-testing
+- open-source
+keywords:
+- PX4 SIH custom firmware
+- PX4 hardware in the loop
+- mavlink-router PX4 serial
+- PX4 SIH tailsitter Cube Orange
+- PX4 simulator_sih Kconfig
+- flash PX4 board_id mismatch
+- pymavlink SIH flight test
 cover:
   image: /images/posts/px4-sih-hardware.png
-  alt: "PX4 SIH running on real flight controller hardware with Unity visualization"
-categories: ["deep-dive"]
-summary: "Getting PX4's Simulation-In-Hardware (SIH) module running on a production flight controller — discovering the firmware doesn't include SIH, building a custom PX4 with flash-trimming, fan-out routing serial MAVLink to both the simulator and ground station, and connecting it all to the Unity visualization pipeline."
+  alt: PX4 SIH running on real flight controller hardware with Unity visualization
+categories:
+- deep-dive
+summary: Getting PX4's Simulation-In-Hardware (SIH) module running on a production
+  flight controller — discovering the firmware doesn't include SIH, building a custom
+  PX4 with flash-trimming, fan-out routing serial MAVLink to both the simulator and
+  ground station, and connecting it all to the Unity visualization pipeline.
 ShowToc: true
+audio:
+  pronunciation:
+    PX4: P X four
+    SIH: S I H
+    SITL: sittle
+    MAVLink: mav link
+    mavlink-router: mav link router
+    mavlink-routerd: mav link router D
+    pymavlink: pie mav link
+    MAVSDK: mav S D K
+    Cube Orange: Cube Orange
+    CubeOrange: Cube Orange
+    cubepilot_cubeorange_default.px4: cube pilot cube orange default dot P X four
+    cubepilot_cubeorange_default: cube pilot cube orange default
+    px_uploader.py: P X uploader dot pie
+    px_uploader: P X uploader
+    QGC: Q G C
+    QGroundControl: Q ground control
+    Pixhawk: pix hawk
+    STM32H7: S T M thirty two H seven
+    STM32H743: S T M thirty two H seven forty three
+    Kconfig: K config
+    .px4board: dot P X four board
+    .px4: dot P X four
+    px4board: P X four board
+    MODULES_SIMULATION_SIMULATOR_SIH: modules simulation simulator S I H
+    CONFIG_MODULES_SIMULATION_SIMULATOR_SIH: config modules simulation simulator S
+      I H
+    CONFIG_DRIVERS_UAVCAN: config drivers U A V can
+    UAVCAN: U A V can
+    uXRCE-DDS: micro X R C E D D S
+    DDS: D D S
+    DFU: D F U
+    dfu-util: D F U util
+    BOOT0: boot zero
+    VID: V I D
+    PID: P I D
+    vendor_id: vendor I D
+    product_id: product I D
+    board_id: board I D
+    board_version: board version
+    VTOL: V tol
+    tailsitter: tail sitter
+    EKF2: E K F two
+    DO_REPOSITION: do reposition
+    MAV_CMD_DO_REPOSITION: mav command do reposition
+    MAV_CMD_NAV_TAKEOFF: mav command nav takeoff
+    MAV_CMD_NAV_RETURN_TO_LAUNCH: mav command nav return to launch
+    MAV_CMD_COMPONENT_ARM_DISARM: mav command component arm disarm
+    MAV_CMD_DO_SET_MODE: mav command do set mode
+    MAVLINK_MSG_ID_AUTOPILOT_VERSION: mav link message I D autopilot version
+    MAV_CMD_REQUEST_MESSAGE: mav command request message
+    MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN: mav command preflight reboot shutdown
+    GLOBAL_POSITION_INT: global position int
+    GPS_RAW_INT: G P S raw int
+    HEARTBEAT: heartbeat
+    AUTO.LOITER: auto loiter
+    AUTO.MISSION: auto mission
+    AUTO.TAKEOFF: auto takeoff
+    SYS_HITL: sys hit L
+    SYS_AUTOSTART: sys auto start
+    SIH_MASS: S I H mass
+    SIH_T_MAX: S I H T max
+    SIH_IXX: S I H I X X
+    SIH_GPS_USED: S I H G P S used
+    SIH_LOC_LAT0: S I H lock lat zero
+    SIH_LOC_LON0: S I H lock lon zero
+    SIH_LOC_H0: S I H lock H zero
+    SIH_VEHICLE_TYPE: S I H vehicle type
+    CA_AIRFRAME: C A airframe
+    CA_ROTOR_COUNT: C A rotor count
+    CA_ROTOR0_KM: C A rotor zero K M
+    CA_ROTOR1_KM: C A rotor one K M
+    CA_ROTOR1_PY: C A rotor one P Y
+    VT_MOT_COUNT: V T mot count
+    VT_TYPE: V T type
+    MAV_TYPE: mav type
+    MC_PITCH_P: M C pitch P
+    MC_ROLL_P: M C roll P
+    MC_PITCHRATE_P: M C pitch rate P
+    MC_ROLLRATE_P: M C roll rate P
+    MPC_THR_HOVER: M P C thrust hover
+    MPC_TKO_SPEED: M P C takeoff speed
+    Tools/docker_run.sh: tools slash docker run dot S H
+    /dev/ttyACM0: dev slash T T Y A C M zero
+    ttyACM0: T T Y A C M zero
+    Unity: Unity
+    MavlinkEntity: mav link entity
+    SimEntity: sim entity
+    FlightController: flight controller
+    AGL: A G L
+    ASL: A S L
+    MSL: M S L
+    T/W: thrust to weight
+    1102_tailsitter_duo_sih.hil: eleven oh two tail sitter duo S I H dot hill
+    1101_rc_plane_sih.hil: eleven oh one R C plane S I H dot hill
+    1103_standard_vtol_sih.hil: eleven oh three standard V tol S I H dot hill
+    1001_rc_quad_x.hil: ten oh one R C quad X dot hill
+    GitHub: git hub
+    param set-default: param set default
+    PARAM_SET: param set
+    EEPROM: E E prom
+    JAXA: Jaxa
 ---
 
 ## Context

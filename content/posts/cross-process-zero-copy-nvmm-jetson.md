@@ -1,15 +1,94 @@
 ---
-title: "Cross-Process Zero-Copy on Jetson: dma-buf fds, NvBufSurfaceImport, and a Cache-Line-Padded Pool"
+title: 'Cross-Process Zero-Copy on Jetson: dma-buf fds, NvBufSurfaceImport, and a
+  Cache-Line-Padded Pool'
 date: 2026-04-25
 draft: false
-tags: ["zero-copy", "concurrency", "NVMM", "NVIDIA", "Jetson", "GPU", "GStreamer", "C++", "Linux", "video-processing", "shared-memory", "performance"]
-keywords: ["NvBufSurfaceImport", "dma-buf SCM_RIGHTS Jetson", "NVMM cross-process IPC", "cache line false sharing C++", "futex shared memory cross-process", "GstBufferPool propose_allocation NVMM", "Jetson zero-copy GStreamer", "gst-nvmm-cpp"]
+tags:
+- zero-copy
+- concurrency
+- NVMM
+- NVIDIA
+- Jetson
+- GPU
+- GStreamer
+- C++
+- Linux
+- video-processing
+- shared-memory
+- performance
+keywords:
+- NvBufSurfaceImport
+- dma-buf SCM_RIGHTS Jetson
+- NVMM cross-process IPC
+- cache line false sharing C++
+- futex shared memory cross-process
+- GstBufferPool propose_allocation NVMM
+- Jetson zero-copy GStreamer
+- gst-nvmm-cpp
 cover:
   image: /images/posts/nvmm-zero-copy-ipc.png
-  alt: "Cross-process zero-copy NVMM IPC on Jetson — dma-buf fd passing, NvBufSurfaceImport, lock-free pool"
-categories: ["deep-dive"]
-summary: "Two processes on a Jetson, one camera frame in NVMM (GPU memory), no copies. The kernel does the heavy lifting via dma-buf fds; SCM_RIGHTS carries the fd across the process boundary; NvBufSurfaceImport reconstructs the surface on the consumer side; a cache-line-padded ring of atomic ref-counts keeps fan-out coherent without locks. With benchmark numbers and a Godbolt-runnable demo of the SCM_RIGHTS pattern."
+  alt: Cross-process zero-copy NVMM IPC on Jetson — dma-buf fd passing, NvBufSurfaceImport,
+    lock-free pool
+categories:
+- deep-dive
+summary: Two processes on a Jetson, one camera frame in NVMM (GPU memory), no copies.
+  The kernel does the heavy lifting via dma-buf fds; SCM_RIGHTS carries the fd across
+  the process boundary; NvBufSurfaceImport reconstructs the surface on the consumer
+  side; a cache-line-padded ring of atomic ref-counts keeps fan-out coherent without
+  locks. With benchmark numbers and a Godbolt-runnable demo of the SCM_RIGHTS pattern.
 ShowToc: true
+audio:
+  pronunciation:
+    NVMM: N V M M
+    Jetson: Jetson
+    Xavier: Xavier
+    Orin: Orin
+    NvBufSurface: N V buf surface
+    NvBufSurfaceImport: N V buf surface import
+    NvBufSurfaceCreate: N V buf surface create
+    NvBufSurfaceMap: N V buf surface map
+    NvBufSurfaceCopy: N V buf surface copy
+    NvBufSurfaceFromFd: N V buf surface from F D
+    NvBufSurfaceMapParams: N V buf surface map params
+    NvBufSurfaceGetMapParams: N V buf surface get map params
+    NvBufSurfaceSyncForCpu: N V buf surface sync for C P U
+    NvBufSurfTransform: N V buf surf transform
+    libnvbufsurface.so: lib N V buf surface dot S O
+    libnvbufsurftransform.so: lib N V buf surf transform dot S O
+    libnvscibuf.so: lib N V sci buf dot S O
+    NvSciBuf: N V sci buf
+    dma-buf: D M A buf
+    DMA-buf: D M A buf
+    SCM_RIGHTS: S C M rights
+    memfd_create: mem F D create
+    futex: fyu tex
+    FUTEX_WAIT: fyu tex wait
+    FUTEX_WAKE: fyu tex wake
+    ATOMIC_ACQ_REL: atomic acquire release
+    ATOMIC_ACQUIRE: atomic acquire
+    ATOMIC_RELEASE: atomic release
+    GstBufferPool: G S T buffer pool
+    GstAllocator: G S T allocator
+    GstMemory: G S T memory
+    propose_allocation: propose allocation
+    shmsink: S H M sink
+    L4T: L four T
+    JetPack: JetPack
+    VIC: V I C
+    Tegra: Tegra
+    Argus: Argus
+    nvvidconv: N V vid conv
+    nvv4l2decoder: N V V four L two decoder
+    BSP: B S P
+    GStreamer: G streamer
+    rclcpp: R C L C plus plus
+    ROS2: ross two
+    consteval: const eval
+    constexpr: const expr
+    optmem_max: opt mem max
+    EMSGSIZE: E message size
+    EBADMSG: E bad message
+    kMaxFdsPerMsg: K max F Ds per message
 ---
 
 ## The problem

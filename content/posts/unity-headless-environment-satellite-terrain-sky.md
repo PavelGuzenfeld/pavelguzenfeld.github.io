@@ -1,15 +1,101 @@
 ---
-title: "Natural Skies and Satellite Terrain in a Headless Unity Simulation"
+title: Natural Skies and Satellite Terrain in a Headless Unity Simulation
 date: 2026-04-04
 draft: false
-tags: ["Unity", "Docker", "terrain", "SRTM", "satellite", "skybox", "shader", "headless", "Vulkan", "RTSP", "FFmpeg", "NVENC", "simulation"]
-keywords: ["Unity headless terrain satellite imagery", "SRTM heightmap Unity runtime", "Unity procedural skybox headless", "h264_nvenc Docker Unity", "world-space terrain shader Unity"]
+tags:
+- Unity
+- Docker
+- terrain
+- SRTM
+- satellite
+- skybox
+- shader
+- headless
+- Vulkan
+- RTSP
+- FFmpeg
+- NVENC
+- simulation
+keywords:
+- Unity headless terrain satellite imagery
+- SRTM heightmap Unity runtime
+- Unity procedural skybox headless
+- h264_nvenc Docker Unity
+- world-space terrain shader Unity
 cover:
   image: /images/posts/unity-satellite-terrain.png
-  alt: "Satellite terrain and natural sky in headless Unity simulation"
-categories: ["deep-dive"]
-summary: "How I replaced flat brown terrain and solid-color sky in a headless Unity 6 Docker simulation with real satellite imagery, SRTM topography, and a custom panoramic skybox — all fully air-gapped, no runtime network dependency. Includes NVENC GPU encoding, custom shaders, and every dead end along the way."
+  alt: Satellite terrain and natural sky in headless Unity simulation
+categories:
+- deep-dive
+summary: How I replaced flat brown terrain and solid-color sky in a headless Unity
+  6 Docker simulation with real satellite imagery, SRTM topography, and a custom panoramic
+  skybox — all fully air-gapped, no runtime network dependency. Includes NVENC GPU
+  encoding, custom shaders, and every dead end along the way.
 ShowToc: true
+audio:
+  pronunciation:
+    Unity: Unity
+    Unity 6: Unity six
+    SRTM: S R T M
+    DTM: D T M
+    ESRI: Ezri
+    World Imagery: world imagery
+    tile server: tile server
+    ArcGIS: arc G I S
+    arcgisonline.com: arc G I S online dot com
+    TerrainData: terrain data
+    Terrain.CreateTerrainGameObject: terrain dot create terrain game object
+    TerrainCollider: terrain collider
+    Skybox/Panoramic: skybox slash panoramic
+    Custom/SkyboxPanoramic: custom skybox panoramic
+    Custom/WorldSpaceTerrain: custom world space terrain
+    Shader.Find: shader dot find
+    RenderSettings.skybox: render settings dot skybox
+    RenderSettings.fog: render settings dot fog
+    GraphicsSettings.asset: graphics settings dot asset
+    m_AlwaysIncludedShaders: M underscore always included shaders
+    AmbientMode: ambient mode
+    Resources.Load: resources dot load
+    GetPixels: get pixels
+    isReadable: is readable
+    SimpleCameraCapture: simple camera capture
+    CameraClearFlags: camera clear flags
+    CameraClearFlags.SolidColor: camera clear flags solid color
+    CameraClearFlags.Skybox: camera clear flags skybox
+    LateUpdate: late update
+    EnvironmentSetup: environment setup
+    MonoBehaviour: mono behavior
+    Vulkan: vulkan
+    HDRP: H D R P
+    Built-in RP: built in R P
+    FFmpeg: F F mpeg
+    ffmpeg: F F mpeg
+    NVENC: N V enc
+    h264_nvenc: H two six four N V enc
+    libx264: lib X two six four
+    RTSP: R T S P
+    .hgt: dot H G T
+    .hdr: dot H D R
+    HDRI: H D R I
+    Reinhard: Reinhard
+    Poly Haven: Poly Haven
+    GeoTIFF: geo tiff
+    ApplicationSetting.yaml: application setting dot yaml
+    UseInstalledFFmpeg: use installed F F mpeg
+    tonemap: tone map
+    createTonemapReinhard: create tone map Reinhard
+    AsyncGPUReadback: async G P U readback
+    RTX 3060: R T X thirty sixty
+    WorldSpaceTerrain.shader: world space terrain dot shader
+    SkyboxPanoramic.shader: skybox panoramic dot shader
+    atan2: A tan two
+    tex2Dlod: tex two D L O D
+    tex2D: tex two D
+    UnityCG.cginc: unity C G dot C G inc
+    UnityObjectToClipPos: unity object to clip pos
+    UnityObjectToWorldNormal: unity object to world normal
+    unity_ObjectToWorld: unity object to world
+    _WorldSpaceLightPos0: world space light pos zero
 ---
 
 ## Context

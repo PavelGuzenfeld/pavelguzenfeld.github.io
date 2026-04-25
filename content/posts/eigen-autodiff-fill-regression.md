@@ -1,15 +1,46 @@
 ---
-title: "How GCC's std::fill_n Silently Regressed Eigen's AutoDiffScalar Performance"
+title: How GCC's std::fill_n Silently Regressed Eigen's AutoDiffScalar Performance
 date: 2026-03-20
 draft: false
-tags: ["C++", "Eigen", "GCC", "performance", "open-source"]
-keywords: ["Eigen AutoDiffScalar performance", "Eigen fill regression GCC", "trivially copyable scalar Eigen"]
+tags:
+- C++
+- Eigen
+- GCC
+- performance
+- open-source
+keywords:
+- Eigen AutoDiffScalar performance
+- Eigen fill regression GCC
+- trivially copyable scalar Eigen
 cover:
   image: /images/posts/eigen-autodiff.png
-  alt: "How GCC's fill_n Regressed Eigen's AutoDiffScalar"
-categories: ["deep-dive"]
-summary: "A performance optimization in Eigen's fill path assumed all scalar types are equal. GCC's libstdc++ disagreed — and AutoDiffScalar paid the price."
+  alt: How GCC's fill_n Regressed Eigen's AutoDiffScalar
+categories:
+- deep-dive
+summary: A performance optimization in Eigen's fill path assumed all scalar types
+  are equal. GCC's libstdc++ disagreed — and AutoDiffScalar paid the price.
 ShowToc: true
+audio:
+  pronunciation:
+    Eigen: Eye gen
+    AutoDiffScalar: auto diff scalar
+    DerType: der type
+    VectorXd: vector X D
+    Vector12d: vector twelve D
+    eigen_fill_helper: Eigen fill helper
+    eigen_memset_helper: Eigen memset helper
+    std::fill_n: S T D fill N
+    std::is_trivially_copyable: S T D is trivially copyable
+    std::true_type: S T D true type
+    std::false_type: S T D false type
+    std::bool_constant: S T D bool constant
+    std::integral_constant: S T D integral constant
+    memset: mem set
+    setZero: set zero
+    setConstant: set constant
+    RequireInitialization: require initialization
+    GitLab: git lab
+    libstdc++: lib S T D C plus plus
 ---
 
 ## The Setup

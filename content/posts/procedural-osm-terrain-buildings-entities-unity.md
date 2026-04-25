@@ -1,15 +1,69 @@
 ---
-title: "Procedural Settlement: Generating 3D Buildings, Roads, and Entities from OpenStreetMap in Unity"
+title: 'Procedural Settlement: Generating 3D Buildings, Roads, and Entities from OpenStreetMap
+  in Unity'
 date: 2026-04-13
 draft: false
-tags: ["Unity", "Docker", "terrain", "SRTM", "satellite", "shader", "headless", "simulation", "GIS", "DTM", "open-source", "rendering"]
-keywords: ["OpenStreetMap Unity buildings", "procedural city generation Unity", "OSM building extrusion runtime", "headless Unity terrain generation", "Overpass API Unity integration", "procedural window textures Unity"]
+tags:
+- Unity
+- Docker
+- terrain
+- SRTM
+- satellite
+- shader
+- headless
+- simulation
+- GIS
+- DTM
+- open-source
+- rendering
+keywords:
+- OpenStreetMap Unity buildings
+- procedural city generation Unity
+- OSM building extrusion runtime
+- headless Unity terrain generation
+- Overpass API Unity integration
+- procedural window textures Unity
 cover:
   image: /images/posts/osm-procedural-terrain.png
-  alt: "Procedural settlement with OSM buildings, roads, and entities in a headless Unity simulation"
-categories: ["deep-dive"]
-summary: "How I replaced a proprietary terrain bundle with a fully procedural environment generated from open-source data — hundreds of buildings with window textures from OpenStreetMap, terrain-hugging roads, satellite-driven vegetation, and multiple ground and air entities — all built at runtime in a headless Unity Docker simulation."
+  alt: Procedural settlement with OSM buildings, roads, and entities in a headless
+    Unity simulation
+categories:
+- deep-dive
+summary: How I replaced a proprietary terrain bundle with a fully procedural environment
+  generated from open-source data — hundreds of buildings with window textures from
+  OpenStreetMap, terrain-hugging roads, satellite-driven vegetation, and multiple
+  ground and air entities — all built at runtime in a headless Unity Docker simulation.
 ShowToc: true
+audio:
+  pronunciation:
+    OSM: O S M
+    OpenStreetMap: open street map
+    Overpass API: overpass A P I
+    WGS84: W G S eighty four
+    DTM: D T M
+    SRTM: S R T M
+    HDRP: H D R P
+    Built-in RP: built in R P
+    Cull Off: cull off
+    OSMNode: O S M node
+    OSMBuildingLoader: O S M building loader
+    OSMRoadLoader: O S M road loader
+    TreePlacer: tree placer
+    Terrain.activeTerrain: terrain dot active terrain
+    Terrain.SampleHeight: terrain dot sample height
+    TerrainCollider: terrain collider
+    Physics.Raycast: physics dot raycast
+    RaycastHit: raycast hit
+    GetPixels: get pixels
+    isReadable: is readable
+    RTSP: R T S P
+    NVENC: N V enc
+    GStreamer: G streamer
+    PrimitiveFlightController: primitive flight controller
+    GoTo: go to
+    Vector2: vector two
+    Vector3: vector three
+    MeshRenderer: mesh renderer
 ---
 
 ## Context
