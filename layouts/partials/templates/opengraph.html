@@ -55,9 +55,15 @@
   {{- end }}
 {{- end }}
 
+{{- /* The `audio:` frontmatter param is reused as a config map for the
+       narration script (audio.pronunciation), so it can be either a slice
+       of URLs (the original OpenGraph case) or a dict.  Only emit
+       og:audio meta tags when it's actually a slice. */ -}}
 {{- with .Params.audio }}
-  {{- range . | first 6  }}
-    <meta property="og:audio" content="{{ . | absURL }}">
+  {{- if reflect.IsSlice . }}
+    {{- range . | first 6 }}
+      <meta property="og:audio" content="{{ . | absURL }}">
+    {{- end }}
   {{- end }}
 {{- end }}
 
