@@ -1,0 +1,18 @@
+{{- /*
+  Embed an <audio> player when a matching MP3 lives at static/audio/<slug>.mp3.
+  preload="none" keeps the page lightweight — the browser only fetches the
+  ~10–20 MB file when the reader actually clicks play.
+*/ -}}
+{{- $slug := .File.BaseFileName -}}
+{{- $audioPath := printf "static/audio/%s.mp3" $slug -}}
+{{- if os.FileExists $audioPath -}}
+<figure class="post-audio" style="margin: 1rem 0 2rem 0;">
+  <figcaption style="font-size: 0.85em; opacity: 0.7; margin-bottom: 0.4rem;">
+    🔊 Listen to this post
+  </figcaption>
+  <audio controls preload="none" style="width: 100%;"
+         src="{{ printf "/audio/%s.mp3" $slug | absURL }}">
+    Your browser doesn't support HTML5 audio. <a href="{{ printf "/audio/%s.mp3" $slug | absURL }}">Download the MP3</a>.
+  </audio>
+</figure>
+{{- end -}}
