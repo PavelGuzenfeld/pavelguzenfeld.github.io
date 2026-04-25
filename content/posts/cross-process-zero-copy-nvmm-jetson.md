@@ -87,7 +87,7 @@ You connect a `socketpair(AF_UNIX, SOCK_STREAM, 0, sv)`, fork, and send fds acro
 
 A standalone runnable demo of the whole producer→consumer fd handshake (no NVIDIA libs, just kernel dma-buf via `memfd_create`, fork, socketpair, write/read through a shared mmap) — runnable on Compiler Explorer:
 
-> **[Run it on Compiler Explorer →](https://godbolt.org/z/PjG9zaKnr)** (gcc 14.2, `-std=c++23 -O2 -pthread`, {fmt} library linked). The child process opens the parent's `memfd` via SCM_RIGHTS, mmaps it, reads the message the parent wrote. Source also reproduced [at the bottom of this post](#full-godbolt-example).
+> **[Run it on Compiler Explorer →](https://godbolt.org/z/oWf79bndM)** (gcc 14.2, `-std=c++23 -O2 -pthread`, {fmt} linked as a library so the asm pane stays readable). The child process opens the parent's `memfd` via SCM_RIGHTS, mmaps it, reads the message the parent wrote. Source also reproduced [at the bottom of this post](#full-godbolt-example).
 
 ## Step 2: NvBufSurfaceImport — the userspace bridge
 
@@ -398,27 +398,54 @@ The shm header carries metadata + the futex word + the per-slot ref-counts. The 
 
 The full implementation is at <https://github.com/PavelGuzenfeld/gst-nvmm-cpp> if you want to build on it. PR #2 contains everything described above (build/runtime guards, atomics, padded layout, futex, propose_allocation pool, CRC + visual roundtrip tests, throughput bench).
 
+## Magic numbers, `consteval`, and why we don't ask the kernel
+
+A minor detour because the question came up. The cmsg buffer needs a compile-time-known max-fds-per-message constant — `CMSG_SPACE(N)` is a macro and `N` has to be a constant expression. The obvious "right" answer is "ask the kernel via `/proc/sys/net/core/optmem_max` divided by `sizeof(int)`." That doesn't work, for two distinct reasons that are worth distinguishing:
+
+- **`consteval` can't.** `consteval` evaluates to a constant expression at translation time. The compiler can't open a file or issue a syscall during compilation. `/proc/sys/net/core/optmem_max` is a runtime kernel virtual filesystem entry — every value there lives in kernel memory, populated when sysctl initializes. There's no userspace header that exposes it as a `#define` either; `SCM_MAX_FD` lives inside the Linux kernel and never ships in `<sys/socket.h>`.
+- **Build-time injection works mechanically, but bakes in the wrong number.** You can have meson `run_command('cat', '/proc/sys/net/core/optmem_max')` and pass `-DNVMM_OPTMEM_MAX=...`, and `kMaxFdsPerMsg = NVMM_OPTMEM_MAX / sizeof(int)` is then a perfectly valid `constexpr`. But the value baked in is the **build host's** `optmem_max`. Cross-compile from a CI runner (default 65536) to a Xavier (`cat /proc/sys/net/core/optmem_max` → `20480`) and the wrong cap is wired into the binary; `sendmsg` returns `EMSGSIZE` at runtime and CI was green.
+
+So the compromise that actually works: pick a small compile-time constant sized for **your use case** (NVMM pool fans out to ≤32 consumers, so `kMaxFdsPerMsg = 32`; the cmsg stack buffer is then ~150 bytes, not the kernel's 20 KiB cap), and add a one-time runtime probe at startup that reads the live kernel value and refuses to start if it's lower than your compile-time choice. You'll never see the runtime check fire on a sane system; it earns its keep the day someone tunes `net.core.optmem_max` low and you'd otherwise debug an `EMSGSIZE` from a place that doesn't make it obvious why.
+
+```cpp
+[[nodiscard]] int check_optmem_runtime() noexcept {
+    int fd = open("/proc/sys/net/core/optmem_max", O_RDONLY);
+    if (fd < 0) return 0;  // not Linux, or proc not mounted; let it fly
+    char buf[32]{};
+    ssize_t n = read(fd, buf, sizeof(buf) - 1);
+    close(fd);
+    if (n <= 0) return 0;
+    long live = std::atol(buf);
+    long need = static_cast<long>(CMSG_SPACE(sizeof(int) * kMaxFdsPerMsg));
+    if (live > 0 && live < need) {
+        fmt::print(stderr,
+            "kernel net.core.optmem_max={} bytes < required {} (kMaxFdsPerMsg={})\n",
+            live, need, kMaxFdsPerMsg);
+        return -EOVERFLOW;
+    }
+    return 0;
+}
+```
+
 ## Full Godbolt example
 
-Live link: **<https://godbolt.org/z/PjG9zaKnr>** (gcc 14.2, `-std=c++23 -O2 -pthread`, {fmt} via library panel).
+Live link: **<https://godbolt.org/z/oWf79bndM>** (gcc 14.2, `-std=c++23 -O2 -pthread`, {fmt} as a linked library — keeps the asm pane to a few hundred lines of *our* code instead of the ~30k that `FMT_HEADER_ONLY` would inline).
 
 Standalone demo of the SCM_RIGHTS pattern — no NVIDIA libs, runs anywhere with a Linux kernel. Producer creates a `memfd`, writes a string, sends the fd to a child process via `socketpair`. Child receives, mmaps, prints. The exact same pattern the NVMM backend uses, with NVIDIA's `NvBufSurfaceCreate` standing in for `memfd_create`.
 
-The example uses `{fmt}` rather than `std::print` — wider compiler reach (nothing here actually needs C++23 for the formatting itself; switch the `<print>` include to `<fmt/core.h>` and the same code compiles back to gcc 9). On godbolt the {fmt} library is added via the libraries panel; for a local build, link with `-lfmt` or define `FMT_HEADER_ONLY` before the include.
+The example uses `{fmt}` rather than `std::print` — wider compiler reach (nothing here actually needs C++23 for the formatting itself; the same code compiles back to gcc 9 with fmt). For a local build, install `libfmt-dev` and link with `-lfmt`.
 
 ```cpp
 // Build:  g++ -std=c++23 -O2 -pthread scm_rights_demo.cpp -lfmt -o demo
-//         (or define FMT_HEADER_ONLY before the fmt include and skip
-//          -lfmt — that's what the Compiler Explorer link does)
 
 #include <array>
 #include <cerrno>
+#include <cstdlib>
 #include <cstring>
 #include <cstdint>
 #include <span>
 #include <string_view>
 
-#define FMT_HEADER_ONLY
 #include <fmt/core.h>
 
 #include <fcntl.h>
@@ -432,11 +459,23 @@ The example uses `{fmt}` rather than `std::print` — wider compiler reach (noth
 // ── Tunables ────────────────────────────────────────────────────────────────
 
 // Compile-time upper bound on how many fds we ever pass in one sendmsg.
-// CMSG_SPACE() needs a constant expression to size the ancillary buffer;
-// there's no kernel facility for "max ancillary fds per message" beyond
-// per-process /proc/sys/net/core/optmem_max divided by sizeof(int), and
-// that's runtime / non-constexpr. 16 covers our pool sizes.
-inline constexpr std::size_t kMaxFdsPerMsg = 16;
+// CMSG_SPACE() needs a constant expression to size the ancillary buffer.
+//
+// Why not consteval / buildtime-inject from /proc/sys/net/core/optmem_max?
+//   • consteval can't do I/O. /proc is a runtime kernel interface; nothing
+//     exposes the value as a userspace header constant (SCM_MAX_FD lives
+//     inside the kernel and never ships in <sys/socket.h>).
+//   • Build-time injection (meson run_command + -DNVMM_OPTMEM_MAX=...)
+//     bakes the BUILD host's value into the binary. Cross-compile from a
+//     CI server (default 65536) to a Xavier (20480) and the wrong number
+//     is hard-coded; sendmsg returns EMSGSIZE at runtime.
+//
+// So: pick a use-case-bounded compile-time constant (32 covers our pool),
+// keep the cmsg stack buffer small (~150 bytes), and check at runtime
+// (see check_optmem_runtime() below) that the kernel's live cap allows it.
+inline constexpr std::size_t kMaxFdsPerMsg = 32;
+static_assert(kMaxFdsPerMsg * sizeof(int) < 4096,
+              "ancillary buffer should fit in one page");
 
 // SCM_RIGHTS messages must carry at least one byte of normal payload —
 // the kernel rejects msghdrs whose iovec is empty. Any byte will do; we
@@ -450,6 +489,28 @@ inline constexpr char        kIovDummy     = 'X';
 [[nodiscard]] static std::size_t demo_page_size() noexcept {
     long ps = sysconf(_SC_PAGESIZE);
     return ps > 0 ? static_cast<std::size_t>(ps) : 4096;
+}
+
+// One-shot startup probe: confirm the kernel's live ancillary-data cap is
+// big enough for our compile-time choice. Read /proc directly (no sysctl
+// syscall path) and just compare. Refuse to start if the live kernel is
+// configured weirdly low; warn-only would also be reasonable.
+[[nodiscard]] int check_optmem_runtime() noexcept {
+    int fd = open("/proc/sys/net/core/optmem_max", O_RDONLY);
+    if (fd < 0) return 0;  // not Linux or proc not mounted; let it fly
+    char buf[32]{};
+    ssize_t n = read(fd, buf, sizeof(buf) - 1);
+    close(fd);
+    if (n <= 0) return 0;
+    long live = std::atol(buf);
+    long need = static_cast<long>(CMSG_SPACE(sizeof(int) * kMaxFdsPerMsg));
+    if (live > 0 && live < need) {
+        fmt::print(stderr,
+            "kernel net.core.optmem_max={} bytes < required {} (kMaxFdsPerMsg={})\n",
+            live, need, kMaxFdsPerMsg);
+        return -EOVERFLOW;
+    }
+    return 0;
 }
 
 // ── SCM_RIGHTS helpers ──────────────────────────────────────────────────────
@@ -501,6 +562,8 @@ recv_fds(int sock, std::span<int> out) noexcept
 
 int main()
 {
+    if (int rc = check_optmem_runtime(); rc != 0) return 1;
+
     const std::size_t kSize = demo_page_size();   // one page
 
     std::array<int, 2> sv{};
