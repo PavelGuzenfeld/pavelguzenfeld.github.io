@@ -2,17 +2,69 @@
   Embed an <audio> player when a matching MP3 lives at static/audio/<slug>.mp3.
   preload="none" keeps the page lightweight — the browser only fetches the
   ~10–20 MB file when the reader actually clicks play.
+
+  Adds two custom controls beyond the browser default:
+    - speed: select 0.75x..2x, sets HTMLMediaElement.playbackRate
+    - pin to top: toggle position: sticky on the wrapper so the player follows
+      the reader as they scroll the post body
 */ -}}
 {{- $slug := .File.BaseFileName -}}
 {{- $audioPath := printf "static/audio/%s.mp3" $slug -}}
 {{- if os.FileExists $audioPath -}}
-<figure class="post-audio" style="margin: 1rem 0 2rem 0;">
-  <figcaption style="font-size: 0.85em; opacity: 0.7; margin-bottom: 0.4rem;">
-    🔊 Listen to this post
-  </figcaption>
-  <audio controls preload="none" style="width: 100%;"
-         src="{{ printf "/audio/%s.mp3" $slug | absURL }}">
-    Your browser doesn't support HTML5 audio. <a href="{{ printf "/audio/%s.mp3" $slug | absURL }}">Download the MP3</a>.
+{{- $src := printf "/audio/%s.mp3" $slug | absURL -}}
+<style>
+  .post-audio { margin: 1rem 0 2rem 0; }
+  .post-audio figcaption { font-size: 0.85em; opacity: 0.7; margin-bottom: 0.4rem; }
+  .post-audio audio { width: 100%; display: block; }
+  .post-audio__controls {
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    align-items: center; font-size: 0.9em; margin-top: 0.4rem;
+    opacity: 0.8;
+  }
+  .post-audio__controls label { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+  .post-audio.sticky {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--theme); padding: 0.6rem 0.8rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+  }
+</style>
+<figure class="post-audio" id="post-audio-{{ $slug }}">
+  <figcaption>🔊 Listen to this post</figcaption>
+  <audio controls preload="none" src="{{ $src }}">
+    Your browser doesn't support HTML5 audio. <a href="{{ $src }}">Download the MP3</a>.
   </audio>
+  <div class="post-audio__controls">
+    <label>
+      Speed
+      <select aria-label="Playback speed">
+        <option value="0.75">0.75×</option>
+        <option value="1" selected>1×</option>
+        <option value="1.25">1.25×</option>
+        <option value="1.5">1.5×</option>
+        <option value="1.75">1.75×</option>
+        <option value="2">2×</option>
+      </select>
+    </label>
+    <label>
+      <input type="checkbox" aria-label="Pin player to top">
+      Pin to top
+    </label>
+  </div>
 </figure>
+<script>
+  (function () {
+    var fig = document.getElementById('post-audio-{{ $slug }}');
+    if (!fig) return;
+    var audio = fig.querySelector('audio');
+    var speed = fig.querySelector('select');
+    var pin   = fig.querySelector('input[type="checkbox"]');
+    speed.addEventListener('change', function () {
+      audio.playbackRate = parseFloat(speed.value);
+    });
+    pin.addEventListener('change', function () {
+      fig.classList.toggle('sticky', pin.checked);
+    });
+  })();
+</script>
 {{- end -}}

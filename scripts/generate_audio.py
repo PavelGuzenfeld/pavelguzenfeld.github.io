@@ -110,6 +110,13 @@ PRONUNCIATION_RULES: list[tuple[re.Pattern[str], object]] = [
     # `g++` mirror of the C++ rule
     (re.compile(r"\bg\+\+\b"),  "g plus plus"),
 
+    # Docker-image / container-tag style refs like `gcc:14`, `python:3.12-slim`,
+    # `silkeh/clang:19`, `ubuntu:22.04`, `hft-nb:latest`.  The colon makes TTS
+    # say "colon"; collapse to a single phrase.
+    (re.compile(r"\b([a-zA-Z][a-zA-Z0-9_-]*(?:/[a-zA-Z][a-zA-Z0-9_-]*)?):"
+                r"([0-9][\w.-]*|latest|alpine|slim|bookworm|bullseye)\b"),
+     r"\1 \2"),
+
     # Preprocessor directives — rule: read so a listener understands without
     # seeing the source.  "hash define" is jargon the listener won't recognize
     # if they haven't read the post first; "define X" just works.
@@ -241,10 +248,10 @@ def clean_markdown(md: str) -> str:
     # Layer 3 first — these are intentional, the writer asked for them.
     body = apply_inline_overrides(body)
 
-    # Drop code blocks before any other rule sees their contents.
-    body = FENCED_CODE_RE.sub("\n[code block omitted]\n", body)
-    body = INDENTED_CODE_RE.sub("\n[code block omitted]\n", body)
-    body = TABLE_RE.sub("\n[table omitted]\n", body)
+    # Drop code blocks and tables outright — the narrator just skips them.
+    body = FENCED_CODE_RE.sub("\n", body)
+    body = INDENTED_CODE_RE.sub("\n", body)
+    body = TABLE_RE.sub("\n", body)
 
     body = IMAGE_RE.sub("", body)
     body = LINK_RE.sub(_link_replacer, body)
