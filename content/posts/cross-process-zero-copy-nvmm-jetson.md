@@ -35,10 +35,13 @@ Linux lets you transfer file descriptors over a Unix-domain socket using ancilla
 This is a 30-line pattern that hasn't changed in 25 years. Here's the core:
 
 ```cpp
-// Send a batch of fds over a unix socket. C++23: std::span for the
-// batch, std::expected for the result so the error path is on the type.
-[[nodiscard]] std::expected<void, int>
-send_fds(int sock, std::span<const int> fds)
+// Send a batch of fds over a unix socket. C++23 spelling: std::span for
+// the batch; plain int return (0 = ok, -errno on failure) keeps the
+// helper usable from C ABI boundaries — gst-nvmm-cpp exposes its IPC
+// primitives through a C-callable interface so plain ints win over
+// std::expected here.
+[[nodiscard]] int
+send_fds(int sock, std::span<const int> fds) noexcept
 {
     alignas(cmsghdr) std::byte ctrl[CMSG_SPACE(sizeof(int) * 16)]{};
     char     dummy = 'X';
@@ -55,13 +58,12 @@ send_fds(int sock, std::span<const int> fds)
     c->cmsg_len   = CMSG_LEN(sizeof(int) * fds.size());
     std::memcpy(CMSG_DATA(c), fds.data(), sizeof(int) * fds.size());
 
-    if (sendmsg(sock, &msg, 0) < 0) return std::unexpected(errno);
-    return {};
+    return sendmsg(sock, &msg, 0) < 0 ? -errno : 0;
 }
 
 // Caller-supplied span; we fill it. Caller closes the fds when done.
-[[nodiscard]] std::expected<void, int>
-recv_fds(int sock, std::span<int> out)
+[[nodiscard]] int
+recv_fds(int sock, std::span<int> out) noexcept
 {
     alignas(cmsghdr) std::byte ctrl[CMSG_SPACE(sizeof(int) * 16)]{};
     char     dummy{};
@@ -72,12 +74,12 @@ recv_fds(int sock, std::span<int> out)
     msg.msg_control = ctrl;
     msg.msg_controllen = sizeof(ctrl);
 
-    if (recvmsg(sock, &msg, 0) < 0) return std::unexpected(errno);
+    if (recvmsg(sock, &msg, 0) < 0) return -errno;
     auto *c = CMSG_FIRSTHDR(&msg);
     if (!c || c->cmsg_level != SOL_SOCKET || c->cmsg_type != SCM_RIGHTS)
-        return std::unexpected(EBADMSG);
+        return -EBADMSG;
     std::memcpy(out.data(), CMSG_DATA(c), sizeof(int) * out.size());
-    return {};
+    return 0;
 }
 ```
 
@@ -85,7 +87,7 @@ You connect a `socketpair(AF_UNIX, SOCK_STREAM, 0, sv)`, fork, and send fds acro
 
 A standalone runnable demo of the whole producer→consumer fd handshake (no NVIDIA libs, just kernel dma-buf via `memfd_create`, fork, socketpair, write/read through a shared mmap) — runnable on Compiler Explorer:
 
-> **[Run it on Compiler Explorer →](https://godbolt.org/z/4dvx8P6c5)** (gcc 14.2, `-std=c++23 -O2 -pthread`). The child process opens the parent's `memfd` via SCM_RIGHTS, mmaps it, reads the message the parent wrote. Source also reproduced [at the bottom of this post](#full-godbolt-example).
+> **[Run it on Compiler Explorer →](https://godbolt.org/z/PjG9zaKnr)** (gcc 14.2, `-std=c++23 -O2 -pthread`, {fmt} library linked). The child process opens the parent's `memfd` via SCM_RIGHTS, mmaps it, reads the message the parent wrote. Source also reproduced [at the bottom of this post](#full-godbolt-example).
 
 ## Step 2: NvBufSurfaceImport — the userspace bridge
 
@@ -398,21 +400,26 @@ The full implementation is at <https://github.com/PavelGuzenfeld/gst-nvmm-cpp> i
 
 ## Full Godbolt example
 
-Live link: **<https://godbolt.org/z/4dvx8P6c5>** (gcc 14.2, `-std=c++23 -O2 -pthread`).
+Live link: **<https://godbolt.org/z/PjG9zaKnr>** (gcc 14.2, `-std=c++23 -O2 -pthread`, {fmt} via library panel).
 
 Standalone demo of the SCM_RIGHTS pattern — no NVIDIA libs, runs anywhere with a Linux kernel. Producer creates a `memfd`, writes a string, sends the fd to a child process via `socketpair`. Child receives, mmaps, prints. The exact same pattern the NVMM backend uses, with NVIDIA's `NvBufSurfaceCreate` standing in for `memfd_create`.
 
+The example uses `{fmt}` rather than `std::print` — wider compiler reach (nothing here actually needs C++23 for the formatting itself; switch the `<print>` include to `<fmt/core.h>` and the same code compiles back to gcc 9). On godbolt the {fmt} library is added via the libraries panel; for a local build, link with `-lfmt` or define `FMT_HEADER_ONLY` before the include.
+
 ```cpp
-// Build: g++ -std=c++23 -O2 -pthread scm_rights_demo.cpp -o demo && ./demo
+// Build:  g++ -std=c++23 -O2 -pthread scm_rights_demo.cpp -lfmt -o demo
+//         (or define FMT_HEADER_ONLY before the fmt include and skip
+//          -lfmt — that's what the Compiler Explorer link does)
 
 #include <array>
 #include <cerrno>
 #include <cstring>
 #include <cstdint>
-#include <expected>
-#include <print>
 #include <span>
 #include <string_view>
+
+#define FMT_HEADER_ONLY
+#include <fmt/core.h>
 
 #include <fcntl.h>
 #include <linux/memfd.h>
@@ -446,9 +453,11 @@ inline constexpr char        kIovDummy     = 'X';
 }
 
 // ── SCM_RIGHTS helpers ──────────────────────────────────────────────────────
+// Return 0 on success, -errno on failure. Matches the gst-nvmm-cpp repo's
+// actual style; keeps the helpers usable from C ABI boundaries.
 
-[[nodiscard]] std::expected<void, int>
-send_fds(int sock, std::span<const int> fds)
+[[nodiscard]] int
+send_fds(int sock, std::span<const int> fds) noexcept
 {
     alignas(cmsghdr) std::byte ctrl[CMSG_SPACE(sizeof(int) * kMaxFdsPerMsg)]{};
     char     dummy = kIovDummy;
@@ -465,12 +474,11 @@ send_fds(int sock, std::span<const int> fds)
     c->cmsg_len   = CMSG_LEN(sizeof(int) * fds.size());
     std::memcpy(CMSG_DATA(c), fds.data(), sizeof(int) * fds.size());
 
-    if (sendmsg(sock, &msg, 0) < 0) return std::unexpected(errno);
-    return {};
+    return sendmsg(sock, &msg, 0) < 0 ? -errno : 0;
 }
 
-[[nodiscard]] std::expected<void, int>
-recv_fds(int sock, std::span<int> out)
+[[nodiscard]] int
+recv_fds(int sock, std::span<int> out) noexcept
 {
     alignas(cmsghdr) std::byte ctrl[CMSG_SPACE(sizeof(int) * kMaxFdsPerMsg)]{};
     char     dummy{};
@@ -481,12 +489,12 @@ recv_fds(int sock, std::span<int> out)
     msg.msg_control = ctrl;
     msg.msg_controllen = sizeof(ctrl);
 
-    if (recvmsg(sock, &msg, 0) < 0) return std::unexpected(errno);
+    if (recvmsg(sock, &msg, 0) < 0) return -errno;
     auto *c = CMSG_FIRSTHDR(&msg);
     if (!c || c->cmsg_level != SOL_SOCKET || c->cmsg_type != SCM_RIGHTS)
-        return std::unexpected(EBADMSG);
+        return -EBADMSG;
     std::memcpy(out.data(), CMSG_DATA(c), sizeof(int) * out.size());
-    return {};
+    return 0;
 }
 
 // ── Demo ────────────────────────────────────────────────────────────────────
@@ -497,7 +505,7 @@ int main()
 
     std::array<int, 2> sv{};
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv.data()) < 0) {
-        std::println(stderr, "socketpair: {}", std::strerror(errno));
+        fmt::print(stderr, "socketpair: {}\n", std::strerror(errno));
         return 1;
     }
 
@@ -505,17 +513,17 @@ int main()
         // ── child = consumer ───────────────────────────────────────────────
         close(sv[0]);
         int fd = -1;
-        if (auto r = recv_fds(sv[1], std::span{&fd, 1}); !r) {
-            std::println(stderr, "recv_fds: {}", std::strerror(r.error()));
+        if (int rc = recv_fds(sv[1], std::span{&fd, 1}); rc != 0) {
+            fmt::print(stderr, "recv_fds: {}\n", std::strerror(-rc));
             return 1;
         }
         void *p = mmap(nullptr, kSize, PROT_READ, MAP_SHARED, fd, 0);
         if (p == MAP_FAILED) {
-            std::println(stderr, "mmap: {}", std::strerror(errno));
+            fmt::print(stderr, "mmap: {}\n", std::strerror(errno));
             return 1;
         }
-        std::println("[child  pid={}] received fd={}, content=\"{}\"",
-                     getpid(), fd, static_cast<const char*>(p));
+        fmt::print("[child  pid={}] received fd={}, content=\"{}\"\n",
+                   getpid(), fd, static_cast<const char*>(p));
         munmap(p, kSize);
         close(fd);
         return 0;
@@ -525,7 +533,7 @@ int main()
     close(sv[1]);
     int fd = static_cast<int>(syscall(SYS_memfd_create, "demo", 0u));
     if (fd < 0 || ftruncate(fd, kSize) < 0) {
-        std::println(stderr, "memfd_create/ftruncate: {}", std::strerror(errno));
+        fmt::print(stderr, "memfd_create/ftruncate: {}\n", std::strerror(errno));
         return 1;
     }
     void *p = mmap(nullptr, kSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
@@ -533,9 +541,9 @@ int main()
     std::memcpy(p, kMsg.data(), kMsg.size() + 1);
     munmap(p, kSize);
 
-    std::println("[parent pid={}] sending fd={}", getpid(), fd);
-    if (auto r = send_fds(sv[0], std::span{&fd, 1}); !r) {
-        std::println(stderr, "send_fds: {}", std::strerror(r.error()));
+    fmt::print("[parent pid={}] sending fd={}\n", getpid(), fd);
+    if (int rc = send_fds(sv[0], std::span{&fd, 1}); rc != 0) {
+        fmt::print(stderr, "send_fds: {}\n", std::strerror(-rc));
         return 1;
     }
     int status{};
@@ -545,11 +553,11 @@ int main()
 }
 ```
 
-Verified output (gcc 14, x86_64 Linux):
+Verified output (gcc 14 on godbolt, executor mode):
 
 ```
-[child  pid=14] received fd=3, content="hello from process A - same physical page"
-[parent pid=13] sending fd=4
+[child  pid=2] received fd=3, content="hello from process A - same physical page"
+[parent pid=1] sending fd=4
 ```
 
 Note the fd integers differ between the processes (parent's `4`, child's `3`) — they're independent fd-table entries pointing at the same kernel object. That's the kernel's fd-passing semantics, identical for `memfd` (this demo) and dma-buf (the real NVMM case).
