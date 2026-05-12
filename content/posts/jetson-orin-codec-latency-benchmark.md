@@ -87,7 +87,7 @@ This post is the benchmark I wanted to find but couldn't.
 
 The setup: two Jetson Orin boards on a GbE LAN. `videotestsrc` → hardware encoder → TCP → hardware decoder. GStreamer pad probes record wall-clock timestamps at four points in the pipeline. Chrony synchronizes the two Jetson clocks to within ±234 µs. 900 frames per combination, 30-frame warmup discarded. Six combinations total: `[H.264, H.265, AV1] × [FHD 1920×1080, HD 1280×720]`.
 
-The punchline: **AV1 wins end-to-end at every resolution**. H.264 is not second — it is last by a large margin, because the `nvv4l2decoder` holds ~4 frames in an internal decoded picture buffer before releasing output, adding 130–170 ms of hidden latency that does not appear in any encoder specification.
+**TL;DR: AV1 wins end-to-end at every resolution.** H.264 is not second — it is last by a large margin, because the `nvv4l2decoder` holds ~4 frames in an internal decoded picture buffer before releasing output, adding 130–170 ms of hidden latency that does not appear in any encoder specification.
 
 ---
 
@@ -104,10 +104,10 @@ The punchline: **AV1 wins end-to-end at every resolution**. H.264 is not second 
 | Measurement frames | 900 per combination (30-frame warmup discarded) |
 | Resolutions | FHD 1920×1080, HD 1280×720 |
 | Codecs | H.264 (`nvv4l2h264enc`), H.265 (`nvv4l2h265enc`), AV1 (`nvv4l2av1enc`) |
-| Sender IP | `192.168.1.10` (example) |
-| Receiver IP | `192.168.1.20` (example) |
+| Sender IP | `192.168.1.10` |
+| Receiver IP | `192.168.1.20` |
 
-All codecs are hardware-accelerated via NVIDIA's V4L2 (`nvv4l2`) interface. There is no software fallback anywhere in these pipelines. Both systems run inside the same Docker image built from `ubuntu:22.04` with GStreamer 1.22 installed.
+All codecs are hardware-accelerated via NVIDIA's V4L2 (`nvv4l2`) interface. Both systems run inside the same Docker image built from `ubuntu:22.04` with GStreamer 1.22 installed.
 
 ---
 
@@ -206,6 +206,24 @@ tcpserversink                            │
 | E2E | `Encode + Wire + Decode` | Full pipeline: encoder input → decoder output |
 
 All timestamps are taken with Python's `time.time_ns()` inside GStreamer pad probe callbacks. Because probes fire synchronously on the streaming thread, there is no additional scheduling jitter beyond what the OS introduces.
+
+### Metadata insertion and frame identity
+
+**Sender side — PTS as frame index.**
+`videotestsrc` sets each buffer's PTS to `frame_idx × (GST_SECOND / FPS)`. With `num-B-Frames=0` the `nvv4l2` encoders preserve PTS unchanged through the encode stage. The sender probe callbacks recover the frame index as `pts / FRAME_DURATION_NS` and store it as the CSV key.
+
+**PTS is not transmitted across TCP.**
+`tcpserversink` sends a raw bytestream — GStreamer buffer metadata (PTS, DTS, duration flags) lives in the GstBuffer struct and is never serialised onto the wire. `tcpclientsrc` on the receiver delivers a bare bytestream with no timing metadata attached.
+
+**Receiver side — sequential counter.**
+After a parse element each output buffer is exactly one access unit (one frame). The receiver uses a monotonically incrementing counter for `frame_idx`. This is safe because:
+- `parse → nvv4l2decoder` is a 1:1 FIFO with `num-B-Frames=0` (no reordering)
+- TCP is lossless and in-order on a LAN
+
+The sender and receiver counters align because both start at zero and neither pipeline drops frames.
+
+**In-band bitstream metadata.**
+`insert-sps-pps=true` (H.264/H.265) and `insert-seq-hdr=true` (AV1) embed codec parameter sets into the bitstream at every IDR frame. This is bitstream-level metadata — not GStreamer buffer metadata — and *is* transmitted. It allows the receiver's parse element to determine video dimensions and framerate from any IDR boundary, enabling mid-stream joins without prior signalling.
 
 ### Clock synchronization
 
@@ -422,11 +440,28 @@ Run sequence from your dev machine:
 
 ```bash
 # Step 1 — configure sender as stratum-1 NTP server
-ssh nvidia@<sender-ip> "bash ~/benchmark/scripts/setup_timesync.sh sender"
+ssh nvidia@<sender-ip> bash -s <<'ENDSSH'
+sudo tee /etc/chrony/chrony.conf > /dev/null <<'EOF'
+local stratum 1 orphan
+allow 0.0.0.0/0
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+EOF
+sudo systemctl restart chrony
+ENDSSH
 
 # Step 2 — wait 60 s for sender to stabilize, then configure receiver
 sleep 60
-ssh nvidia@<receiver-ip> "bash ~/benchmark/scripts/setup_timesync.sh receiver <sender-ip>"
+ssh nvidia@<receiver-ip> bash -s <<ENDSSH
+sudo tee /etc/chrony/chrony.conf > /dev/null <<EOF
+server <sender-ip> iburst prefer
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+EOF
+sudo systemctl restart chrony
+ENDSSH
 
 # Step 3 — verify on receiver (target: System time < 0.001 s)
 ssh nvidia@<receiver-ip> "chronyc tracking"
@@ -644,77 +679,141 @@ Sender and receiver addresses depend on your LAN — substitute your own IPs thr
 ### Step 1 — Deploy to both Jetsons
 
 ```bash
-cd ~/benchmark
-bash scripts/deploy.sh
+SENDER=nvidia@<sender-ip>
+RECEIVER=nvidia@<receiver-ip>
+BENCH_SRC=.          # root of this benchmark directory on the dev machine
+
+# Sync files (excludes .git, __pycache__, results/)
+rsync -az --delete \
+  --exclude '.git' --exclude '__pycache__' --exclude 'results/' \
+  ${BENCH_SRC}/ ${SENDER}:~/benchmark/
+rsync -az --delete \
+  --exclude '.git' --exclude '__pycache__' --exclude 'results/' \
+  ${BENCH_SRC}/ ${RECEIVER}:~/benchmark/
+
+# Build Docker image on both Jetsons in parallel (~10–15 min first run)
+# Always --network=host: Docker bridge is broken on these Jetsons (iptables raw table)
+ssh ${SENDER}   "cd ~/benchmark && docker build --network=host -t gst-bench ." &
+ssh ${RECEIVER} "cd ~/benchmark && docker build --network=host -t gst-bench ." &
+wait
 ```
-
-This rsync's the benchmark directory to both Jetsons and builds the `gst-bench` Docker image on each (ARM64, ~10–15 min on first run due to VVenC/VVdeC compilation).
-
-> **Always build with `--network=host`** — Docker bridge networking is broken on these Jetsons due to an iptables raw table issue.
 
 ### Step 2 — Synchronize clocks
 
 ```bash
-# Sender first
-ssh nvidia@<sender-ip> "bash ~/benchmark/scripts/setup_timesync.sh sender"
-# Wait 60 s, then receiver
-ssh nvidia@<receiver-ip> "bash ~/benchmark/scripts/setup_timesync.sh receiver <sender-ip>"
-# Verify — target offset < 1 ms
+# Configure sender as stratum-1 orphan NTP server
+ssh nvidia@<sender-ip> bash -s <<'ENDSSH'
+sudo tee /etc/chrony/chrony.conf > /dev/null <<'EOF'
+local stratum 1 orphan
+allow 0.0.0.0/0
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+EOF
+sudo systemctl restart chrony
+ENDSSH
+
+# Wait for sender to stabilize as stratum 1, then configure receiver
+sleep 60
+ssh nvidia@<receiver-ip> bash -s <<ENDSSH
+sudo tee /etc/chrony/chrony.conf > /dev/null <<EOF
+server <sender-ip> iburst prefer
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+EOF
+sudo systemctl restart chrony
+ENDSSH
+
+# Verify — target: "System time" < 0.001 s
 ssh nvidia@<receiver-ip> "chronyc tracking"
 ```
 
 ### Step 3 — Run the full matrix
 
+Each combination follows this pattern (six total: `[h264, h265, av1] × [fhd, hd]`):
+
 ```bash
-cd ~/benchmark
-bash scripts/run_matrix.sh
+SENDER_IP=<sender-ip>
+RECEIVER_IP=<receiver-ip>
+BITRATE=1500000
+DURATION=30
+WARMUP=30
+RESULTS=/tmp/bench_results
+
+run_one() {
+  local CODEC=$1 RES=$2 PORT=$3
+  # Remove any leftover containers
+  ssh nvidia@${SENDER_IP}   "docker rm -f bench_sender   2>/dev/null; true"
+  ssh nvidia@${RECEIVER_IP} "docker rm -f bench_receiver 2>/dev/null; true"
+  ssh nvidia@${SENDER_IP}   "mkdir -p ${RESULTS}"
+  ssh nvidia@${RECEIVER_IP} "mkdir -p ${RESULTS}"
+
+  # Start sender in PAUSED state (port open, not encoding yet)
+  ssh nvidia@${SENDER_IP} "docker run -d --rm --runtime nvidia --network host \
+    --name bench_sender \
+    -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all \
+    -v ${RESULTS}:/results gst-bench \
+    python3 /app/scripts/sender.py \
+      --codec ${CODEC} --resolution ${RES} \
+      --bitrate ${BITRATE} --port ${PORT} \
+      --duration ${DURATION} --warmup ${WARMUP}"
+
+  # Poll until sender port is bound and ready
+  until ssh nvidia@${SENDER_IP} \
+    "docker logs bench_sender 2>&1 | grep -q 'READY port=${PORT}'"; do
+    sleep 1; done
+
+  # Start receiver — its connect triggers sender to transition to PLAYING
+  ssh nvidia@${RECEIVER_IP} "docker run -d --rm --runtime nvidia --network host \
+    --name bench_receiver \
+    -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all \
+    -v ${RESULTS}:/results gst-bench \
+    python3 /app/scripts/receiver.py \
+      --codec ${CODEC} --resolution ${RES} \
+      --sender-ip ${SENDER_IP} --port ${PORT} \
+      --warmup ${WARMUP}"
+
+  # Wait for both to exit
+  until ssh nvidia@${SENDER_IP} \
+    "! docker ps -q --filter name=bench_sender | grep -q ."; do sleep 5; done
+  until ssh nvidia@${RECEIVER_IP} \
+    "! docker ps -q --filter name=bench_receiver | grep -q ."; do sleep 5; done
+
+  # Collect CSVs
+  mkdir -p ./results
+  scp nvidia@${SENDER_IP}:${RESULTS}/sender_${CODEC}_${RES}.csv   ./results/
+  scp nvidia@${RECEIVER_IP}:${RESULTS}/receiver_${CODEC}_${RES}.csv ./results/
+}
+
+run_one h264 fhd 5100
+run_one h264 hd  5101
+run_one h265 fhd 5200
+run_one h265 hd  5201
+run_one av1  fhd 5300
+run_one av1  hd  5301
 ```
 
-Six combinations run sequentially. Each takes ~36–40 seconds. Total: ~4 minutes.
-
-The script:
-1. Starts the sender container in `PAUSED` (port bound, encoding not started)
-2. Polls sender Docker logs until `READY port=N` appears
-3. Starts the receiver container
-4. Receiver connects → sender detects `client-added` → transitions to `PLAYING`
-5. Encoding starts with receiver already consuming frames
-6. Both containers exit; CSVs are `scp`'d to `./results/`
+Each combination takes ~36–40 s (30 s measurement + warmup + container startup). Total: ~4 minutes.
 
 ### Step 4 — Analyze
 
 ```bash
-python3 scripts/analyze.py --results-dir ./results
+# Run inside the gst-bench container (numpy + tabulate already installed)
+ssh nvidia@<sender-ip> "
+  docker run --rm \
+    -v /tmp/bench_results:/results \
+    gst-bench \
+    python3 /app/scripts/analyze.py --results-dir /results"
 ```
 
-Outputs a Markdown table and writes `results/summary.json` with full percentile data.
+Prints a Markdown table and writes `/tmp/bench_results/summary.json` with full percentile data.
 
-### Running a single combination manually
+Alternatively, if numpy and tabulate are installed locally:
 
 ```bash
-# Sender — waits in PAUSED until receiver connects
-ssh nvidia@<sender-ip> "
-  docker run --rm --runtime nvidia --network host \
-    --name bench_sender \
-    -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all \
-    -v /tmp/bench_results:/results \
-    gst-bench \
-    python3 /app/scripts/sender.py \
-      --codec h265 --resolution fhd \
-      --bitrate 1500000 --port 5200 \
-      --duration 30 --warmup 30
-"
-# Watch for READY port=5200, then start receiver
-ssh nvidia@<receiver-ip> "
-  docker run --rm --runtime nvidia --network host \
-    --name bench_receiver \
-    -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all \
-    -v /tmp/bench_results:/results \
-    gst-bench \
-    python3 /app/scripts/receiver.py \
-      --codec h265 --resolution fhd \
-      --sender-ip <sender-ip> --port 5200 \
-      --warmup 30
-"
+pip3 install numpy tabulate
+python3 scripts/analyze.py --results-dir ./results
 ```
 
 ---
@@ -744,4 +843,496 @@ On JetPack 6 hardware with `nvv4l2` codecs at 30 fps / 1500 kbps / GbE TCP:
 
 **Encode latency is a secondary concern.** Differences between codecs at the encoder stage are 1–2 ms. For pipelines targeting sub-200 ms E2E, encoder selection is not the lever to pull — decoder behavior and parse-element lookahead are.
 
-The full per-frame CSV data and `Dockerfile` are available in the benchmark repository.
+The full per-frame CSV data is in `results/summary.json` after analysis.
+
+---
+
+## Appendix — full source
+
+All constants are named. No magic numbers.
+
+### Dockerfile
+
+```dockerfile
+# ARM64 benchmark image for Jetson Orin JP6 (L4T R36.4.x).
+# Build ON the Orin (not cross-compiled): docker build --network=host -t gst-bench .
+# Run with NVIDIA runtime: docker run --runtime nvidia --network host ...
+#
+# The nvv4l2* plugins (nvv4l2h264enc, nvv4l2h265enc, nvv4l2av1enc, nvv4l2decoder)
+# are injected from the host by the NVIDIA container runtime at launch time.
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gstreamer1.0-tools \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    libgstreamer-plugins-bad1.0-dev \
+    gir1.2-gstreamer-1.0 \
+    gir1.2-gst-plugins-base-1.0 \
+    python3-gi \
+    python3-pip \
+    python3-dev \
+    cmake ninja-build build-essential git pkg-config \
+    iproute2 net-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --no-cache-dir numpy tabulate
+
+ARG VVENC_TAG=v1.12.0
+RUN git clone --depth 1 --branch ${VVENC_TAG} \
+        https://github.com/fraunhoferHHI/vvenc.git /tmp/vvenc \
+    && cmake -S /tmp/vvenc -B /tmp/vvenc/build \
+        -G Ninja -DCMAKE_BUILD_TYPE=Release \
+        -DVVENC_ENABLE_INSTALL=ON -DVVENC_INSTALL_VVENCAPP=ON \
+    && cmake --build /tmp/vvenc/build -j$(nproc) \
+    && cmake --install /tmp/vvenc/build --prefix /usr/local \
+    && ldconfig && rm -rf /tmp/vvenc
+
+ARG VVDEC_TAG=v2.3.0
+RUN git clone --depth 1 --branch ${VVDEC_TAG} \
+        https://github.com/fraunhoferHHI/vvdec.git /tmp/vvdec \
+    && cmake -S /tmp/vvdec -B /tmp/vvdec/build \
+        -G Ninja -DCMAKE_BUILD_TYPE=Release -DVVDEC_ENABLE_INSTALL=ON \
+    && cmake --build /tmp/vvdec/build -j$(nproc) \
+    && cmake --install /tmp/vvdec/build --prefix /usr/local \
+    && ldconfig && rm -rf /tmp/vvdec
+
+WORKDIR /app
+COPY config/  /app/config/
+COPY scripts/ /app/scripts/
+RUN chmod +x /app/scripts/*.sh /app/scripts/*.py 2>/dev/null || true
+
+VOLUME ["/results"]
+```
+
+### sender.py
+
+<details>
+<summary>Full source</summary>
+
+```python
+#!/usr/bin/env python3
+import gi
+gi.require_version('Gst', '1.0')
+from gi.repository import Gst, GLib
+
+import argparse, csv, os, sys, threading, time
+from pathlib import Path
+
+Gst.init(None)
+
+RESULTS_DIR  = Path(os.environ.get('RESULTS_DIR', '/results'))
+FPS          = 30
+FRAME_DURATION_NS = Gst.SECOND // FPS
+
+CODEC_CONFIGS = {
+    'h264': dict(element='nvv4l2h264enc',
+                 params='insert-sps-pps=true iframeinterval=30 num-B-Frames=0',
+                 parse='h264parse'),
+    'h265': dict(element='nvv4l2h265enc',
+                 params='insert-sps-pps=true iframeinterval=30 num-B-Frames=0',
+                 parse='h265parse ! video/x-h265,stream-format=byte-stream,alignment=au'),
+    'av1':  dict(element='nvv4l2av1enc',
+                 params='iframeinterval=30 insert-seq-hdr=true',
+                 parse=None),
+}
+
+RESOLUTIONS = {'fhd': (1920, 1080), 'hd': (1280, 720)}
+
+def build_pipeline(codec, width, height, bitrate, port, num_buffers):
+    cfg   = CODEC_CONFIGS[codec]
+    parse = f'! {cfg["parse"]} ' if cfg['parse'] else ''
+    warmup_buffers = num_buffers
+    return (
+        f'videotestsrc pattern=ball num-buffers={num_buffers} is-live=true '
+        f'! video/x-raw,format=I420,width={width},height={height},framerate={FPS}/1 '
+        f'! nvvidconv '
+        f'! video/x-raw(memory:NVMM),format=NV12 '
+        f'! {cfg["element"]} name=encoder bitrate={bitrate} {cfg["params"]} '
+        f'{parse}'
+        f'! identity name=tx_probe sync=false '
+        f'! tcpserversink name=sink host=0.0.0.0 port={port} sync=false '
+        f'  recover-policy=none buffers-soft-max=300'
+    )
+
+class FrameStore:
+    def __init__(self):
+        self._lock   = threading.Lock()
+        self.enc_in  = {}
+        self.enc_out = {}
+        self.tx      = {}
+
+def pts_to_idx(pts):
+    if pts == Gst.CLOCK_TIME_NONE:
+        return None
+    return int(round(pts / FRAME_DURATION_NS))
+
+def make_enc_in_probe(store, warmup):
+    def cb(pad, info, _):
+        buf = info.get_buffer()
+        if buf is None:
+            return Gst.PadProbeReturn.OK
+        idx = pts_to_idx(buf.pts)
+        if idx is not None and idx >= warmup:
+            with store._lock:
+                store.enc_in[idx - warmup] = time.time_ns()
+        return Gst.PadProbeReturn.OK
+    return cb
+
+def make_enc_out_probe(store, warmup):
+    def cb(pad, info, _):
+        buf = info.get_buffer()
+        if buf is None:
+            return Gst.PadProbeReturn.OK
+        idx = pts_to_idx(buf.pts)
+        if idx is not None and idx >= warmup:
+            with store._lock:
+                store.enc_out[idx - warmup] = time.time_ns()
+        return Gst.PadProbeReturn.OK
+    return cb
+
+def make_tx_probe(store, warmup):
+    def cb(pad, info, _):
+        buf = info.get_buffer()
+        if buf is None:
+            return Gst.PadProbeReturn.OK
+        idx = pts_to_idx(buf.pts)
+        if idx is not None and idx >= warmup:
+            with store._lock:
+                store.tx[idx - warmup] = time.time_ns()
+        return Gst.PadProbeReturn.OK
+    return cb
+
+def run(args):
+    width, height = RESOLUTIONS[args.resolution]
+    total_buffers = args.warmup + args.duration * FPS
+    store = FrameStore()
+
+    pipeline_str = build_pipeline(
+        args.codec, width, height, args.bitrate, args.port, total_buffers)
+    pipeline = Gst.parse_launch(pipeline_str)
+
+    encoder  = pipeline.get_by_name('encoder')
+    tx_probe = pipeline.get_by_name('tx_probe')
+    sink     = pipeline.get_by_name('sink')
+
+    encoder.get_static_pad('sink').add_probe(
+        Gst.PadProbeType.BUFFER, make_enc_in_probe(store, args.warmup))
+    encoder.get_static_pad('src').add_probe(
+        Gst.PadProbeType.BUFFER, make_enc_out_probe(store, args.warmup))
+    tx_probe.get_static_pad('src').add_probe(
+        Gst.PadProbeType.BUFFER, make_tx_probe(store, args.warmup))
+
+    loop = GLib.MainLoop()
+
+    def on_client_added(element, fd, host, port):
+        GLib.idle_add(pipeline.set_state, Gst.State.PLAYING)
+
+    sink.connect('client-added', on_client_added)
+
+    bus = pipeline.get_bus()
+    bus.add_signal_watch()
+
+    def on_message(bus, msg):
+        if msg.type == Gst.MessageType.EOS:
+            loop.quit()
+        elif msg.type == Gst.MessageType.ERROR:
+            print(f'ERROR: {msg.parse_error()}', file=sys.stderr)
+            loop.quit()
+
+    bus.connect('message', on_message)
+
+    pipeline.set_state(Gst.State.PAUSED)
+    pipeline.get_state(Gst.CLOCK_TIME_NONE)
+    print(f'READY port={args.port}', flush=True)
+
+    try:
+        loop.run()
+    finally:
+        pipeline.set_state(Gst.State.NULL)
+
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    out = RESULTS_DIR / f'sender_{args.codec}_{args.resolution}.csv'
+    with open(out, 'w', newline='') as f:
+        w = csv.writer(f)
+        w.writerow(['frame_idx', 'enc_in_ns', 'enc_out_ns', 'tx_ns'])
+        for idx in sorted(store.enc_in):
+            if idx in store.enc_out and idx in store.tx:
+                w.writerow([idx, store.enc_in[idx], store.enc_out[idx], store.tx[idx]])
+    print(f'wrote {out}')
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--codec',      required=True, choices=list(CODEC_CONFIGS))
+    ap.add_argument('--resolution', required=True, choices=list(RESOLUTIONS))
+    ap.add_argument('--bitrate',    type=int, default=1_500_000)
+    ap.add_argument('--port',       type=int, default=5100)
+    ap.add_argument('--duration',   type=int, default=30,
+                    help='measurement duration in seconds')
+    ap.add_argument('--warmup',     type=int, default=30,
+                    help='warmup frames to discard')
+    run(ap.parse_args())
+
+if __name__ == '__main__':
+    main()
+```
+
+</details>
+
+### receiver.py
+
+<details>
+<summary>Full source</summary>
+
+```python
+#!/usr/bin/env python3
+import gi
+gi.require_version('Gst', '1.0')
+from gi.repository import Gst, GLib
+
+import argparse, csv, os, sys, threading, time
+from pathlib import Path
+
+Gst.init(None)
+
+RESULTS_DIR = Path(os.environ.get('RESULTS_DIR', '/results'))
+FPS         = 30
+RESOLUTIONS = {'fhd': (1920, 1080), 'hd': (1280, 720)}
+
+# PTS is not preserved across tcpserversink/tcpclientsrc (raw bytestream).
+# Frame identity uses monotonic counters — safe because parse → decoder is a
+# 1:1 FIFO with num-B-Frames=0 and TCP is lossless in-order.
+
+CODEC_PARSE = {
+    'h264': 'h264parse',
+    'h265': 'h265parse',
+    'av1':  'av1parse',
+}
+
+def build_pipeline(codec, sender_ip, port, width, height):
+    parse = CODEC_PARSE[codec]
+    return (
+        f'tcpclientsrc name=src host={sender_ip} port={port} '
+        f'! {parse} '
+        f'! identity name=dec_in_probe sync=false '
+        f'! nvv4l2decoder name=decoder '
+        f'! nvvidconv '
+        f'! video/x-raw,format=I420 '
+        f'! identity name=dec_out_probe sync=false '
+        f'! fakesink sync=false'
+    )
+
+class FrameStore:
+    def __init__(self):
+        self._lock          = threading.Lock()
+        self.dec_in         = {}
+        self.dec_out        = {}
+        self._dec_in_count  = 0
+        self._dec_out_count = 0
+
+def make_dec_in_probe(store, warmup):
+    def cb(pad, info, _):
+        with store._lock:
+            idx = store._dec_in_count
+            store._dec_in_count += 1
+            if idx >= warmup:
+                store.dec_in[idx - warmup] = time.time_ns()
+        return Gst.PadProbeReturn.OK
+    return cb
+
+def make_dec_out_probe(store, warmup):
+    def cb(pad, info, _):
+        with store._lock:
+            idx = store._dec_out_count
+            store._dec_out_count += 1
+            if idx >= warmup:
+                store.dec_out[idx - warmup] = time.time_ns()
+        return Gst.PadProbeReturn.OK
+    return cb
+
+def run(args):
+    width, height = RESOLUTIONS[args.resolution]
+    store = FrameStore()
+
+    pipeline_str = build_pipeline(
+        args.codec, args.sender_ip, args.port, width, height)
+    pipeline = Gst.parse_launch(pipeline_str)
+
+    dec_in_probe  = pipeline.get_by_name('dec_in_probe')
+    dec_out_probe = pipeline.get_by_name('dec_out_probe')
+
+    dec_in_probe.get_static_pad('src').add_probe(
+        Gst.PadProbeType.BUFFER, make_dec_in_probe(store, args.warmup))
+    dec_out_probe.get_static_pad('src').add_probe(
+        Gst.PadProbeType.BUFFER, make_dec_out_probe(store, args.warmup))
+
+    loop = GLib.MainLoop()
+    bus  = pipeline.get_bus()
+    bus.add_signal_watch()
+
+    def on_message(bus, msg):
+        if msg.type in (Gst.MessageType.EOS, Gst.MessageType.ERROR):
+            loop.quit()
+
+    bus.connect('message', on_message)
+    pipeline.set_state(Gst.State.PLAYING)
+
+    try:
+        loop.run()
+    finally:
+        pipeline.set_state(Gst.State.NULL)
+
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    out = RESULTS_DIR / f'receiver_{args.codec}_{args.resolution}.csv'
+    with open(out, 'w', newline='') as f:
+        w = csv.writer(f)
+        w.writerow(['frame_idx', 'rx_ns', 'dec_in_ns', 'dec_out_ns'])
+        for idx in sorted(store.dec_in):
+            if idx in store.dec_out:
+                ns = store.dec_in[idx]
+                w.writerow([idx, ns, ns, store.dec_out[idx]])
+    print(f'wrote {out}')
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--codec',      required=True, choices=list(CODEC_PARSE))
+    ap.add_argument('--resolution', required=True, choices=list(RESOLUTIONS))
+    ap.add_argument('--sender-ip',  required=True)
+    ap.add_argument('--port',       type=int, default=5100)
+    ap.add_argument('--warmup',     type=int, default=30,
+                    help='warmup frames to discard')
+    run(ap.parse_args())
+
+if __name__ == '__main__':
+    main()
+```
+
+</details>
+
+### analyze.py
+
+<details>
+<summary>Full source</summary>
+
+```python
+#!/usr/bin/env python3
+"""
+Merge sender/receiver CSVs, compute per-stage latency statistics.
+
+Wire latency (tx_latency) is valid only when sender and receiver clocks
+are synchronized with chrony (< 1 ms offset). Large negative TX values
+indicate clock skew.
+"""
+import argparse, csv, json
+from pathlib import Path
+
+import numpy as np
+try:
+    from tabulate import tabulate
+    HAS_TABULATE = True
+except ImportError:
+    HAS_TABULATE = False
+
+FPS         = 30
+NS_PER_MS   = 1_000_000
+
+CODECS      = ['h264', 'h265', 'av1']
+RESOLUTIONS = ['fhd', 'hd']
+RES_LABEL   = {'fhd': '1920×1080', 'hd': '1280×720'}
+
+def load_csv(path):
+    with open(path) as f:
+        return [{k: int(v) for k, v in row.items()} for row in csv.DictReader(f)]
+
+def ns_to_ms(ns):
+    return ns / NS_PER_MS
+
+def percentiles(values):
+    if not values:
+        return {k: float('nan') for k in ('mean', 'p50', 'p95', 'p99', 'max')}
+    a = np.array(values)
+    return dict(mean=float(np.mean(a)),
+                p50=float(np.percentile(a, 50)),
+                p95=float(np.percentile(a, 95)),
+                p99=float(np.percentile(a, 99)),
+                max=float(np.max(a)))
+
+def analyze_pair(sender_rows, receiver_rows):
+    by_sender   = {r['frame_idx']: r for r in sender_rows}
+    by_receiver = {r['frame_idx']: r for r in receiver_rows}
+    common = sorted(set(by_sender) & set(by_receiver))
+
+    enc, dec, tx, e2e = [], [], [], []
+    for idx in common:
+        s, r = by_sender[idx], by_receiver[idx]
+        enc_ms = ns_to_ms(s['enc_out_ns'] - s['enc_in_ns'])
+        dec_ms = ns_to_ms(r['dec_out_ns'] - r['dec_in_ns'])
+        tx_ms  = ns_to_ms(r['rx_ns']      - s['tx_ns'])
+        enc.append(enc_ms)
+        dec.append(dec_ms)
+        tx.append(tx_ms)
+        e2e.append(enc_ms + dec_ms + max(tx_ms, 0.0))
+
+    return dict(n_frames=len(common),
+                encode=percentiles(enc),
+                decode=percentiles(dec),
+                tx=percentiles(tx),
+                e2e=percentiles(e2e))
+
+def fmt(v, d=1):
+    return 'N/A' if v != v else f'{v:.{d}f}'
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--results-dir', default='./results')
+    ap.add_argument('--output',      default=None)
+    args = ap.parse_args()
+
+    results_dir = Path(args.results_dir)
+    rows, missing, all_data = [], [], {}
+
+    for codec in CODECS:
+        for res in RESOLUTIONS:
+            sp = results_dir / f'sender_{codec}_{res}.csv'
+            rp = results_dir / f'receiver_{codec}_{res}.csv'
+            if not sp.exists() or not rp.exists():
+                missing.append(f'{codec}/{res}')
+                continue
+            r = analyze_pair(load_csv(sp), load_csv(rp))
+            all_data[f'{codec}_{res}'] = r
+            rows.append([
+                codec.upper(), RES_LABEL[res], r['n_frames'],
+                fmt(r['encode']['mean']), fmt(r['encode']['p95']),
+                fmt(r['decode']['mean']), fmt(r['decode']['p95']),
+                fmt(r['tx']['mean']),     fmt(r['tx']['p95']),
+                fmt(r['e2e']['mean']),    fmt(r['e2e']['p95']),
+            ])
+
+    headers = ['Codec', 'Resolution', 'Frames',
+               'Enc mean', 'Enc p95', 'Dec mean', 'Dec p95',
+               'TX mean',  'TX p95',  'E2E mean', 'E2E p95']
+
+    report = (tabulate(rows, headers=headers, tablefmt='github')
+              if HAS_TABULATE else '\n'.join('\t'.join(str(c) for c in r) for r in rows))
+    print(report)
+
+    if missing:
+        print(f'\nMissing: {", ".join(missing)}')
+    if args.output:
+        Path(args.output).write_text(report)
+
+    json_out = results_dir / 'summary.json'
+    json_out.write_text(json.dumps(all_data, indent=2))
+    print(f'stats → {json_out}')
+
+if __name__ == '__main__':
+    main()
+```
+
+</details>
