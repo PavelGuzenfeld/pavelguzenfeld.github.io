@@ -1215,6 +1215,154 @@ if __name__ == '__main__':
 
 </details>
 
+### deploy.sh
+
+```bash
+#!/usr/bin/env bash
+# Sync benchmark directory to both Jetsons and build the Docker image there.
+# Edit SENDER_IP / RECEIVER_IP at the top, then: bash scripts/deploy.sh
+set -euo pipefail
+
+SENDER_IP=192.168.1.10      # ← set your sender IP
+RECEIVER_IP=192.168.1.20    # ← set your receiver IP
+SSH_USER=nvidia
+REMOTE_DIR='~/benchmark'
+IMAGE=gst-bench
+BENCH_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+
+log() { printf '[deploy] %s\n' "$*"; }
+
+sync_host() {
+    local target="${SSH_USER}@${1}:${REMOTE_DIR}/"
+    log "rsync → ${target}"
+    rsync -az --delete \
+        --exclude '.git' \
+        --exclude '__pycache__' \
+        --exclude 'results/' \
+        "${BENCH_ROOT}/" "${target}"
+}
+
+build_image() {
+    local host=$1
+    log "docker build on ${host}"
+    ssh "${SSH_USER}@${host}" \
+        "cd ${REMOTE_DIR} && docker build --network=host -t ${IMAGE} ." \
+        2>&1 | sed "s/^/[${host}] /"
+    log "  ✓ ${host} done"
+}
+
+sync_host "${SENDER_IP}"
+sync_host "${RECEIVER_IP}"
+
+build_image "${SENDER_IP}"   &
+build_image "${RECEIVER_IP}" &
+wait
+
+log "deploy complete"
+log "next: setup_timesync.sh → run_matrix.sh"
+```
+
+### run_matrix.sh
+
+```bash
+#!/usr/bin/env bash
+# Runs all codec × resolution combinations sequentially.
+# Edit the top variables, then: bash scripts/run_matrix.sh
+set -euo pipefail
+
+SENDER_IP=192.168.1.10      # ← set your sender IP
+RECEIVER_IP=192.168.1.20    # ← set your receiver IP
+SSH_USER=nvidia
+IMAGE=gst-bench
+RESULTS_LOCAL=$(cd "$(dirname "$0")/.." && pwd)/results
+RESULTS_REMOTE=/tmp/bench_results
+BITRATE=1500000
+DURATION=30
+WARMUP=30
+
+declare -A PORTS=(
+    [h264_fhd]=5100  [h264_hd]=5101
+    [h265_fhd]=5200  [h265_hd]=5201
+    [av1_fhd]=5300   [av1_hd]=5301
+)
+CODECS=(h264 h265 av1)
+RESOLUTIONS=(fhd hd)
+
+log() { printf '[matrix] %(%H:%M:%S)T %s\n' -1 "$*"; }
+
+run_one() {
+    local codec=$1 res=$2
+    local port=${PORTS[${codec}_${res}]}
+
+    log "start ${codec^^} ${res^^} (port ${port})"
+
+    ssh "${SSH_USER}@${SENDER_IP}"   "docker rm -f bench_sender   2>/dev/null; true"
+    ssh "${SSH_USER}@${RECEIVER_IP}" "docker rm -f bench_receiver 2>/dev/null; true"
+    ssh "${SSH_USER}@${SENDER_IP}"   "mkdir -p ${RESULTS_REMOTE}"
+    ssh "${SSH_USER}@${RECEIVER_IP}" "mkdir -p ${RESULTS_REMOTE}"
+
+    # Start sender in PAUSED state — port open, not encoding
+    ssh "${SSH_USER}@${SENDER_IP}" "
+        docker run -d --rm --runtime nvidia --network host \
+            --name bench_sender \
+            -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all \
+            -v ${RESULTS_REMOTE}:/results ${IMAGE} \
+            python3 /app/scripts/sender.py \
+                --codec ${codec} --resolution ${res} \
+                --bitrate ${BITRATE} --port ${port} \
+                --duration ${DURATION} --warmup ${WARMUP}" >/dev/null
+
+    # Poll until sender's tcpserversink is bound
+    until ssh "${SSH_USER}@${SENDER_IP}" \
+        "docker logs bench_sender 2>&1 | grep -q 'READY port=${port}'"; do
+        sleep 0.5; done
+
+    # Start receiver — its connect triggers sender into PLAYING
+    ssh "${SSH_USER}@${RECEIVER_IP}" "
+        docker run -d --rm --runtime nvidia --network host \
+            --name bench_receiver \
+            -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all \
+            -v ${RESULTS_REMOTE}:/results ${IMAGE} \
+            python3 /app/scripts/receiver.py \
+                --codec ${codec} --resolution ${res} \
+                --sender-ip ${SENDER_IP} --port ${port} \
+                --warmup ${WARMUP}" >/dev/null
+
+    # Wait for both containers to exit
+    local elapsed=0
+    local timeout=$((DURATION + 60))
+    while true; do
+        local s r
+        s=$(ssh "${SSH_USER}@${SENDER_IP}"   "docker ps -q --filter name=bench_sender   | wc -l")
+        r=$(ssh "${SSH_USER}@${RECEIVER_IP}" "docker ps -q --filter name=bench_receiver | wc -l")
+        [[ "$s" == "0" && "$r" == "0" ]] && break
+        (( elapsed >= timeout )) && {
+            ssh "${SSH_USER}@${SENDER_IP}"   "docker stop bench_sender   2>/dev/null; true"
+            ssh "${SSH_USER}@${RECEIVER_IP}" "docker stop bench_receiver 2>/dev/null; true"
+            log "TIMEOUT — containers stopped"; break; }
+        sleep 5; (( elapsed += 5 ))
+    done
+
+    mkdir -p "${RESULTS_LOCAL}"
+    scp -q "${SSH_USER}@${SENDER_IP}:${RESULTS_REMOTE}/sender_${codec}_${res}.csv" \
+        "${RESULTS_LOCAL}/" 2>/dev/null || true
+    scp -q "${SSH_USER}@${RECEIVER_IP}:${RESULTS_REMOTE}/receiver_${codec}_${res}.csv" \
+        "${RESULTS_LOCAL}/" 2>/dev/null || true
+
+    log "done ${codec^^} ${res^^}"
+}
+
+mkdir -p "${RESULTS_LOCAL}"
+
+for codec in "${CODECS[@]}"; do
+    for res in "${RESOLUTIONS[@]}"; do
+        run_one "${codec}" "${res}"
+    done
+done
+
+log "all done → ${RESULTS_LOCAL}/"
+```
+
 ### analyze.py
 
 <details>
