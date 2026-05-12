@@ -853,6 +853,9 @@ All constants are named. No magic numbers.
 
 ### Dockerfile
 
+<details>
+<summary>Full source</summary>
+
 ```dockerfile
 # ARM64 benchmark image for Jetson Orin JP6 (L4T R36.4.x).
 # Build ON the Orin (not cross-compiled): docker build --network=host -t gst-bench .
@@ -910,6 +913,8 @@ RUN chmod +x /app/scripts/*.sh /app/scripts/*.py 2>/dev/null || true
 
 VOLUME ["/results"]
 ```
+
+</details>
 
 ### sender.py
 
@@ -1217,6 +1222,9 @@ if __name__ == '__main__':
 
 ### deploy.sh
 
+<details>
+<summary>Full source</summary>
+
 ```bash
 #!/usr/bin/env bash
 # Sync benchmark directory to both Jetsons and build the Docker image there.
@@ -1262,7 +1270,12 @@ log "deploy complete"
 log "next: setup_timesync.sh → run_matrix.sh"
 ```
 
+</details>
+
 ### run_matrix.sh
+
+<details>
+<summary>Full source</summary>
 
 ```bash
 #!/usr/bin/env bash
@@ -1362,6 +1375,8 @@ done
 
 log "all done → ${RESULTS_LOCAL}/"
 ```
+
+</details>
 
 ### analyze.py
 
