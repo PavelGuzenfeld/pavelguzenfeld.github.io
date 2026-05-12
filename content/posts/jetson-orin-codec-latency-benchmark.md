@@ -15,6 +15,7 @@ tags:
 - Python
 - Docker
 - embedded
+- Linux
 keywords:
 - Jetson Orin codec latency benchmark
 - nvv4l2 H.264 H.265 AV1 latency
@@ -26,11 +27,17 @@ keywords:
 - chrony clock synchronization GStreamer
 - JetPack 6 codec comparison
 - nvv4l2h264enc nvv4l2h265enc nvv4l2av1enc
+- NTP clock sync two Linux machines
+- chrony stratum-1 orphan NTP server
+- chronyc tracking offset verification
+- sync Linux clocks LAN NTP chrony
+- cross-host timestamp synchronization Linux
 cover:
   image: /images/posts/jetson-codec-latency-benchmark.png
   alt: H.264 vs H.265 vs AV1 end-to-end latency on Jetson Orin — grouped bar chart
 categories:
 - deep-dive
+- how-to
 summary: >
   A rigorous per-stage latency benchmark across H.264, H.265, and AV1 hardware codecs
   on NVIDIA Jetson Orin (JetPack 6), measuring encode, wire, and decode separately at
@@ -63,6 +70,15 @@ audio:
     num-B-Frames: num B frames
     VVenC: V V enc
     VVdeC: V V dec
+    chronyc: kron ee C
+    chrony.conf: kron ee dot conf
+    iburst: I burst
+    makestep: make step
+    driftfile: drift file
+    rtcsync: R T C sync
+    stratum-1: stratum one
+    systemctl: system C T L
+    apt-get: apt get
 ---
 
 The question "which codec should I use for a latency-sensitive Jetson pipeline?" does not have a single obvious answer on paper. H.264 is the oldest standard with the longest hardware support history. H.265 offers better compression. AV1 is the newest and is a JetPack 6 addition. Published latency comparisons for Jetson's NVMM (`nvv4l2`) codec stack are sparse, and the ones that exist rarely separate encode, wire, and decode into distinct measured stages.
@@ -193,22 +209,249 @@ All timestamps are taken with Python's `time.time_ns()` inside GStreamer pad pro
 
 ### Clock synchronization
 
-Wire latency is the only stage that requires clock synchronization between the two machines.
+Wire latency is the only stage that requires clock synchronization between the two machines. Encode and decode are measured entirely within a single host, so no cross-machine timing is needed for those stages. But `wire = dec_in_ns − tx_ns` subtracts a receiver timestamp from a sender timestamp — those two clocks must agree.
 
-The sender runs as a chrony stratum-1 orphan (no upstream NTP server needed on an air-gapped LAN). The receiver syncs from the sender over NTP. After ~60 seconds of convergence, achieved offset on this run: **+202 µs ± 234 µs**.
+The achieved offset on this run: **+202 µs ± 234 µs**. At 30 fps (one frame = 33.3 ms), that is 0.7% of a frame period — well within the acceptable range for latency measurements in the 67–100 ms range.
 
-At 30 fps, one frame is 33.3 ms. A ±234 µs clock error is 0.7% of a frame period — well within the acceptable range for a benchmark whose wire latency measurements are in the 67–100 ms range.
+---
 
-The setup is scripted in `scripts/setup_timesync.sh`:
+## How to sync two Linux machines with NTP using chrony
+
+This section is a self-contained how-to for anyone who needs sub-millisecond clock agreement between two Linux hosts on the same LAN — not only for this benchmark, but for any cross-host timestamp comparison.
+
+### Why NTP, and why chrony specifically
+
+The Network Time Protocol (NTP) synchronizes clocks by measuring the round-trip time to a reference server, estimating one-way propagation, and applying a correction to the local clock. On a LAN with sub-millisecond RTT, NTP routinely achieves ±100–500 µs accuracy.
+
+`chrony` is the recommended NTP implementation on modern Linux. It converges faster than the classic `ntpd` (especially after cold starts or when the initial clock error is large), handles intermittent network connections better, and exposes better diagnostics via `chronyc`. It ships by default on Ubuntu 20.04+ and most Jetson JetPack images.
+
+### NTP stratum levels
+
+NTP uses a **stratum** hierarchy to describe clock quality:
+
+| Stratum | Source |
+|---------|--------|
+| 0 | Physical reference (GPS, atomic clock) — not an NTP node |
+| 1 | Host directly connected to stratum-0 hardware |
+| 2 | Host syncing from a stratum-1 server |
+| 3–15 | Each hop adds one stratum |
+| 16 | Unsynchronized (special value meaning "not a valid source") |
+
+On an air-gapped LAN with no GPS or internet, neither machine has a real stratum-0 source. The solution is **orphan mode**: chrony allows a host to declare itself stratum-1 autonomously, using its own free-running local oscillator as the reference. The receiver then treats the sender as a legitimate stratum-1 source and syncs to it. Both machines agree with each other, even though neither is tied to an absolute time standard. For a latency benchmark this is exactly what we need: relative agreement between the two clocks, not absolute UTC accuracy.
+
+### Step-by-step: configure sender as NTP server
+
+**1. Install chrony on both hosts (if not already present)**
 
 ```bash
-# On sender: become stratum-1 orphan
-ssh nvidia@<sender-ip> "bash scripts/setup_timesync.sh sender"
-# After 60 s, on receiver: sync from sender
-ssh nvidia@<receiver-ip> "bash scripts/setup_timesync.sh receiver <sender-ip>"
-# Verify
+sudo apt-get install -y chrony
+```
+
+**2. Configure the sender as a stratum-1 orphan NTP server**
+
+Write the following to `/etc/chrony/chrony.conf` on the **sender**:
+
+```
+# Sender acts as NTP server for the benchmark LAN.
+# 'orphan' lets it free-run as stratum 1 without an upstream reference.
+local stratum 1 orphan
+allow 192.168.1.0/24
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+```
+
+Key directives:
+- `local stratum 1 orphan` — declares this machine as a stratum-1 reference; `orphan` prevents it from advertising itself as a time source unless it is actually in sync with itself (prevents loops in larger setups).
+- `allow 192.168.1.0/24` — permits NTP queries from any host on the subnet. Substitute your actual subnet.
+- `driftfile` — persists the measured oscillator drift rate across reboots so chrony does not have to re-learn it each time.
+- `makestep 1.0 3` — allows a step correction (rather than a slow slew) for the first 3 clock updates if the offset exceeds 1 second. This speeds up initial convergence.
+- `rtcsync` — keeps the hardware RTC in sync with the system clock.
+
+Restart chrony to apply:
+
+```bash
+sudo systemctl restart chrony
+```
+
+Wait approximately **60 seconds** for chrony to stabilize its stratum-1 declaration. During this window the sender is still converging its own internal clock model; the receiver should not start syncing until the sender is stable.
+
+**3. Configure the receiver to sync from the sender**
+
+Write the following to `/etc/chrony/chrony.conf` on the **receiver**, substituting the sender's IP:
+
+```
+# Sync exclusively from the sender Jetson
+server <sender-ip> iburst prefer
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+```
+
+Key directives:
+- `server <sender-ip> iburst prefer` — sets the sender as the only NTP source. `iburst` sends a burst of 8 packets on startup instead of 1, reaching initial sync 4–8× faster. `prefer` marks this source as preferred when multiple sources are configured.
+
+Restart chrony:
+
+```bash
+sudo systemctl restart chrony
+```
+
+### Step-by-step: verify sync quality
+
+Run on the receiver after ~60 seconds:
+
+```bash
+chronyc tracking
+```
+
+Example output:
+
+```
+Reference ID    : C0A80101 (192.168.1.10)
+Stratum         : 2
+Ref time (UTC)  : Mon May 12 09:14:33 2026
+System time     : 0.000202 seconds fast of NTP time
+Last offset     : +0.000198 seconds
+RMS offset      : 0.000221 seconds
+Frequency       : 3.271 ppm fast
+Residual freq   : +0.002 ppm
+Skew            : 0.083 ppm
+Root delay      : 0.000412 seconds
+Root dispersion : 0.000104 seconds
+Update interval : 8.0 seconds
+Leap status     : Normal
+```
+
+What to look at:
+
+| Field | What it means | Target |
+|-------|--------------|--------|
+| `Reference ID` | The NTP server being used — should show sender's IP | sender's IP |
+| `Stratum` | Should be 2 (one hop from sender's stratum 1) | 2 |
+| `System time` | Current offset from NTP time | **< 1 ms** |
+| `Last offset` | Offset at the last update | < 1 ms |
+| `RMS offset` | Root-mean-square of recent offsets — the stability measure | < 500 µs |
+| `Root delay` | Round-trip time to reference — should be sub-ms on LAN | < 1 ms |
+| `Root dispersion` | Accumulated error estimate | < 1 ms |
+
+For this benchmark run: `System time = +202 µs`, `RMS offset = 221 µs`. Both are well under the 1 ms target.
+
+Also check the source list:
+
+```bash
+chronyc sources -v
+```
+
+Example output:
+
+```
+  .-- Source mode  '^' = server, '=' = peer, '#' = local clock.
+ / .- Source state '*' = current best, '+' = combined, '-' = not used,
+| / .- Distance: '*' = outlier rejected, '~' = stale, '?' = unknown
+| | / .- Jitter: '/' = high
+| | | /
+S Name/IP Address        Reach LastRx Last sample
+===============================================================================
+^* 192.168.1.10               17     8   +202us[+198us] +/-  309us
+```
+
+The `*` next to the sender IP confirms it is the active reference. The `[+198us]` is the last measured offset; `+/- 309us` is the estimated uncertainty.
+
+### The full setup script
+
+`scripts/setup_timesync.sh` automates both roles:
+
+```bash
+#!/usr/bin/env bash
+# Usage:
+#   On sender:   ./setup_timesync.sh sender
+#   On receiver: ./setup_timesync.sh receiver <sender-ip>
+
+set -euo pipefail
+
+ROLE=${1:-sender}
+SENDER_IP=${2:-<sender-ip>}
+
+install_chrony() {
+    if ! command -v chronyc &>/dev/null; then
+        sudo apt-get install -y chrony
+    fi
+}
+
+configure_sender() {
+    sudo tee /etc/chrony/chrony.conf > /dev/null <<EOF
+local stratum 1 orphan
+allow 0.0.0.0/0
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+EOF
+    sudo systemctl restart chrony
+}
+
+configure_receiver() {
+    sudo tee /etc/chrony/chrony.conf > /dev/null <<EOF
+server ${SENDER_IP} iburst prefer
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+EOF
+    sudo systemctl restart chrony
+    # Poll for convergence
+    for i in $(seq 1 12); do
+        sleep 5
+        offset=$(chronyc tracking 2>/dev/null \
+            | awk '/System time/ {gsub(/[^0-9.\-]/, "", $5); print $5}')
+        echo "[timesync] offset: ${offset} s"
+    done
+}
+
+install_chrony
+case "$ROLE" in
+    sender)   configure_sender ;;
+    receiver) configure_receiver ;;
+    *)        echo "Usage: $0 [sender|receiver] [sender_ip]"; exit 1 ;;
+esac
+
+echo "=== chronyc tracking ===" && chronyc tracking
+echo "=== chronyc sources ===" && chronyc sources -v
+```
+
+Run sequence from your dev machine:
+
+```bash
+# Step 1 — configure sender as stratum-1 NTP server
+ssh nvidia@<sender-ip> "bash ~/benchmark/scripts/setup_timesync.sh sender"
+
+# Step 2 — wait 60 s for sender to stabilize, then configure receiver
+sleep 60
+ssh nvidia@<receiver-ip> "bash ~/benchmark/scripts/setup_timesync.sh receiver <sender-ip>"
+
+# Step 3 — verify on receiver (target: System time < 0.001 s)
 ssh nvidia@<receiver-ip> "chronyc tracking"
 ```
+
+### Common failure modes
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `Stratum: 16` on receiver | Sender not reachable or not yet stable | Wait 60 s and retry; check `ufw`/`iptables` allow UDP 123 |
+| `Reference ID: 7F7F0101` (127.127.1.1) | Receiver fell back to local clock — sender unreachable | Verify sender IP in `chrony.conf`; check firewall |
+| Offset > 10 ms after 2 min | Large initial error, `makestep` not triggered | Run `sudo chronyc makestep` manually to force immediate step |
+| `Root delay > 5 ms` | High LAN RTT or switch congestion | Verify hosts are on the same switch; avoid WiFi |
+| Offset bounces ±1–2 ms | Kernel clock frequency instability (common on Jetson after warm boot) | Run `sudo chronyc makestep` then wait 2 min |
+
+### Why ±234 µs is sufficient here
+
+The wire latency measurements in this benchmark are in the **67–100 ms range**. A ±234 µs clock error represents:
+
+- 0.35% of the 67 ms H.264/AV1 wire measurement
+- 0.23% of the 100 ms H.265 wire measurement
+
+For the benchmark's purpose — comparing codecs, not computing absolute latency — this error is negligible. Even if the offset were a full millisecond, it would shift all wire measurements equally and not change any codec comparison.
+
+For applications where absolute wire latency accuracy matters (e.g., measuring <5 ms video paths), consider PTP (IEEE 1588) with hardware timestamping support, which achieves sub-microsecond accuracy on compatible NICs.
 
 ---
 
