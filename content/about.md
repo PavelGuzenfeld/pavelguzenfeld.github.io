@@ -3,6 +3,8 @@ title: "About"
 layout: "single"
 summary: "Drone software engineer, C++. Video pipelines, headless simulation, system-testing in CI, and upstream bug fixes across Eigen, GStreamer, MAVSDK, PX4, and ROS 2."
 ShowToc: false
+aliases:
+  - /contact/
 ---
 
 ## Who I Am
