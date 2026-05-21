@@ -48,7 +48,7 @@ aliases:
 
 ## Upstream Contributions
 
-**64 patches merged across 11 projects, 17 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of April 2026.
+**65 patches merged across 11 projects, 11 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of May 2026.
 
 ### Eigen — 21 merged, 1 open, 2 closed
 
@@ -91,7 +91,7 @@ aliases:
 | [!11118](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11118) | bug | `GstShmAllocator` maxsize not rounded up to page size | 2026-03-24 | merged |
 | [!11126](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11126) | test | Fix flaky `test_shm_live` timeout | 2026-03-24 | open |
 
-### PX4-Autopilot — 4 merged, 2 open, 1 closed
+### PX4-Autopilot — 5 merged, 1 open, 1 closed
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -101,7 +101,7 @@ aliases:
 | [#26847](https://github.com/PX4/PX4-Autopilot/pull/26847) | security | Unsigned MAVLink messages accepted when signing key is missing | 2026-03-21 | closed |
 | [#26848](https://github.com/PX4/PX4-Autopilot/pull/26848) | bug | uxrce_dds_client session fails to reconnect after agent restart | 2026-03-21 | merged |
 | [#26853](https://github.com/PX4/PX4-Autopilot/pull/26853) | bug | Mission resume picks wrong waypoint when camera triggering is active | 2026-03-22 | merged |
-| [#26854](https://github.com/PX4/PX4-Autopilot/pull/26854) | bug | False landed-state detection in OFFBOARD direct_actuator mode | 2026-03-22 | open |
+| [#26854](https://github.com/PX4/PX4-Autopilot/pull/26854) | bug | False landed-state detection in OFFBOARD direct_actuator mode | 2026-03-22 | merged |
 
 ### MAVSDK — 8 merged, 2 closed
 
@@ -127,17 +127,17 @@ aliases:
 | [#400](https://github.com/mavlink/MAVSDK-Proto/pull/400) | feature | Add `DownloadGeofence` RPC to geofence proto | 2026-03-21 | merged |
 | [#401](https://github.com/mavlink/MAVSDK-Proto/pull/401) | feature | Add `HomePosition` message and timestamp fields to telemetry | 2026-03-27 | closed |
 
-### dora-rs — 3 merged, 5 open, 1 closed
+### dora-rs — 3 merged, 6 closed
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#1403](https://github.com/dora-rs/dora/pull/1403) | feature | Expose `node_id()` and `dataflow_id()` accessors | 2026-03-15 | merged |
-| [#1409](https://github.com/dora-rs/dora/pull/1409) | feature | Event receive variants (timeout, non-blocking, drain) | 2026-03-16 | open |
-| [#1410](https://github.com/dora-rs/dora/pull/1410) | feature | `close_outputs`, `NodeFailed` and `Reload` event types | 2026-03-16 | open |
-| [#1413](https://github.com/dora-rs/dora/pull/1413) | feature | `node_config_json` and `dataflow_descriptor_json` accessors | 2026-03-16 | open |
-| [#1414](https://github.com/dora-rs/dora/pull/1414) | bug | `InputClosed`/`Stop` events not forwarded to C++ callbacks | 2026-03-16 | open |
+| [#1409](https://github.com/dora-rs/dora/pull/1409) | feature | Event receive variants (timeout, non-blocking, drain) | 2026-03-16 | closed |
+| [#1410](https://github.com/dora-rs/dora/pull/1410) | feature | `close_outputs`, `NodeFailed` and `Reload` event types | 2026-03-16 | closed |
+| [#1413](https://github.com/dora-rs/dora/pull/1413) | feature | `node_config_json` and `dataflow_descriptor_json` accessors | 2026-03-16 | closed |
+| [#1414](https://github.com/dora-rs/dora/pull/1414) | bug | `InputClosed`/`Stop` events not forwarded to C++ callbacks | 2026-03-16 | closed |
 | [#1426](https://github.com/dora-rs/dora/pull/1426) | feature | CLI progress bars for time-consuming operations | 2026-03-17 | closed |
-| [#1427](https://github.com/dora-rs/dora/pull/1427) | feature | CLI progress bars for time-consuming operations (v2) | 2026-03-17 | open |
+| [#1427](https://github.com/dora-rs/dora/pull/1427) | feature | CLI progress bars for time-consuming operations (v2) | 2026-03-17 | closed |
 | [#1428](https://github.com/dora-rs/dora/pull/1428) | feature | Dynamic node initialization | 2026-03-17 | merged |
 | [#1431](https://github.com/dora-rs/dora/pull/1431) | feature | Zero-copy output API | 2026-03-17 | merged |
 
