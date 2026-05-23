@@ -1,0 +1,43 @@
+/* Collapsible contribution tables */
+.contrib-details {
+    margin: 0.25em 0 0.75em;
+}
+
+.contrib-summary {
+    cursor: pointer;
+    font-size: 1.05em;
+    font-weight: 600;
+    color: var(--primary);
+    padding: 0.35em 0.5em;
+    border-radius: var(--radius);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    user-select: none;
+    transition: background 0.15s;
+}
+
+.contrib-summary:hover {
+    background: var(--tertiary);
+}
+
+.contrib-summary::before {
+    content: "▶";
+    font-size: 0.7em;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+details[open] .contrib-summary::before {
+    transform: rotate(90deg);
+}
+
+/* Hide the native disclosure triangle */
+.contrib-summary::-webkit-details-marker { display: none; }
+.contrib-summary::marker { display: none; }
+
+.contrib-details table {
+    margin-top: 0.5em;
+}

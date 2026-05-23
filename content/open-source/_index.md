@@ -50,8 +50,7 @@ aliases:
 
 **74 patches merged across 12 projects, 14 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of May 2026.
 
-### Eigen — 21 merged, 1 open, 2 closed
-
+{{% details summary="Eigen — 21 merged, 1 open, 2 closed" %}}
 | MR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [!2298](https://gitlab.com/libeigen/eigen/-/merge_requests/2298) | bug | Fix most vexing parse in `SparseSparseProductWithPruning.h` | 2026-03-15 | merged |
@@ -78,9 +77,9 @@ aliases:
 | [!2337](https://gitlab.com/libeigen/eigen/-/merge_requests/2337) | feature | Add Modified Gram-Schmidt QR decomposition | 2026-03-21 | closed |
 | [!2338](https://gitlab.com/libeigen/eigen/-/merge_requests/2338) | fix | Map `.inc` files to C++ in Doxygen extension mapping | 2026-03-21 | merged |
 | [!2341](https://gitlab.com/libeigen/eigen/-/merge_requests/2341) | perf | Add blocked right-side application for HouseholderSequence | 2026-03-23 | closed |
+{{% /details %}}
 
-### GStreamer — 5 merged, 1 open, 1 closed
-
+{{% details summary="GStreamer — 5 merged, 1 open, 1 closed" %}}
 | MR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [!11101](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11101) | feature | Add NVMM allocator, buffer pool, and transform element for Jetson | 2026-03-23 | closed |
@@ -90,9 +89,9 @@ aliases:
 | [!11109](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11109) | bug | shmsink returns exit code 1 on clean shutdown | 2026-03-24 | merged |
 | [!11118](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11118) | bug | `GstShmAllocator` maxsize not rounded up to page size | 2026-03-24 | merged |
 | [!11126](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/11126) | test | Fix flaky `test_shm_live` timeout | 2026-03-24 | open |
+{{% /details %}}
 
-### PX4-Autopilot — 5 merged, 1 open, 1 closed
-
+{{% details summary="PX4-Autopilot — 5 merged, 1 open, 1 closed" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#26836](https://github.com/PX4/PX4-Autopilot/pull/26836) | refactor | Migrate ROS integration tests from Gazebo Classic to SIH | 2026-03-20 | open |
@@ -102,9 +101,9 @@ aliases:
 | [#26848](https://github.com/PX4/PX4-Autopilot/pull/26848) | bug | uxrce_dds_client session fails to reconnect after agent restart | 2026-03-21 | merged |
 | [#26853](https://github.com/PX4/PX4-Autopilot/pull/26853) | bug | Mission resume picks wrong waypoint when camera triggering is active | 2026-03-22 | merged |
 | [#26854](https://github.com/PX4/PX4-Autopilot/pull/26854) | bug | False landed-state detection in OFFBOARD direct_actuator mode | 2026-03-22 | merged |
+{{% /details %}}
 
-### MAVSDK — 8 merged, 2 closed
-
+{{% details summary="MAVSDK — 8 merged, 2 closed" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#2800](https://github.com/mavlink/MAVSDK/pull/2800) | bug | System incorrectly set to disconnected on heartbeat timeout | 2026-03-16 | closed |
@@ -117,18 +116,18 @@ aliases:
 | [#2827](https://github.com/mavlink/MAVSDK/pull/2827) | bug | mocap: Fix `MavFrame` enum sending wrong values on the wire | 2026-03-30 | merged |
 | [#2828](https://github.com/mavlink/MAVSDK/pull/2828) | bug | system_tests: Fix race in mission tests by registering server before connections | 2026-03-30 | merged |
 | [#2839](https://github.com/mavlink/MAVSDK/pull/2839) | feature | Expose full `HOME_POSITION` fields in `subscribe_home` | 2026-04-02 | merged |
+{{% /details %}}
 
-### MAVSDK-Proto — 3 merged, 1 closed
-
+{{% details summary="MAVSDK-Proto — 3 merged, 1 closed" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#398](https://github.com/mavlink/MAVSDK-Proto/pull/398) | feature | Add `timestamp_us` to Altitude and GroundTruth messages | 2026-03-21 | merged |
 | [#399](https://github.com/mavlink/MAVSDK-Proto/pull/399) | feature | Add `HomePosition` message with full `HOME_POSITION` fields | 2026-03-21 | merged |
 | [#400](https://github.com/mavlink/MAVSDK-Proto/pull/400) | feature | Add `DownloadGeofence` RPC to geofence proto | 2026-03-21 | merged |
 | [#401](https://github.com/mavlink/MAVSDK-Proto/pull/401) | feature | Add `HomePosition` message and timestamp fields to telemetry | 2026-03-27 | closed |
+{{% /details %}}
 
-### dora-rs — 7 merged, 1 open, 6 closed
-
+{{% details summary="dora-rs — 7 merged, 1 open, 6 closed" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#1403](https://github.com/dora-rs/dora/pull/1403) | feature | Expose `node_id()` and `dataflow_id()` accessors | 2026-03-15 | merged |
@@ -145,9 +144,9 @@ aliases:
 | [#1906](https://github.com/dora-rs/dora/pull/1906) | fix | Add root `pyproject.toml` workspace to Python dataflow template | 2026-05-21 | merged |
 | [#1907](https://github.com/dora-rs/dora/pull/1907) | fix | Replace `expect` with contextual errors on stdout/stderr pipe capture | 2026-05-21 | merged |
 | [#1908](https://github.com/dora-rs/dora/pull/1908) | feature | Async iteration support for `MockNode` + 3 async tests | 2026-05-21 | merged |
+{{% /details %}}
 
-### XGBoost — 4 merged, 1 open, 5 closed
-
+{{% details summary="XGBoost — 4 merged, 1 open, 5 closed" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#12085](https://github.com/dmlc/xgboost/pull/12085) | bug | Import crash under `python -OO` (optimized bytecode) | 2026-03-15 | closed |
@@ -160,18 +159,18 @@ aliases:
 | [#12110](https://github.com/dmlc/xgboost/pull/12110) | cleanup | Add specific error codes to all `type: ignore` comments | 2026-03-19 | merged |
 | [#12111](https://github.com/dmlc/xgboost/pull/12111) | cleanup | Replace bare `Any` with specific types in sklearn helpers | 2026-03-19 | open |
 | [#12112](https://github.com/dmlc/xgboost/pull/12112) | refactor | Consolidate version query scripts into shared Python module | 2026-03-19 | closed |
+{{% /details %}}
 
-### ROS 2 — rclcpp, ros2cli, geometry2 — 1 merged, 3 open
-
+{{% details summary="ROS 2 — rclcpp, ros2cli, geometry2 — 1 merged, 3 open" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [rclcpp#3109](https://github.com/ros2/rclcpp/pull/3109) | perf | O(N²) entity addition in CallbackGroup — 71x speedup | 2026-03-21 | open |
 | [rclcpp#3110](https://github.com/ros2/rclcpp/pull/3110) | bug | Deadlock in `TimeSource::destroy_clock_sub` | 2026-03-21 | open |
 | [ros2cli#1213](https://github.com/ros2/ros2cli/pull/1213) | feature | Add `--content-filter` DDS filtering to `ros2 topic echo\|hz\|bw` | 2026-03-21 | open |
 | [geometry2#908](https://github.com/ros2/geometry2/pull/908) | bug | `StaticCache::getData()` returns true on empty cache | 2026-03-21 | merged |
+{{% /details %}}
 
-### Fast-DDS — 7 open
-
+{{% details summary="Fast-DDS — 7 open" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#6332](https://github.com/eProsima/Fast-DDS/pull/6332) | bug | Missing `#include <cstdint>` in DDSSQLFilter headers | 2026-03-15 | open |
@@ -181,32 +180,32 @@ aliases:
 | [#6342](https://github.com/eProsima/Fast-DDS/pull/6342) | bug | Data race on `has_been_removed` flag in `DataSharingPayloadPool` | 2026-03-21 | open |
 | [#6343](https://github.com/eProsima/Fast-DDS/pull/6343) | bug | Infinite loop in VOLATILE `DataReader` `init_shared_segment` | 2026-03-21 | open |
 | [#6344](https://github.com/eProsima/Fast-DDS/pull/6344) | bug | Race between Condition destruction and WaitSet iteration | 2026-03-21 | open |
+{{% /details %}}
 
-### px4-ros2-interface-lib — 4 merged
-
+{{% details summary="px4-ros2-interface-lib — 4 merged" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#186](https://github.com/Auterion/px4-ros2-interface-lib/pull/186) | fix | VTOL status staleness timeout not configurable | 2026-03-15 | merged |
 | [#188](https://github.com/Auterion/px4-ros2-interface-lib/pull/188) | bug | Missing topic namespace prefix in `MapProjection` | 2026-03-17 | merged |
 | [#189](https://github.com/Auterion/px4-ros2-interface-lib/pull/189) | feature | Add `HomePositionSetter` utility | 2026-03-18 | merged |
 | [#192](https://github.com/Auterion/px4-ros2-interface-lib/pull/192) | refactor | Use `VehicleCommandSender` in `sendCommandSync()` | 2026-03-19 | merged |
+{{% /details %}}
 
-### OpenCV — 2 merged
-
+{{% details summary="OpenCV — 2 merged" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#28660](https://github.com/opencv/opencv/pull/28660) | bug | Broken Python bindings | 2026-03-15 | merged |
 | [#28665](https://github.com/opencv/opencv/pull/28665) | cleanup | Stale typing stubs | 2026-03-16 | merged |
+{{% /details %}}
 
-### concurrentqueue — 2 merged
-
+{{% details summary="concurrentqueue — 2 merged" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#445](https://github.com/cameron314/concurrentqueue/pull/445) | cleanup | Replace C-style casts with C++ casts | 2026-03-10 | merged |
 | [#446](https://github.com/cameron314/concurrentqueue/pull/446) | docs | Document `try_enqueue` capacity limit | 2026-03-17 | merged |
+{{% /details %}}
 
-### boost/sml — 5 merged, 2 open
-
+{{% details summary="boost/sml — 5 merged, 2 open" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#661](https://github.com/boost-ext/sml/pull/661) | fix | Fix build with `-fno-exceptions` on GCC 14 | 2026-05-21 | merged |
@@ -216,9 +215,10 @@ aliases:
 | [#665](https://github.com/boost-ext/sml/pull/665) | fix | Fix `lock_guard` member order in `thread_safe` for clang-cl | 2026-05-22 | open |
 | [#666](https://github.com/boost-ext/sml/pull/666) | fix | Fix UBSan false positives with captureless lambdas in C++20 | 2026-05-22 | merged |
 | [#667](https://github.com/boost-ext/sml/pull/667) | fix | Fix submachine state not accessible as action parameter | 2026-05-23 | open |
+{{% /details %}}
 
-### Fast-DDS-docs — 1 open
-
+{{% details summary="Fast-DDS-docs — 1 open" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#1234](https://github.com/eProsima/Fast-DDS-docs/pull/1234) | docs | Troubleshooting entry for libunwind/libgcc_s conflict | 2026-03-15 | open |
+{{% /details %}}
