@@ -48,7 +48,7 @@ aliases:
 
 ## Upstream Contributions
 
-**65 patches merged across 11 projects, 11 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of May 2026.
+**74 patches merged across 12 projects, 14 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of May 2026.
 
 ### Eigen — 21 merged, 1 open, 2 closed
 
@@ -127,7 +127,7 @@ aliases:
 | [#400](https://github.com/mavlink/MAVSDK-Proto/pull/400) | feature | Add `DownloadGeofence` RPC to geofence proto | 2026-03-21 | merged |
 | [#401](https://github.com/mavlink/MAVSDK-Proto/pull/401) | feature | Add `HomePosition` message and timestamp fields to telemetry | 2026-03-27 | closed |
 
-### dora-rs — 3 merged, 6 closed
+### dora-rs — 7 merged, 1 open, 6 closed
 
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
@@ -140,6 +140,11 @@ aliases:
 | [#1427](https://github.com/dora-rs/dora/pull/1427) | feature | CLI progress bars for time-consuming operations (v2) | 2026-03-17 | closed |
 | [#1428](https://github.com/dora-rs/dora/pull/1428) | feature | Dynamic node initialization | 2026-03-17 | merged |
 | [#1431](https://github.com/dora-rs/dora/pull/1431) | feature | Zero-copy output API | 2026-03-17 | merged |
+| [#1904](https://github.com/dora-rs/dora/pull/1904) | feature | C++ operator `on_input_parse_error` callback | 2026-05-21 | open |
+| [#1905](https://github.com/dora-rs/dora/pull/1905) | test | Tighten ws-cli-e2e assertions + node lifecycle E2E | 2026-05-21 | merged |
+| [#1906](https://github.com/dora-rs/dora/pull/1906) | fix | Add root `pyproject.toml` workspace to Python dataflow template | 2026-05-21 | merged |
+| [#1907](https://github.com/dora-rs/dora/pull/1907) | fix | Replace `expect` with contextual errors on stdout/stderr pipe capture | 2026-05-21 | merged |
+| [#1908](https://github.com/dora-rs/dora/pull/1908) | feature | Async iteration support for `MockNode` + 3 async tests | 2026-05-21 | merged |
 
 ### XGBoost — 4 merged, 1 open, 5 closed
 
@@ -199,6 +204,18 @@ aliases:
 |----|------|-------------|------|--------|
 | [#445](https://github.com/cameron314/concurrentqueue/pull/445) | cleanup | Replace C-style casts with C++ casts | 2026-03-10 | merged |
 | [#446](https://github.com/cameron314/concurrentqueue/pull/446) | docs | Document `try_enqueue` capacity limit | 2026-03-17 | merged |
+
+### boost/sml — 5 merged, 2 open
+
+| PR | Type | Description | Date | Status |
+|----|------|-------------|------|--------|
+| [#661](https://github.com/boost-ext/sml/pull/661) | fix | Fix build with `-fno-exceptions` on GCC 14 | 2026-05-21 | merged |
+| [#662](https://github.com/boost-ext/sml/pull/662) | fix | Fix ambiguous constructor when substate machine has virtual destructor | 2026-05-22 | merged |
+| [#663](https://github.com/boost-ext/sml/pull/663) | fix | Fix deferred events not processed in non-first orthogonal region | 2026-05-22 | merged |
+| [#664](https://github.com/boost-ext/sml/pull/664) | fix | Fix `-Wcast-align` in `queue_event` with over-aligned event types | 2026-05-22 | merged |
+| [#665](https://github.com/boost-ext/sml/pull/665) | fix | Fix `lock_guard` member order in `thread_safe` for clang-cl | 2026-05-22 | open |
+| [#666](https://github.com/boost-ext/sml/pull/666) | fix | Fix UBSan false positives with captureless lambdas in C++20 | 2026-05-22 | merged |
+| [#667](https://github.com/boost-ext/sml/pull/667) | fix | Fix submachine state not accessible as action parameter | 2026-05-23 | open |
 
 ### Fast-DDS-docs — 1 open
 
