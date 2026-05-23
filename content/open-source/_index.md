@@ -48,7 +48,7 @@ aliases:
 
 ## Upstream Contributions
 
-**74 patches merged across 12 projects, 14 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of May 2026.
+**77 patches merged across 12 projects, 13 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of May 2026.
 
 {{% details summary="Eigen — 21 merged, 1 open, 2 closed" %}}
 | MR | Type | Description | Date | Status |
@@ -205,16 +205,18 @@ aliases:
 | [#446](https://github.com/cameron314/concurrentqueue/pull/446) | docs | Document `try_enqueue` capacity limit | 2026-03-17 | merged |
 {{% /details %}}
 
-{{% details summary="boost/sml — 5 merged, 2 open" %}}
+{{% details summary="boost/sml — 8 merged, 1 open" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#661](https://github.com/boost-ext/sml/pull/661) | fix | Fix build with `-fno-exceptions` on GCC 14 | 2026-05-21 | merged |
 | [#662](https://github.com/boost-ext/sml/pull/662) | fix | Fix ambiguous constructor when substate machine has virtual destructor | 2026-05-22 | merged |
 | [#663](https://github.com/boost-ext/sml/pull/663) | fix | Fix deferred events not processed in non-first orthogonal region | 2026-05-22 | merged |
 | [#664](https://github.com/boost-ext/sml/pull/664) | fix | Fix `-Wcast-align` in `queue_event` with over-aligned event types | 2026-05-22 | merged |
-| [#665](https://github.com/boost-ext/sml/pull/665) | fix | Fix `lock_guard` member order in `thread_safe` for clang-cl | 2026-05-22 | open |
+| [#665](https://github.com/boost-ext/sml/pull/665) | fix | Fix `lock_guard` member order in `thread_safe` for clang-cl | 2026-05-22 | merged |
 | [#666](https://github.com/boost-ext/sml/pull/666) | fix | Fix UBSan false positives with captureless lambdas in C++20 | 2026-05-22 | merged |
-| [#667](https://github.com/boost-ext/sml/pull/667) | fix | Fix submachine state not accessible as action parameter | 2026-05-23 | open |
+| [#667](https://github.com/boost-ext/sml/pull/667) | fix | Fix submachine state not accessible as action parameter | 2026-05-23 | merged |
+| [#668](https://github.com/boost-ext/sml/pull/668) | fix | Fix template depth explosion with large FSMs sharing dependency types | 2026-05-23 | merged |
+| [#669](https://github.com/boost-ext/sml/pull/669) | fix | Fix uninitialized array in `constexpr` context (GCC 14) | 2026-05-23 | open |
 {{% /details %}}
 
 {{% details summary="Fast-DDS-docs — 1 open" %}}
