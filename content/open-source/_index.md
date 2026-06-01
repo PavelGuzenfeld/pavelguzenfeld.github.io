@@ -48,7 +48,7 @@ aliases:
 
 ## Upstream Contributions
 
-**77 patches merged across 12 projects, 13 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of May 2026.
+**112 patches merged across 12 projects, 13 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of June 2026.
 
 {{% details summary="Eigen — 21 merged, 1 open, 2 closed" %}}
 | MR | Type | Description | Date | Status |
@@ -205,18 +205,53 @@ aliases:
 | [#446](https://github.com/cameron314/concurrentqueue/pull/446) | docs | Document `try_enqueue` capacity limit | 2026-03-17 | merged |
 {{% /details %}}
 
-{{% details summary="boost/sml — 8 merged, 1 open" %}}
+{{% details summary="boost/sml — 43 merged, 1 open (1.2.0 release)" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
-| [#661](https://github.com/boost-ext/sml/pull/661) | fix | Fix build with `-fno-exceptions` on GCC 14 | 2026-05-21 | merged |
-| [#662](https://github.com/boost-ext/sml/pull/662) | fix | Fix ambiguous constructor when substate machine has virtual destructor | 2026-05-22 | merged |
-| [#663](https://github.com/boost-ext/sml/pull/663) | fix | Fix deferred events not processed in non-first orthogonal region | 2026-05-22 | merged |
-| [#664](https://github.com/boost-ext/sml/pull/664) | fix | Fix `-Wcast-align` in `queue_event` with over-aligned event types | 2026-05-22 | merged |
-| [#665](https://github.com/boost-ext/sml/pull/665) | fix | Fix `lock_guard` member order in `thread_safe` for clang-cl | 2026-05-22 | merged |
-| [#666](https://github.com/boost-ext/sml/pull/666) | fix | Fix UBSan false positives with captureless lambdas in C++20 | 2026-05-22 | merged |
-| [#667](https://github.com/boost-ext/sml/pull/667) | fix | Fix submachine state not accessible as action parameter | 2026-05-23 | merged |
-| [#668](https://github.com/boost-ext/sml/pull/668) | fix | Fix template depth explosion with large FSMs sharing dependency types | 2026-05-23 | merged |
-| [#669](https://github.com/boost-ext/sml/pull/669) | fix | Fix uninitialized array in `constexpr` context (GCC 14) | 2026-05-23 | open |
+| [#661](https://github.com/boost-ext/sml/pull/661) | fix | Build with `-fno-exceptions` on GCC 14 | 2026-05-22 | merged |
+| [#662](https://github.com/boost-ext/sml/pull/662) | bug | Ambiguous constructor when a substate machine has a virtual destructor | 2026-05-22 | merged |
+| [#663](https://github.com/boost-ext/sml/pull/663) | bug | Deferred events not processed in a non-first orthogonal region | 2026-05-22 | merged |
+| [#664](https://github.com/boost-ext/sml/pull/664) | fix | `-Wcast-align` in `queue_event` with over-aligned event types | 2026-05-22 | merged |
+| [#665](https://github.com/boost-ext/sml/pull/665) | fix | `lock_guard` member order in `thread_safe` for clang-cl | 2026-05-23 | merged |
+| [#666](https://github.com/boost-ext/sml/pull/666) | bug | UBSan false positives with captureless lambdas in C++20 | 2026-05-23 | merged |
+| [#667](https://github.com/boost-ext/sml/pull/667) | bug | Submachine state not accessible as an action parameter (#659) | 2026-05-23 | merged |
+| [#668](https://github.com/boost-ext/sml/pull/668) | bug | Template-depth explosion with large FSMs sharing dependency types (#639) | 2026-05-23 | merged |
+| [#669](https://github.com/boost-ext/sml/pull/669) | bug | Uninitialized array in `constexpr` context (GCC 14) | 2026-05-23 | merged |
+| [#670](https://github.com/boost-ext/sml/pull/670) | bug | Double-pop crash in `process_queued_events` (#465) | 2026-05-23 | merged |
+| [#671](https://github.com/boost-ext/sml/pull/671) | bug | Queued events dispatched in a stale state with pending anonymous transitions (#542) | 2026-05-24 | merged |
+| [#672](https://github.com/boost-ext/sml/pull/672) | fix | `-Wextra-semi` warning with `BOOST_SML_CFG_DISABLE_MIN_SIZE` (#519) | 2026-05-24 | merged |
+| [#673](https://github.com/boost-ext/sml/pull/673) | bug | Null deref when a pointer dependency is passed as an lvalue to the sm ctor (#485) | 2026-05-24 | merged |
+| [#674](https://github.com/boost-ext/sml/pull/674) | bug | Dangling reference in the `pool_type_impl<T&>` init constructor (#504) | 2026-05-23 | merged |
+| [#675](https://github.com/boost-ext/sml/pull/675) | fix | Two-phase lookup + test assertion in the `pool_type_impl<T&>` fix (#504) | 2026-05-23 | merged |
+| [#676](https://github.com/boost-ext/sml/pull/676) | fix | Resolve `-Wshadow` warnings across `sml.hpp` (#496) | 2026-05-24 | merged |
+| [#677](https://github.com/boost-ext/sml/pull/677) | bug | `process_queue<std::queue>` compile error on GCC 9 / Clang 10 (#441) | 2026-05-24 | merged |
+| [#678](https://github.com/boost-ext/sml/pull/678) | docs | Document the `operator,` two-MFP limitation; show the `wrap()` workaround (#389) | 2026-05-25 | merged |
+| [#679](https://github.com/boost-ext/sml/pull/679) | bug | Non-copyable derived dependency passed as a base-class reference (#467) | 2026-05-25 | merged |
+| [#680](https://github.com/boost-ext/sml/pull/680) | fix | Allow `final` classes as SM deps and SM classes (#483) | 2026-05-25 | merged |
+| [#681](https://github.com/boost-ext/sml/pull/681) | bug | Guard taking `const State&` now sees live pool state (#530) | 2026-05-26 | merged |
+| [#682](https://github.com/boost-ext/sml/pull/682) | bug | Prevent `operator&&`/`\|\|`/`!` from matching `integral_constant`-like types (#546) | 2026-05-26 | merged |
+| [#683](https://github.com/boost-ext/sml/pull/683) | fix | Rename reserved `__BOOST_SML_*` macros and `args__` identifiers (#220) | 2026-05-27 | merged |
+| [#684](https://github.com/boost-ext/sml/pull/684) | bug | Generic `on_entry<_>`/`on_exit<_>` suppressed by a sub-SM specific handler (#372) | 2026-05-26 | merged |
+| [#686](https://github.com/boost-ext/sml/pull/686) | fix | Move `operator[]`/`operator/` SFINAE to a trailing return type for MSVC C++20 (#515) | 2026-05-27 | merged |
+| [#687](https://github.com/boost-ext/sml/pull/687) | bug | `back::process<E>` from a sub-SM now routes to the root SM queue (#400) | 2026-05-27 | merged |
+| [#688](https://github.com/boost-ext/sml/pull/688) | fix | Disable the zero-size-array min-size trick by default to fix UBSan violations (#249) | 2026-05-27 | merged |
+| [#689](https://github.com/boost-ext/sml/pull/689) | ci | Codacy cppcheck config and project include paths | 2026-05-27 | merged |
+| [#690](https://github.com/boost-ext/sml/pull/690) | feature | `sml::deps<Ts...>` policy for explicit pool dependencies (#437) | 2026-05-28 | merged |
+| [#691](https://github.com/boost-ext/sml/pull/691) | test | Functional test for `sml::deps<Ts...>` (#437) | 2026-05-28 | merged |
+| [#692](https://github.com/boost-ext/sml/pull/692) | fix | Replace `if constexpr` with C++14 tag-dispatch in `update_composite_states` (#684 regression) | 2026-05-28 | merged |
+| [#694](https://github.com/boost-ext/sml/pull/694) | fix | Guard `test_constexpr` for C++17+; remove a duplicate `add_test` | 2026-05-28 | merged |
+| [#697](https://github.com/boost-ext/sml/pull/697) | docs | Document pool mechanism design, `try_get` overload order, and bug history | 2026-05-28 | merged |
+| [#698](https://github.com/boost-ext/sml/pull/698) | fix | `BOOST_SML_DETAIL_ZERO_SIZE_ARRAY` `static_assert` needs a message for C++14 | 2026-05-28 | merged |
+| [#699](https://github.com/boost-ext/sml/pull/699) | build | Compile-error tests, CMake style/tidy targets, thin Makefile wrapper | 2026-05-28 | merged |
+| [#700](https://github.com/boost-ext/sml/pull/700) | bug | Include `process(E{})` events in `events_t` so the queue can store them (#580) | 2026-05-29 | merged |
+| [#701](https://github.com/boost-ext/sml/pull/701) | test | Regression tests for anonymous transitions in sub-SMs (#384, #544) | 2026-05-29 | merged |
+| [#702](https://github.com/boost-ext/sml/pull/702) | bug | `any`-state wildcard fires when a composable sub-SM terminates (#622) | 2026-05-31 | merged |
+| [#703](https://github.com/boost-ext/sml/pull/703) | docs | Document the `on_entry<_>` multi-TU limitation and dispatch priority (#565) | 2026-05-29 | merged |
+| [#704](https://github.com/boost-ext/sml/pull/704) | bug | Skip `process_event` in `transitions_sub` when the event isn't in the sub-SM (#685) | 2026-05-30 | merged |
+| [#705](https://github.com/boost-ext/sml/pull/705) | bug | Clear the sub-SM defer queue when a composite state is re-entered (#253) | 2026-05-30 | merged |
+| [#707](https://github.com/boost-ext/sml/pull/707) | feature | `sm::flush_queue()` to drain the process queue from async handlers (#456) | 2026-05-31 | merged |
+| [#706](https://github.com/boost-ext/sml/pull/706) | feature | `sml::make_action<Deps...>(f)` for template/constrained callable actions (#629) | 2026-06-01 | merged |
+| [#708](https://github.com/boost-ext/sml/pull/708) | release | Release v1.2.0 — new API (`flush_queue`, `clear_defer`, `deps`, `make_action`), docs overhaul, verified Compiler Explorer links | 2026-05-31 | open |
 {{% /details %}}
 
 {{% details summary="Fast-DDS-docs — 1 open" %}}
