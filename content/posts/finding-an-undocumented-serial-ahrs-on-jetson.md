@@ -51,7 +51,7 @@ This is the story of doing exactly that for a **MiniAHRS** wired into a Jetson O
 
 An **AHRS** — Attitude and Heading Reference System — is the little black box that tells a vehicle which way it's pointing. Inside is a MEMS **IMU** (a 3-axis gyroscope, 3-axis accelerometer, and usually a 3-axis magnetometer), plus an onboard fusion filter that turns those raw rates and forces into a clean **heading / pitch / roll** estimate. It's the same job your phone does to know which way to rotate the screen, scaled up for things that fall out of the sky if they get it wrong.
 
-The unit here was an [Inertial Labs MiniAHRS](https://inertiallabs.com/mini-ahrs/) — a compact industrial AHRS that streams orientation and calibrated sensor data over a serial link. (Its [datasheet](https://inertiallabs.com/wp-content/uploads/2023/03/MiniAHRS-Datasheet-rev2.10_October_2021.pdf) has the full spec.) Inertial Labs also publish an open-source [ROS driver and SDK](https://github.com/inertiallabs/inertiallabs-ros-pkgs), which — spoiler — became the Rosetta Stone for the whole exercise.
+The unit here was an [Inertial Labs MiniAHRS](https://inertiallabs.com/ahrs/) — a compact industrial AHRS that streams orientation and calibrated sensor data over a serial link. (Its [datasheet](https://inertiallabs.com/wp-content/uploads/2023/03/MiniAHRS-Datasheet-rev2.10_October_2021.pdf) has the full spec.) Inertial Labs also publish an open-source [ROS driver and SDK](https://github.com/inertiallabs/inertiallabs-ros-pkgs), which — spoiler — became the Rosetta Stone for the whole exercise.
 
 ## Step 1: what's even on the bus
 
@@ -145,6 +145,226 @@ And here's the satisfying part — the **physics checks out**, which is how you 
 - Cross-computing pitch/roll from that gravity vector gives ≈ 0°, matching the reported attitude.
 
 That 1 g magnitude is the anchor. If your decoded accelerometer doesn't sum to ~1 g at rest, your scale factor, byte offset, or endianness is wrong. It's the cheapest unit test in embedded work, and it's free.
+
+## The scripts
+
+I distilled the hunt into two small scripts. The first sweeps every serial port and asks each one "who are you?" via the device-info command, reporting the port, baud, serial number and firmware string of any Inertial Labs unit it finds:
+
+```bash
+#!/bin/bash
+
+# Find the serial port an Inertial Labs MiniAHRS is connected to.
+#
+# Scans the candidate tty devices, sends the Inertial Labs device-info command
+# (0x12) to each and reports the port whose firmware identifies as a MiniAHRS,
+# together with the baud rate, serial number (IDN) and firmware string.
+#
+# Needs read/write access to the serial devices. If the login user is not in
+# the 'dialout' group, run as root or inside a container with the device mapped:
+#   docker run --rm --network none --privileged --entrypoint bash \
+#     -v /dev:/dev -v "$PWD/scripts:/scripts" <image> /scripts/minihrs_lookup.sh
+#
+# Usage: minihrs_lookup.sh [baud ...]
+#   baud ...  optional baud rates to try (default: common Inertial Labs rates)
+#
+# Exit codes: 0 found, 1 no serial ports / access, 2 no MiniAHRS detected.
+
+set -u
+
+BAUDS=("$@")
+if [ ${#BAUDS[@]} -eq 0 ]; then
+    BAUDS=(921600 460800 230400 115200 57600 38400 9600)
+fi
+
+# Inertial Labs command frames: AA 55 00 00 <len_lo> <len_hi> <payload> <crc16_lo> <crc16_hi>
+STOP=$'\xAA\x55\x00\x00\x07\x00\xFE\x05\x01'   # stop continuous output
+INFO=$'\xAA\x55\x00\x00\x07\x00\x12\x19\x00'   # request device info (code 0x12)
+
+PORTS=$(ls /dev/ttyUSB* /dev/ttyTHS* /dev/ttyACM* 2>/dev/null | sort -u)
+if [ -z "$PORTS" ]; then
+    echo "no serial ports found"
+    exit 1
+fi
+
+FOUND=""
+for port in $PORTS; do
+    for baud in "${BAUDS[@]}"; do
+        stty -F "$port" "$baud" raw -echo clocal -crtscts 2>/dev/null || continue
+
+        cap=$(mktemp)
+        ( timeout 1 cat "$port" > "$cap" 2>/dev/null ) &
+        rp=$!
+        sleep 0.2
+        printf '%b' "$STOP" > "$port" 2>/dev/null; sleep 0.15
+        printf '%b' "$INFO" > "$port" 2>/dev/null; sleep 0.15
+        printf '%b' "$INFO" > "$port" 2>/dev/null
+        wait $rp 2>/dev/null
+
+        # The device-info reply is AA 55 01 12 <len> <INSDeviceInfo>; the struct
+        # starts with IDN[8] (serial) and FW[40] (firmware string), both ASCII.
+        info=$(python3 - "$cap" <<'PY'
+import sys
+d = open(sys.argv[1], 'rb').read()
+i = d.find(b'\xaa\x55\x01\x12')
+if i < 0 or i + 6 > len(d):
+    sys.exit(1)
+ln = d[i + 4] | (d[i + 5] << 8)
+p = d[i + 6:i + 6 + (ln - 6)]
+idn = p[0:8].split(b'\x00')[0].decode('latin1', 'replace')
+fw = p[8:48].split(b'\x00')[0].decode('latin1', 'replace')
+print(idn + "\t" + fw)
+PY
+)
+        rm -f "$cap"
+
+        if [ -n "$info" ]; then
+            idn=${info%%$'\t'*}
+            fw=${info#*$'\t'}
+            echo "$port @ $baud : IDN=$idn  FW=$fw"
+            if echo "$fw" | grep -qi "ahrs"; then
+                FOUND="$port $baud"
+            fi
+            break
+        fi
+    done
+done
+
+if [ -n "$FOUND" ]; then
+    set -- $FOUND
+    echo "MiniAHRS found: port=$1 baud=$2"
+    exit 0
+fi
+
+echo "no Inertial Labs MiniAHRS detected"
+exit 2
+```
+
+The second commands the documented orientation format, decodes the packets and grades them against gravity — a quick pass/fail bench check:
+
+```bash
+#!/bin/bash
+
+# Sanity-check an Inertial Labs MiniAHRS.
+#
+# Commands the documented IL_IMU_Orientation (0x33) output, decodes a few
+# packets and verifies the readings are physically plausible for a unit that is
+# sitting still:
+#   * accelerometer magnitude is ~1 g
+#   * gyro magnitude is near zero
+# Prints a human-readable table of Heading/Pitch/Roll, gyro, accel and mag.
+#
+# Run with the unit stationary. Needs read/write access to the serial device
+# (dialout group or root; see minihrs_lookup.sh for the container invocation).
+#
+# Note: this commands a runtime output format only and does not write to flash;
+# the device returns to its configured auto-start format on power cycle.
+#
+# Usage: minihrs_sanity_test.sh [port] [baud]
+#   port  serial device (e.g. /dev/ttyUSB2). If omitted, minihrs_lookup.sh is used.
+#   baud  default 921600
+#
+# Exit codes: 0 pass, 1 fail / no access, 2 no MiniAHRS found.
+
+set -u
+
+PORT=${1:-}
+BAUD=${2:-921600}
+HERE=$(dirname "$0")
+
+if [ -z "$PORT" ]; then
+    res=$("$HERE/minihrs_lookup.sh" | grep "MiniAHRS found")
+    PORT=$(echo "$res" | sed -n 's/.*port=\([^ ]*\).*/\1/p')
+    BAUD=$(echo "$res" | sed -n 's/.*baud=\([0-9]*\).*/\1/p')
+    if [ -z "$PORT" ]; then
+        echo "no MiniAHRS found"
+        exit 2
+    fi
+fi
+
+stty -F "$PORT" "$BAUD" raw -echo clocal -crtscts 2>/dev/null || {
+    echo "cannot open $PORT"
+    exit 1
+}
+
+# stop any continuous output, then request IL_IMU_Orientation (0x33)
+printf '\xAA\x55\x00\x00\x07\x00\xFE\x05\x01' > "$PORT"; sleep 0.25
+timeout 0.15 cat "$PORT" >/dev/null 2>&1
+cap=$(mktemp)
+( timeout 1 cat "$PORT" > "$cap" 2>/dev/null ) &
+rp=$!
+sleep 0.1
+printf '\xAA\x55\x00\x00\x07\x00\x33\x3A\x00' > "$PORT"; sleep 0.1
+printf '\xAA\x55\x00\x00\x07\x00\x33\x3A\x00' > "$PORT"
+wait $rp 2>/dev/null
+printf '\xAA\x55\x00\x00\x07\x00\xFE\x05\x01' > "$PORT"   # leave the device idle
+
+python3 - "$cap" "$PORT" "$BAUD" <<'PY'
+import sys, struct, math
+
+d = open(sys.argv[1], 'rb').read()
+port, baud = sys.argv[2], sys.argv[3]
+
+# IL_IMU_Orientation (0x33) payload, decoded per the Inertial Labs SDK:
+#   Heading u16/100, Pitch i16/100, Roll i16/100, Gyro[3] i16/10 (deg/s),
+#   Accel[3] i16/GA (g), Mag[3] i16 (raw counts).
+# GA is the unit's accelerometer counts-per-g (gravity anchored, ~2000 here).
+GA = 2000.0
+
+def rd(b, o, fmt, scale):
+    return struct.unpack_from('<' + fmt, b, o)[0] / scale, o + 2
+
+pk = []
+j = 0
+while True:
+    k = d.find(b'\xaa\x55\x01\x33', j)
+    if k < 0 or k + 6 > len(d):
+        break
+    ln = d[k + 4] | (d[k + 5] << 8)
+    if ln == 40 and k + 6 + 34 <= len(d):   # 0x33 data packet: 34-byte payload
+        pk.append(d[k + 6:k + 6 + 34])
+    j = k + 3
+
+if not pk:
+    print("FAIL: no orientation packets received from %s @ %s" % (port, baud))
+    sys.exit(1)
+
+print("MiniAHRS %s @ %s -- %d packets (IL_IMU_Orientation 0x33)" % (port, baud, len(pk)))
+print(" Head  Pitch   Roll | Gyro X/Y/Z (dps)   | Accel X/Y/Z (g)        |A|")
+print(" " + "-" * 70)
+
+amags = []
+gmax = 0.0
+for pl in pk[:10]:
+    o = 0
+    H, o = rd(pl, o, 'H', 100); Pi, o = rd(pl, o, 'h', 100); Ro, o = rd(pl, o, 'h', 100)
+    g = []
+    for _ in range(3):
+        v, o = rd(pl, o, 'h', 10); g.append(v)
+    a = []
+    for _ in range(3):
+        v, o = rd(pl, o, 'h', GA); a.append(v)
+    am = math.sqrt(sum(x * x for x in a))
+    amags.append(am)
+    gmax = max(gmax, max(abs(x) for x in g))
+    print(" %5.1f %+6.1f %+6.1f | %+5.1f %+5.1f %+5.1f | %+6.3f %+6.3f %+6.3f %5.3f"
+          % (H, Pi, Ro, g[0], g[1], g[2], a[0], a[1], a[2], am))
+
+aavg = sum(amags) / len(amags)
+ok = True
+if not (0.85 <= aavg <= 1.15):
+    print("FAIL: |Accel| %.3f g out of [0.85, 1.15]" % aavg)
+    ok = False
+if gmax > 5.0:
+    print("FAIL: gyro %.1f dps too high (run with the unit stationary)" % gmax)
+    ok = False
+
+print("PASS" if ok else "FAIL")
+sys.exit(0 if ok else 1)
+PY
+rc=$?
+rm -f "$cap"
+exit $rc
+```
 
 ## Takeaways
 
