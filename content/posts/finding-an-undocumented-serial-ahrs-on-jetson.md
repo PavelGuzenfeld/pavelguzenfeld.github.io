@@ -21,6 +21,9 @@ keywords:
 - dialout permission denied serial
 - decode AHRS binary packet
 - Jetson serial port scan
+cover:
+  image: /images/posts/serial-ahrs-hunt.svg
+  alt: Hunting an undocumented AHRS on the serial bus
 categories:
 - deep-dive
 summary: A small AHRS was wired to a Jetson over USB, but nobody wrote down which
