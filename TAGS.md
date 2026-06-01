@@ -5,6 +5,7 @@ No slashes or spaces in tech tags (breaks Hugo URL generation).
 
 | Tag | Notes |
 |-----|-------|
+| AHRS | Attitude and Heading Reference System |
 | air-gapped | |
 | ARM | |
 | ASan | |
@@ -33,6 +34,7 @@ No slashes or spaces in tech tags (breaks Hugo URL generation).
 | ESRI | |
 | Fast-DDS | Not `Fast DDS` or `FastDDS` |
 | FFmpeg | |
+| FTDI | USB-to-serial bridge chips |
 | Gazebo | |
 | GCC | |
 | GDExtension | Godot C++ plugin interface |
@@ -46,6 +48,7 @@ No slashes or spaces in tech tags (breaks Hugo URL generation).
 | hardware-testing | |
 | HDRP | |
 | headless | |
+| IMU | Inertial Measurement Unit |
 | integer-arithmetic | |
 | integration-testing | |
 | Jetson | |
@@ -79,6 +82,7 @@ No slashes or spaces in tech tags (breaks Hugo URL generation).
 | RTSP | |
 | safety-critical | |
 | satellite | |
+| serial | UART / RS-232 / RS-422 |
 | shader | Not `shaders` |
 | shared-memory | |
 | SIH | |
