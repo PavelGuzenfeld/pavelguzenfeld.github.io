@@ -205,7 +205,7 @@ aliases:
 | [#446](https://github.com/cameron314/concurrentqueue/pull/446) | docs | Document `try_enqueue` capacity limit | 2026-03-17 | merged |
 {{% /details %}}
 
-{{% details summary="boost/sml — 43 merged, 1 open (1.2.0 release)" %}}
+{{% details summary="boost/sml — 46 merged (1.2.0 released)" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#661](https://github.com/boost-ext/sml/pull/661) | fix | Build with `-fno-exceptions` on GCC 14 | 2026-05-22 | merged |
@@ -251,7 +251,9 @@ aliases:
 | [#705](https://github.com/boost-ext/sml/pull/705) | bug | Clear the sub-SM defer queue when a composite state is re-entered (#253) | 2026-05-30 | merged |
 | [#707](https://github.com/boost-ext/sml/pull/707) | feature | `sm::flush_queue()` to drain the process queue from async handlers (#456) | 2026-05-31 | merged |
 | [#706](https://github.com/boost-ext/sml/pull/706) | feature | `sml::make_action<Deps...>(f)` for template/constrained callable actions (#629) | 2026-06-01 | merged |
-| [#708](https://github.com/boost-ext/sml/pull/708) | release | Release v1.2.0 — new API (`flush_queue`, `clear_defer`, `deps`, `make_action`), docs overhaul, verified Compiler Explorer links | 2026-05-31 | open |
+| [#708](https://github.com/boost-ext/sml/pull/708) | release | Release v1.2.0 — new API (`flush_queue`, `clear_defer`, `deps`, `make_action`), docs overhaul, verified Compiler Explorer links | 2026-05-31 | merged |
+| [#709](https://github.com/boost-ext/sml/pull/709) | ci | Automate docs deploy + GitHub releases; fix dead badges and links | 2026-06-01 | merged |
+| [#710](https://github.com/boost-ext/sml/pull/710) | docs | Fix 404 links and dead Run buttons; add examples and FAQ | 2026-06-02 | merged |
 {{% /details %}}
 
 {{% details summary="Fast-DDS-docs — 1 open" %}}
