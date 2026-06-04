@@ -162,11 +162,11 @@ aliases:
 | [#12162](https://github.com/dmlc/xgboost/pull/12162) | bug | Backport #12094: guard `__doc__` assignments for `python -OO` | 2026-04-16 | merged |
 {{% /details %}}
 
-{{% details summary="ROS 2 — rclcpp, ros2cli, geometry2 — 1 merged, 3 open" %}}
+{{% details summary="ROS 2 — rclcpp, ros2cli, geometry2 — 1 merged, 1 open, 2 closed" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
-| [rclcpp#3109](https://github.com/ros2/rclcpp/pull/3109) | perf | O(N²) entity addition in CallbackGroup — 71x speedup | 2026-03-21 | open |
-| [rclcpp#3110](https://github.com/ros2/rclcpp/pull/3110) | bug | Deadlock in `TimeSource::destroy_clock_sub` | 2026-03-21 | open |
+| [rclcpp#3109](https://github.com/ros2/rclcpp/pull/3109) | perf | O(N²) entity addition in CallbackGroup — 71x speedup | 2026-03-21 | closed |
+| [rclcpp#3110](https://github.com/ros2/rclcpp/pull/3110) | bug | Deadlock in `TimeSource::destroy_clock_sub` | 2026-03-21 | closed |
 | [ros2cli#1213](https://github.com/ros2/ros2cli/pull/1213) | feature | Add `--content-filter` DDS filtering to `ros2 topic echo\|hz\|bw` | 2026-03-21 | open |
 | [geometry2#908](https://github.com/ros2/geometry2/pull/908) | bug | `StaticCache::getData()` returns true on empty cache | 2026-03-21 | merged |
 {{% /details %}}
