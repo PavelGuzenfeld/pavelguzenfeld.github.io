@@ -127,7 +127,7 @@ aliases:
 | [#401](https://github.com/mavlink/MAVSDK-Proto/pull/401) | feature | Add `HomePosition` message and timestamp fields to telemetry | 2026-03-27 | closed |
 {{% /details %}}
 
-{{% details summary="dora-rs — 7 merged, 1 open, 6 closed" %}}
+{{% details summary="dora-rs — 8 merged, 6 closed" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#1403](https://github.com/dora-rs/dora/pull/1403) | feature | Expose `node_id()` and `dataflow_id()` accessors | 2026-03-15 | merged |
@@ -139,7 +139,7 @@ aliases:
 | [#1427](https://github.com/dora-rs/dora/pull/1427) | feature | CLI progress bars for time-consuming operations (v2) | 2026-03-17 | closed |
 | [#1428](https://github.com/dora-rs/dora/pull/1428) | feature | Dynamic node initialization | 2026-03-17 | merged |
 | [#1431](https://github.com/dora-rs/dora/pull/1431) | feature | Zero-copy output API | 2026-03-17 | merged |
-| [#1904](https://github.com/dora-rs/dora/pull/1904) | feature | C++ operator `on_input_parse_error` callback | 2026-05-21 | open |
+| [#1904](https://github.com/dora-rs/dora/pull/1904) | feature | C++ operator `on_input_parse_error` callback | 2026-05-21 | merged |
 | [#1905](https://github.com/dora-rs/dora/pull/1905) | test | Tighten ws-cli-e2e assertions + node lifecycle E2E | 2026-05-21 | merged |
 | [#1906](https://github.com/dora-rs/dora/pull/1906) | fix | Add root `pyproject.toml` workspace to Python dataflow template | 2026-05-21 | merged |
 | [#1907](https://github.com/dora-rs/dora/pull/1907) | fix | Replace `expect` with contextual errors on stdout/stderr pipe capture | 2026-05-21 | merged |
