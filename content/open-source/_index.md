@@ -146,7 +146,7 @@ aliases:
 | [#1908](https://github.com/dora-rs/dora/pull/1908) | feature | Async iteration support for `MockNode` + 3 async tests | 2026-05-21 | merged |
 {{% /details %}}
 
-{{% details summary="XGBoost — 4 merged, 1 open, 5 closed" %}}
+{{% details summary="XGBoost — 5 merged, 1 open, 5 closed" %}}
 | PR | Type | Description | Date | Status |
 |----|------|-------------|------|--------|
 | [#12085](https://github.com/dmlc/xgboost/pull/12085) | bug | Import crash under `python -OO` (optimized bytecode) | 2026-03-15 | closed |
@@ -159,6 +159,7 @@ aliases:
 | [#12110](https://github.com/dmlc/xgboost/pull/12110) | cleanup | Add specific error codes to all `type: ignore` comments | 2026-03-19 | merged |
 | [#12111](https://github.com/dmlc/xgboost/pull/12111) | cleanup | Replace bare `Any` with specific types in sklearn helpers | 2026-03-19 | open |
 | [#12112](https://github.com/dmlc/xgboost/pull/12112) | refactor | Consolidate version query scripts into shared Python module | 2026-03-19 | closed |
+| [#12162](https://github.com/dmlc/xgboost/pull/12162) | bug | Backport #12094: guard `__doc__` assignments for `python -OO` | 2026-04-16 | merged |
 {{% /details %}}
 
 {{% details summary="ROS 2 — rclcpp, ros2cli, geometry2 — 1 merged, 3 open" %}}
