@@ -55,5 +55,5 @@
     <text x="655" y="574">GStreamer</text>
   </g>
 
-  <text x="1136" y="588" text-anchor="end" font-size="56" font-weight="800" fill="#4263EB" font-family="'DejaVu Sans Mono', Consolas, monospace">C++</text>
+  <text x="1136" y="588" text-anchor="end" font-size="52" font-weight="800" fill="#3776AB" font-family="'DejaVu Sans Mono', Consolas, monospace">Python</text>
 </svg>
