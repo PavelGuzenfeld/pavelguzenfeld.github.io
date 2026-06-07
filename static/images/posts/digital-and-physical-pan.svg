@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="Inter, 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F1EDDF"/>
+      <stop offset="1" stop-color="#E6E1D0"/>
+    </linearGradient>
+    <linearGradient id="accentH" x1="0" y1="0" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2D6CDF"/>
+      <stop offset="1" stop-color="#7A2FF6"/>
+    </linearGradient>
+    <linearGradient id="accentV" x1="0" y1="0" x2="0" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2D6CDF"/>
+      <stop offset="1" stop-color="#7A2FF6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="10" fill="url(#accentH)"/>
+  <rect x="0" y="0" width="12" height="630" fill="url(#accentV)"/>
+  <rect x="1188" y="0" width="12" height="630" fill="url(#accentV)"/>
+
+  <!-- sensor frame with a panned crop window handing off to a gimbal arc -->
+  <g transform="translate(840, 250)">
+    <rect x="-150" y="-110" width="300" height="220" rx="6" fill="none" stroke="#B7AE92" stroke-width="3"/>
+    <rect x="-150" y="-110" width="300" height="220" rx="6" fill="#1A1A1A" opacity="0.04"/>
+    <rect x="-138" y="-46" width="150" height="92" rx="4" fill="#3B5BDB" opacity="0.18" stroke="#3B5BDB" stroke-width="3"/>
+    <!-- crop straining against the left edge -->
+    <path d="M -60 0 L -126 0" stroke="#3B5BDB" stroke-width="5" marker-end="url(#a)"/>
+    <!-- gimbal yaw arc taking over -->
+    <path d="M -150 150 A 210 210 0 0 1 -10 96" fill="none" stroke="#7A2FF6" stroke-width="6" stroke-dasharray="2 12" stroke-linecap="round"/>
+    <circle cx="-150" cy="150" r="9" fill="#7A2FF6"/>
+  </g>
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto">
+      <path d="M0 0 L9 4.5 L0 9 z" fill="#3B5BDB"/>
+    </marker>
+  </defs>
+
+  <g fill="#1A1A1A" font-weight="800" font-size="72" letter-spacing="-1">
+    <text x="64" y="170">Two Pans, One Stick</text>
+  </g>
+  <g fill="#444" font-weight="600" font-size="34">
+    <text x="64" y="232">A digital crop pan and a physical</text>
+    <text x="64" y="278">gimbal, driven as one motion</text>
+  </g>
+
+  <g font-family="'DejaVu Sans Mono', 'SFMono-Regular', Consolas, monospace" font-size="22" font-weight="700" fill="#FFFFFF" text-anchor="middle">
+    <rect x="64"  y="545" width="232" height="44" rx="22" fill="#3B5BDB"/>
+    <text x="180" y="574">video-processing</text>
+    <rect x="312" y="545" width="78"  height="44" rx="22" fill="#7048E8"/>
+    <text x="351" y="574">IMU</text>
+    <rect x="406" y="545" width="148" height="44" rx="22" fill="#0CA678"/>
+    <text x="480" y="574">embedded</text>
+    <rect x="570" y="545" width="170" height="44" rx="22" fill="#E64980"/>
+    <text x="655" y="574">GStreamer</text>
+  </g>
+
+  <text x="1136" y="588" text-anchor="end" font-size="56" font-weight="800" fill="#4263EB" font-family="'DejaVu Sans Mono', Consolas, monospace">C++</text>
+</svg>
