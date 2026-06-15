@@ -360,7 +360,7 @@ Two data planes ride the same buffer chain in opposite directions: **pixels flow
 
 And the part that does the heavy lifting, `nvmmsamurai`, is itself a small orchestrator — five TensorRT engines and a handful of CUDA kernels on a single CUDA stream, with the memory ring living on the GPU:
 
-![Inside the nvmmsamurai element: a GstBaseTransform running five TensorRT engines (image encoder, memory attention, mask decoder, memory encoder) and CUDA kernels on one CUDA stream, with an on-GPU memory ring; a full-inference frame laps through the engines while a max-kf fast frame skips them and only advances the Kalman filter, both converging to write GstNvmmTrackMeta.](/images/posts/nvmmsamurai-internals.svg)
+![Inside the nvmmsamurai element: a GstBaseTransform running five TensorRT engines (image encoder, memory attention, mask decoder, memory encoder) and CUDA kernels on one CUDA stream, with an on-GPU memory ring. The box is seeded by a YOLO detection from nvmminfer; a full-inference frame laps through the engines while a max-kf fast frame skips them and the secondary Kalman filter extrapolates, both converging to write GstNvmmTrackMeta.](/images/posts/nvmmsamurai-internals.svg)
 
 `[ ... ]` are the TensorRT engines; everything else is a CUDA kernel or host scalar math. On a full-inference frame the data does one lap through the engines; on a `max-kf` fast frame it skips them entirely and just advances the Kalman filter — which is most of where the 2.5× throughput came from.
 
