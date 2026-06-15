@@ -1,7 +1,7 @@
 ---
 title: "From a PyTorch Tracker to a Zero-Copy GStreamer Pipeline: Rebuilding SAM2.1/SAMURAI on Jetson, Step by Step"
 date: 2026-06-16
-draft: true
+draft: false
 tags:
 - GStreamer
 - Jetson
