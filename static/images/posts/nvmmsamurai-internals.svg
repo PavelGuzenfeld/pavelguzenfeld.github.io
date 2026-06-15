@@ -17,6 +17,9 @@
     </style>
   </defs>
 
+  <!-- opaque light background so text stays high-contrast in any page theme -->
+  <rect x="0.5" y="0.5" width="899" height="699" fill="#ffffff" stroke="#e2e8f0"/>
+
   <!-- entry -->
   <rect class="io" x="170" y="20" width="500" height="46" rx="7"/>
   <text class="name" x="420" y="40" text-anchor="middle">NVMM NV12 frame → VIC crop 512² around predicted box → normalize</text>

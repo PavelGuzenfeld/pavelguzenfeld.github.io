@@ -13,10 +13,13 @@
       .sub  { font-size:11px; fill:#475569; }
       .edge { stroke:#334155; stroke-width:1.6; fill:none; }
       .meta { font-size:12px; fill:#b45309; font-weight:600; }
-      .note { font-size:11px; fill:#64748b; }
-      .q    { font-size:10px; fill:#64748b; }
+      .note { font-size:11px; fill:#475569; }
+      .q    { font-size:10px; fill:#475569; }
     </style>
   </defs>
+
+  <!-- opaque light background so text stays high-contrast in any page theme -->
+  <rect x="0.5" y="0.5" width="879" height="719" fill="#ffffff" stroke="#e2e8f0"/>
 
   <!-- NVMM zero-copy region -->
   <rect x="250" y="158" width="392" height="438" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="6 5"/>
