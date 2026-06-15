@@ -261,12 +261,13 @@ def clean_markdown(md: str) -> str:
     body = EMPHASIS_RE.sub(r"\2", body)
     body = INLINE_CODE_RE.sub(r"\1", body)
 
-    # Headers → "Section: title"
+    # Headers → just the title as its own sentence (the trailing period gives
+    # the narrator a pause between sections; we don't announce the word "section").
     out_lines: list[str] = []
     for line in body.splitlines():
         h = re.match(r"^(#{1,6})\s+(.*)", line)
         if h:
-            out_lines.append(f"Section: {h.group(2).strip()}.")
+            out_lines.append(f"{h.group(2).strip()}.")
         else:
             out_lines.append(line)
     body = "\n".join(out_lines)
