@@ -303,13 +303,15 @@ every-frame, host glue   9.6 fps
 
 Roughly **2.5×**, from 8-ish to ~24 fps at 1080p30 — real time for a 30 fps source with headroom for the encode tail. The remaining ceiling is the encoder; the ranked backlog for going further is INT8-quantizing it (~2×, with a calibration + parity re-check), offloading it to the Orin's DLA, or overlapping the detector and tracker on separate CUDA streams.
 
-## Step 8 — Fusing a detector with the tracker
+## Step 8 — The other half: the detector path
 
-A single-object tracker needs to be *told* what to track, and it needs help recovering when it loses the object. So the tracker runs alongside a lightweight detector, and a second, pure-host GStreamer element — a **master constant-velocity Kalman filter** — fuses them:
+Everything above is about the *tracker*, but a tracker only ever *follows* — it can't *find* an object, and once it loses one it stays lost. That's the job of a separate **object detector**: a TensorRT YOLO, running as the framework's existing `nvmminfer` element. It sits **upstream of the tracker and runs every frame**, attaching its boxes as `GstNvmmDetMeta`. Three distinct things hang off that detector path:
 
-- the **tracker is the trusted primary** measurement (it already gates internally),
-- the **best detector box is a gated secondary** — fused only if it lands within a pixel radius of the prediction,
-- on a run of frames with no measurement, the fusion element emits an **upstream custom event** to make the tracker re-seed from a fresh detection.
+1. **Seed.** On the first frame, `nvmmsamurai` takes a YOLO detection of the target class — the most confident, or the one nearest frame center — and uses its box as the prompt that initializes the track. (A forced `seed-roi` can bypass YOLO entirely when you want to track something the detector won't fire on.)
+2. **Fuse.** Every frame, a second, pure-host element — a **master constant-velocity Kalman filter** (`nvmmfusekf`) — fuses the two estimates: the **tracker is the trusted primary** (it gates internally), and the **best YOLO box is a gated secondary**, folded in only if it lands within a pixel radius of the prediction.
+3. **Re-seed.** After a run of frames with no good measurement, `nvmmfusekf` declares the track lost and emits the upstream `nvmm-reseed` event so the tracker re-acquires from a fresh detection.
+
+The YOLO engine itself is nothing exotic — a stock [Ultralytics](https://docs.ultralytics.com/) detector exported to ONNX and built with `trtexec` exactly like the SAM2 sub-models. The wrinkle is cost: because it runs on *every* frame — including the `max-kf` fast frames where the tracker's own engines are skipped — it's the throughput floor (the 16.6 ms in the table above). Throttling it on fast frames is on the backlog: it trades re-seed responsiveness for speed.
 
 The one non-obvious lesson here: I gated the detector by **Euclidean center distance in pixels**, not the textbook Mahalanobis distance. A Kalman filter's measurement-noise covariance scales with the box size, so for a small object the Mahalanobis gate degenerates into reject-everything or accept-everything. A flat pixel radius is cruder and far more robust. The "correct" statistical tool was the wrong engineering choice.
 
