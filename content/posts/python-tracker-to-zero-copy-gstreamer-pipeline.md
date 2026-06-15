@@ -350,61 +350,13 @@ The engine assets aren't shipped — they're version-locked and weight-derived. 
 
 Here is the whole thing in GStreamer terms. The frame enters NVMM (GPU memory) at the hardware decoder and **never returns to the CPU** until the hardware encoder consumes it; everything in between reads GPU memory in place and communicates by attaching small **metadata** structs to each buffer. `queue` elements put each stage on its own thread.
 
-```text
-  filesrc                                      ── system memory (encoded bitstream)
-    │  .mp4 / .mkv
-  qtdemux ─▶ h264parse
-    │  H.264
-  nvv4l2decoder                                ── HW decode: frame ENTERS NVMM (GPU) here
-    │
-  ╔════════════════ NVMM (GPU) — zero-copy from here to the encoder ════════════════╗
-  ║  nvvidconv          VIC → video/x-raw(memory:NVMM),NV12                          ║
-  ║    │ ! queue                                                                     ║
-  ║  nvmminfer          TensorRT detector (e.g. YOLO)   ──▶ attaches GstNvmmDetMeta  ║
-  ║    │ ! queue                                                                     ║
-  ║  nvmmsamurai        SAM2.1 / SAMURAI tracker        ──▶ attaches GstNvmmTrackMeta║
-  ║    │ ! queue            ▲                                                         ║
-  ║    │                    │  "nvmm-reseed" custom UPSTREAM event (re-seed on loss) ║
-  ║  nvmmfusekf         master Kalman fusion ───────────┘  ──▶ updates GstNvmmTrackMeta
-  ║    │ ! queue                                                                     ║
-  ║  nvmmdrawdet        overlay fused box + FPS/coverage HUD                         ║
-  ║    │                                                                             ║
-  ║  nvvidconv ─▶ nvv4l2h264enc   VIC → HW H.264 encode ── frame LEAVES NVMM here    ║
-  ╚══════════════════════════════════════════════════════════════════════════════════╝
-    │  H.264
-  h264parse ─▶ rtph264pay ─▶ udpsink           ── RTP/H.264 over UDP
-```
+![End-to-end GStreamer pipeline and data flow: a hardware-decoded frame enters NVMM GPU memory, passes zero-copy through nvvidconv, nvmminfer, nvmmsamurai, nvmmfusekf and nvmmdrawdet with metadata accumulating per buffer, and leaves at the hardware encoder for RTP over UDP.](/images/posts/tracker-pipeline-dataflow.svg)
 
 Two data planes ride the same buffer chain in opposite directions: **pixels flow downstream** as NVMM surfaces (one GPU-side buffer, never copied), while **metadata accumulates** on each buffer — `nvmminfer` attaches detections, `nvmmsamurai` attaches the track, `nvmmfusekf` rewrites the track with the fused estimate, and `nvmmdrawdet` reads it to draw. The one upstream signal is the `nvmm-reseed` event: when the fusion filter declares the track lost, it pushes a custom event *back up* the pads to make the tracker re-acquire from a fresh detection.
 
 And the part that does the heavy lifting, `nvmmsamurai`, is itself a small orchestrator — five TensorRT engines and a handful of CUDA kernels on a single CUDA stream, with the memory ring living on the GPU:
 
-```text
-  nvmmsamurai  (GstBaseTransform, in-place · one cudaStream · NVMM in, GstNvmmTrackMeta out)
-
-   NVMM NV12 frame ─▶ VIC crop 512² around predicted box ─▶ normalize
-                                                              │
-     full-inference frame ───────────────────────────────────┤        max-kf fast frame
-                                                              ▼              │
-                                                   [ image_encoder ] TRT     │  (skip engines)
-                                                              │              ▼
-   on-GPU memory ring ──▶ k_assemble_memory ─▶ 7232×1×64 memory   KalmanBox.predict()
-   (7 maskmem + 16 ptr)                        │                       │
-                                               ▼                       ▼
-                                    [ memory_attention ] TRT     extrapolated box
-                                               │                       │
-                                    [ mask_decoder ] TRT (4 cands)      │
-                                               │                       │
-                                    SamuraiSelector (Kalman-aware)      │
-                                               │                       │
-                          CUDA: bilinear 128→512 ─▶ mask→box ─▶ un-crop │
-                                               │                       │
-                                    [ memory_encoder ] TRT ─▶ push to ring (device→device)
-                                               │                       │
-                                    KalmanBox.update() ◀───────────────┘
-                                               ▼
-                                    write GstNvmmTrackMeta (box · score · valid)
-```
+![Inside the nvmmsamurai element: a GstBaseTransform running five TensorRT engines (image encoder, memory attention, mask decoder, memory encoder) and CUDA kernels on one CUDA stream, with an on-GPU memory ring; a full-inference frame laps through the engines while a max-kf fast frame skips them and only advances the Kalman filter, both converging to write GstNvmmTrackMeta.](/images/posts/nvmmsamurai-internals.svg)
 
 `[ ... ]` are the TensorRT engines; everything else is a CUDA kernel or host scalar math. On a full-inference frame the data does one lap through the engines; on a `max-kf` fast frame it skips them entirely and just advances the Kalman filter — which is most of where the 2.5× throughput came from.
 
