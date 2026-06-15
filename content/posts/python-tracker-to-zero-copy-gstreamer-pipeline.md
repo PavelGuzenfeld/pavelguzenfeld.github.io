@@ -20,9 +20,57 @@ keywords:
 - PyTorch model to TensorRT engines
 - SAMURAI visual tracker C++
 - ONNX export parity validation
+audio:
+  pronunciation:
+    SAM2.1: SAM 2.1
+    SAM2: SAM 2
+    SAMURAI: samurai
+    GStreamer: G-streamer
+    NVMM: N V M M
+    TensorRT: tensor R T
+    TRT: T R T
+    trtexec: T R T exec
+    ONNX: onyx
+    YOLO: yolo
+    Jetson: jetson
+    Orin: orin
+    CUDA: cuda
+    cuDNN: cu D N N
+    fp16: F P 16
+    NV12: N V 12
+    RoPE: rope
+    FPN: F P N
+    Hiera: hiera
+    VIC: V I C
+    RTP: R T P
+    UDP: U D P
+    H.264: H 264
+    iou: I O U
+    bbox: bounding box
+    einsum: ein-sum
+    repeat_interleave: repeat interleave
+    cudaStream: cuda stream
+    compute-sanitizer: compute sanitizer
+    max-kf: max K F
+    KalmanBox: Kalman box
+    nvmmsamurai: N V M M samurai
+    nvmmfusekf: N V M M fuse K F
+    nvmminfer: N V M M infer
+    nvmmdrawdet: N V M M draw det
+    nvvidconv: N V vid-conv
+    nvv4l2decoder: N V V4 L2 decoder
+    nvv4l2h264enc: N V V4 L2 H264 encoder
+    qtdemux: q t demux
+    h264parse: H264 parse
+    rtph264pay: R T P H264 pay
+    udpsink: U D P sink
+    GstNvmmTrackMeta: gst N V M M track meta
+    GstNvmmDetMeta: gst N V M M det meta
+    GstBaseTransform: gst base transform
+    1080p30: 1080p 30
 cover:
-  image: ""
-  alt: "Zero-copy GStreamer tracking pipeline on Jetson"
+  image: /images/posts/python-tracker-zero-copy.png
+  alt: "Zero-copy GStreamer tracking pipeline on Jetson Orin"
 categories:
 - deep-dive
 summary: A long, hands-on account of turning a research-grade PyTorch visual tracker (SAM2.1 / SAMURAI) into a real-time, zero-copy GStreamer + CUDA + TensorRT pipeline on a Jetson Orin NX — decomposing the model into engines, exporting and parity-validating each one, porting the per-frame math to CUDA, packaging it as a GStreamer element, and squeezing 8 fps into 24 with queues and frame-skipping. Every stage is validated against a golden reference.
