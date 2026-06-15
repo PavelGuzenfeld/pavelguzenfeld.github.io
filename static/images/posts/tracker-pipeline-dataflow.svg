@@ -6,6 +6,9 @@
     <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#b45309"/>
     </marker>
+    <marker id="arrM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0891b2"/>
+    </marker>
     <style>
       .el   { fill:#dbeafe; stroke:#3b82f6; stroke-width:1.5; }
       .an   { fill:#dcfce7; stroke:#16a34a; stroke-width:1.5; }
@@ -69,11 +72,18 @@
   <text class="sub"  x="440" y="364" text-anchor="middle">SAM2.1 / SAMURAI tracker</text>
   <text class="meta" x="600" y="354" >+ GstNvmmTrackMeta</text>
 
-  <!-- r6: fusion -->
+  <!-- r6: fusion (master Kalman filter) -->
   <rect class="an" x="290" y="398" width="300" height="44" rx="7"/>
   <text class="name" x="440" y="418" text-anchor="middle">nvmmfusekf</text>
-  <text class="sub"  x="440" y="434" text-anchor="middle">master Kalman fusion</text>
-  <text class="meta" x="600" y="424" >updates GstNvmmTrackMeta</text>
+  <text class="sub"  x="440" y="434" text-anchor="middle">master Kalman filter</text>
+  <text class="meta" x="600" y="416" >fuses SAM (primary) +</text>
+  <text class="meta" x="600" y="430" >YOLO det (gated) → TrackMeta</text>
+
+  <!-- YOLO det rides the buffer and also feeds the master KF: parallel measurement -->
+  <path class="edge" stroke="#0891b2" stroke-dasharray="5 4" marker-end="url(#arrM)"
+        d="M590,300 L800,300 L800,420 L592,420"/>
+  <text x="810" y="364" class="note" fill="#0891b2"
+        transform="rotate(90 810 364)">YOLO box → master KF (gated 2nd measurement)</text>
 
   <!-- reseed upstream arrow: fusekf left -> tracker left -->
   <path class="edge" stroke="#b45309" stroke-dasharray="5 4" marker-end="url(#arrR)"

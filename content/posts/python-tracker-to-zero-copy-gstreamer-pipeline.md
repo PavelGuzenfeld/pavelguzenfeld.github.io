@@ -41,7 +41,7 @@ Everything sits on top of [**`gst-nvmm-cpp`**](https://github.com/PavelGuzenfeld
 
 ## The shape of the problem
 
-A SAM2-style tracker is not one model. It's a small graph of sub-models with state threaded between them:
+A SAM2-style tracker is a small graph of sub-models with state threaded between them:
 
 1. an **image encoder** (a Hiera backbone + FPN neck) that turns a cropped frame into multi-scale features;
 2. a **prompt encoder** that turns the seed box into sparse/dense embeddings;
@@ -311,11 +311,9 @@ Everything above is about the *tracker*, but a tracker only ever *follows* — i
 2. **Fuse.** Every frame, a second, pure-host element — a **master constant-velocity Kalman filter** (`nvmmfusekf`) — fuses the two estimates: the **tracker is the trusted primary** (it gates internally), and the **best YOLO box is a gated secondary**, folded in only if it lands within a pixel radius of the prediction.
 3. **Re-seed.** After a run of frames with no good measurement, `nvmmfusekf` declares the track lost and emits the upstream `nvmm-reseed` event so the tracker re-acquires from a fresh detection.
 
-**Two Kalman filters, not one.** It's worth being precise about the filtering, because there are two KFs doing different jobs. The *secondary* one lives **inside `nvmmsamurai`** (the `KalmanBox` from earlier): it scores the mask-decoder candidates, and on `max-kf` fast frames it extrapolates the box while the engines are skipped — so the tracker's per-frame output is either a full-inference SAM box or a KF-predicted *"fast"* one. The *master* KF lives in **`nvmmfusekf`** and fuses the two detectors as **parallel measurements** every frame: it `predict`s, then updates from the SAM box (trusted primary, ungated — the tracker gates internally) and from the best YOLO box (gated by a pixel radius). One honest caveat about my build: the master treats SAM the same whether the box is a real inference or a fast extrapolation. Explicitly *diluting* the extrapolated "fast SAM" — feeding it to the master with higher measurement noise, so a prediction counts for less than a fresh inference — is a sensible refinement I haven't made yet.
+The filtering sits at two levels. `nvmmsamurai` carries its own `KalmanBox`: it scores the mask-decoder candidates and, on `max-kf` fast frames, extrapolates the box while the engines are skipped — so the tracker emits either a full-inference box or a predicted one. `nvmmfusekf` runs the master filter on top: each frame it predicts, updates from the SAM box as the primary, and updates from the best YOLO box when it falls inside the gate. Both show up in the diagrams below — the master KF in `nvmmfusekf`, the secondary one inside `nvmmsamurai`. Extrapolated and full-inference SAM boxes are fused identically today; down-weighting the extrapolated ones is a natural extension.
 
-![The two Kalman filters: nvmminfer (YOLO) and nvmmsamurai (SAM2.1, which contains a secondary KalmanBox for candidate scoring and max-kf fast-frame extrapolation) both feed the master Kalman filter in nvmmfusekf as parallel measurements every frame — the SAM box as a trusted ungated primary and the best YOLO box gated by a pixel radius — producing the fused GstNvmmTrackMeta.](/images/posts/tracker-fusion-two-kf.svg)
-
-The YOLO engine itself is nothing exotic — a stock [Ultralytics](https://docs.ultralytics.com/) detector exported to ONNX and built with `trtexec` exactly like the SAM2 sub-models. The wrinkle is cost: because it runs on *every* frame — including the `max-kf` fast frames where the tracker's own engines are skipped — it's the throughput floor (the 16.6 ms in the table above). Throttling it on fast frames is on the backlog: it trades re-seed responsiveness for speed.
+The YOLO engine is an [Ultralytics](https://docs.ultralytics.com/) detector exported to ONNX and built with `trtexec`, same as the SAM2 sub-models. Its cost is the wrinkle: it runs on *every* frame — including the `max-kf` fast frames where the tracker's own engines are skipped — so it sets the throughput floor (the 16.6 ms in the table above). Throttling it on fast frames is on the backlog; it trades re-seed responsiveness for speed.
 
 The one non-obvious lesson here: I gated the detector by **Euclidean center distance in pixels**, not the textbook Mahalanobis distance. A Kalman filter's measurement-noise covariance scales with the box size, so for a small object the Mahalanobis gate degenerates into reject-everything or accept-everything. A flat pixel radius is cruder and far more robust. The "correct" statistical tool was the wrong engineering choice.
 
@@ -350,7 +348,7 @@ gst-launch-1.0 -e \
   rtph264pay config-interval=1 pt=96 ! udpsink host=127.0.0.1 port=5600
 ```
 
-The engine assets aren't shipped — they're version-locked and weight-derived. Instead the repo carries the **export and build tooling** and a [step-by-step guide](https://pavelguzenfeld.com/gst-nvmm-cpp/building-engines/) to reproduce them from the public SAM 2.1 checkpoint and a public YOLO detector, entirely in Docker. (The whole chain — public weights → ONNX → engines → loaded in the element — is what I validated end-to-end on the Orin.)
+The engine assets aren't shipped — they're version-locked and weight-derived. Instead the repo carries the **export and build tooling** and a [step-by-step guide](https://pavelguzenfeld.com/gst-nvmm-cpp/building-engines/) to reproduce them from the SAM 2.1 checkpoint and an Ultralytics YOLO detector, entirely in Docker. (The whole chain — public weights → ONNX → engines → loaded in the element — is what I validated end-to-end on the Orin.)
 
 ## The end result: architecture and data flow
 

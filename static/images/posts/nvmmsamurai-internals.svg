@@ -80,8 +80,8 @@
   <text class="lbl" x="20" y="314">(D→D)</text>
 
   <!-- max-kf fast column (center x=700) -->
-  <rect class="host" x="600" y="106" width="200" height="44" rx="7"/>
-  <text class="name" x="700" y="132" text-anchor="middle">KalmanBox.predict()</text>
+  <rect class="host" x="595" y="106" width="210" height="44" rx="7"/>
+  <text class="name" x="700" y="132" text-anchor="middle">secondary KF · predict()</text>
   <rect class="host" x="600" y="466" width="200" height="44" rx="7"/>
   <text class="name" x="700" y="492" text-anchor="middle">extrapolated box</text>
   <path class="edge" stroke-dasharray="5 4" marker-end="url(#a)" d="M700,150 L700,464"/>
@@ -89,7 +89,7 @@
 
   <!-- output -->
   <rect class="io" x="250" y="612" width="380" height="46" rx="7"/>
-  <text class="name" x="440" y="632" text-anchor="middle">KalmanBox.update → write GstNvmmTrackMeta</text>
+  <text class="name" x="440" y="632" text-anchor="middle">secondary KF · update → write GstNvmmTrackMeta</text>
   <text class="sub"  x="440" y="649" text-anchor="middle">box · object score · valid flag</text>
   <!-- converge -->
   <path class="edge" marker-end="url(#a)" d="M300,582 L300,600 L420,600 L420,610"/>
