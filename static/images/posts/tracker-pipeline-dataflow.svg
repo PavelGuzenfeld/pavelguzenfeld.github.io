@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 720" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b45309"/>
+    </marker>
+    <marker id="arrM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0891b2"/>
+    </marker>
+    <style>
+      .el   { fill:#dbeafe; stroke:#3b82f6; stroke-width:1.5; }
+      .an   { fill:#dcfce7; stroke:#16a34a; stroke-width:1.5; }
+      .name { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:14px; fill:#0f172a; }
+      .sub  { font-size:11px; fill:#475569; }
+      .edge { stroke:#334155; stroke-width:1.6; fill:none; }
+      .meta { font-size:12px; fill:#b45309; font-weight:600; }
+      .note { font-size:11px; fill:#475569; }
+      .q    { font-size:10px; fill:#475569; }
+    </style>
+  </defs>
+
+  <!-- opaque light background so text stays high-contrast in any page theme -->
+  <rect x="0.5" y="0.5" width="879" height="719" fill="#ffffff" stroke="#e2e8f0"/>
+
+  <!-- NVMM zero-copy region -->
+  <rect x="250" y="158" width="392" height="438" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="6 5"/>
+  <text x="262" y="178" class="note">NVMM (GPU) — zero-copy: the frame never returns to the CPU here</text>
+
+  <!-- vertical edges (center x=440) -->
+  <path class="edge" marker-end="url(#arr)" d="M440,68 L440,90"/>
+  <path class="edge" marker-end="url(#arr)" d="M440,136 L440,188"/>
+  <path class="edge" marker-end="url(#arr)" d="M440,234 L440,258"/>
+  <path class="edge" marker-end="url(#arr)" d="M440,304 L440,328"/>
+  <path class="edge" marker-end="url(#arr)" d="M440,374 L440,398"/>
+  <path class="edge" marker-end="url(#arr)" d="M440,444 L440,468"/>
+  <path class="edge" marker-end="url(#arr)" d="M440,514 L440,538"/>
+  <path class="edge" marker-end="url(#arr)" d="M440,584 L440,622"/>
+
+  <!-- queue tags -->
+  <text x="450" y="250" class="q">! queue</text>
+  <text x="450" y="320" class="q">! queue</text>
+  <text x="450" y="390" class="q">! queue</text>
+  <text x="450" y="460" class="q">! queue</text>
+
+  <!-- r1: ingest -->
+  <rect class="el" x="290" y="24" width="300" height="44" rx="7"/>
+  <text class="name" x="440" y="44" text-anchor="middle">filesrc → qtdemux → h264parse</text>
+  <text class="sub"  x="440" y="60" text-anchor="middle">encoded H.264 · system memory</text>
+
+  <!-- r2: decode -->
+  <rect class="el" x="290" y="92" width="300" height="44" rx="7"/>
+  <text class="name" x="440" y="112" text-anchor="middle">nvv4l2decoder</text>
+  <text class="sub"  x="440" y="128" text-anchor="middle">hardware H.264 decode</text>
+  <text class="meta" x="600" y="178" >frame enters NVMM (GPU)</text>
+
+  <!-- r3: convert in -->
+  <rect class="el" x="290" y="188" width="300" height="44" rx="7"/>
+  <text class="name" x="440" y="208" text-anchor="middle">nvvidconv</text>
+  <text class="sub"  x="440" y="224" text-anchor="middle">VIC → video/x-raw(memory:NVMM),NV12</text>
+
+  <!-- r4: detector -->
+  <rect class="an" x="290" y="258" width="300" height="44" rx="7"/>
+  <text class="name" x="440" y="278" text-anchor="middle">nvmminfer</text>
+  <text class="sub"  x="440" y="294" text-anchor="middle">TensorRT detector (e.g. YOLO)</text>
+  <text class="meta" x="600" y="284" >+ GstNvmmDetMeta</text>
+
+  <!-- r5: tracker -->
+  <rect class="an" x="290" y="328" width="300" height="44" rx="7"/>
+  <text class="name" x="440" y="348" text-anchor="middle">nvmmsamurai</text>
+  <text class="sub"  x="440" y="364" text-anchor="middle">SAM2.1 / SAMURAI tracker</text>
+  <text class="meta" x="600" y="354" >+ GstNvmmTrackMeta</text>
+
+  <!-- r6: fusion (master Kalman filter) -->
+  <rect class="an" x="290" y="398" width="300" height="44" rx="7"/>
+  <text class="name" x="440" y="418" text-anchor="middle">nvmmfusekf</text>
+  <text class="sub"  x="440" y="434" text-anchor="middle">master Kalman filter</text>
+  <text class="meta" x="600" y="416" >fuses SAM (primary) +</text>
+  <text class="meta" x="600" y="430" >YOLO det (gated) → TrackMeta</text>
+
+  <!-- YOLO det rides the buffer and also feeds the master KF: parallel measurement -->
+  <path class="edge" stroke="#0891b2" stroke-dasharray="5 4" marker-end="url(#arrM)"
+        d="M590,300 L800,300 L800,420 L592,420"/>
+  <text x="810" y="364" class="note" fill="#0891b2"
+        transform="rotate(90 810 364)">YOLO box → master KF (gated 2nd measurement)</text>
+
+  <!-- reseed upstream arrow: fusekf left -> tracker left -->
+  <path class="edge" stroke="#b45309" stroke-dasharray="5 4" marker-end="url(#arrR)"
+        d="M290,420 L268,420 L268,350 L290,350"/>
+  <text x="60" y="378" class="meta">nvmm-reseed</text>
+  <text x="60" y="392" class="note">custom upstream</text>
+  <text x="60" y="404" class="note">event (re-seed</text>
+  <text x="60" y="416" class="note">on track loss)</text>
+  <path class="edge" stroke="#b45309" stroke-dasharray="2 3" d="M150,400 L262,400"/>
+
+  <!-- r7: overlay -->
+  <rect class="an" x="290" y="468" width="300" height="44" rx="7"/>
+  <text class="name" x="440" y="488" text-anchor="middle">nvmmdrawdet</text>
+  <text class="sub"  x="440" y="504" text-anchor="middle">overlay fused box + FPS / coverage HUD</text>
+
+  <!-- r8: encode -->
+  <rect class="el" x="290" y="538" width="300" height="44" rx="7"/>
+  <text class="name" x="440" y="558" text-anchor="middle">nvvidconv → nvv4l2h264enc</text>
+  <text class="sub"  x="440" y="574" text-anchor="middle">VIC → hardware H.264 encode</text>
+  <text class="meta" x="600" y="566" >frame leaves NVMM</text>
+
+  <!-- r9: out -->
+  <rect class="el" x="290" y="622" width="300" height="44" rx="7"/>
+  <text class="name" x="440" y="642" text-anchor="middle">h264parse → rtph264pay → udpsink</text>
+  <text class="sub"  x="440" y="658" text-anchor="middle">RTP / H.264 over UDP</text>
+</svg>

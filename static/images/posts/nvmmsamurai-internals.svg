@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+    <style>
+      .trt  { fill:#ede9fe; stroke:#7c3aed; stroke-width:1.5; }
+      .cuda { fill:#ffedd5; stroke:#ea580c; stroke-width:1.5; }
+      .host { fill:#f1f5f9; stroke:#64748b; stroke-width:1.5; }
+      .ring { fill:#dcfce7; stroke:#16a34a; stroke-width:1.5; }
+      .det  { fill:#dcfce7; stroke:#16a34a; stroke-width:1.5; }
+      .io   { fill:#e0f2fe; stroke:#0284c7; stroke-width:1.5; }
+      .name { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; fill:#0f172a; }
+      .sub  { font-size:10.5px; fill:#475569; }
+      .edge { stroke:#334155; stroke-width:1.6; fill:none; }
+      .lbl  { font-size:11px; fill:#475569; }
+      .leg  { font-size:11px; fill:#334155; }
+    </style>
+  </defs>
+
+  <!-- opaque light background so text stays high-contrast in any page theme -->
+  <rect x="0.5" y="0.5" width="899" height="699" fill="#ffffff" stroke="#e2e8f0"/>
+
+  <!-- external seed source: YOLO detection (first frame + re-seed on loss) -->
+  <rect class="det" x="690" y="20" width="196" height="46" rx="7"/>
+  <text class="name" x="788" y="40" text-anchor="middle" font-size="12">nvmminfer · YOLO</text>
+  <text class="sub"  x="788" y="57" text-anchor="middle">seeds the box (frame 1 + re-seed)</text>
+  <path class="edge" stroke-dasharray="5 4" marker-end="url(#a)" d="M690,43 L672,43"/>
+
+  <!-- entry -->
+  <rect class="io" x="170" y="20" width="500" height="46" rx="7"/>
+  <text class="name" x="420" y="40" text-anchor="middle">NVMM NV12 frame → VIC crop 512² around predicted box → normalize</text>
+  <text class="sub"  x="420" y="57" text-anchor="middle">GstBaseTransform, in-place · one cudaStream · GstNvmmTrackMeta out</text>
+
+  <!-- split arrows -->
+  <path class="edge" marker-end="url(#a)" d="M340,66 L300,104"/>
+  <path class="edge" marker-end="url(#a)" d="M540,66 L700,104"/>
+  <text class="lbl" x="150" y="92">full-inference frame</text>
+  <text class="lbl" x="600" y="92">max-kf fast frame</text>
+
+  <!-- full-inference column (center x=300) -->
+  <rect class="trt"  x="150" y="106" width="300" height="44" rx="7"/>
+  <text class="name" x="300" y="132" text-anchor="middle">image_encoder  ·  TRT</text>
+
+  <rect class="cuda" x="150" y="178" width="300" height="44" rx="7"/>
+  <text class="name" x="300" y="198" text-anchor="middle">k_assemble_memory  ·  CUDA</text>
+  <text class="sub"  x="300" y="214" text-anchor="middle">builds 7232×1×64 memory + pos</text>
+
+  <rect class="trt"  x="150" y="250" width="300" height="44" rx="7"/>
+  <text class="name" x="300" y="276" text-anchor="middle">memory_attention  ·  TRT</text>
+
+  <rect class="trt"  x="150" y="322" width="300" height="44" rx="7"/>
+  <text class="name" x="300" y="342" text-anchor="middle">mask_decoder  ·  TRT</text>
+  <text class="sub"  x="300" y="358" text-anchor="middle">4 mask candidates + scores</text>
+
+  <rect class="host" x="150" y="394" width="300" height="44" rx="7"/>
+  <text class="name" x="300" y="414" text-anchor="middle">SamuraiSelector</text>
+  <text class="sub"  x="300" y="430" text-anchor="middle">secondary KF scores the candidates</text>
+
+  <rect class="cuda" x="150" y="466" width="300" height="44" rx="7"/>
+  <text class="name" x="300" y="486" text-anchor="middle">bilinear 128→512 → mask→box</text>
+  <text class="sub"  x="300" y="502" text-anchor="middle">CUDA · then un-crop to frame coords</text>
+
+  <rect class="trt"  x="150" y="538" width="300" height="44" rx="7"/>
+  <text class="name" x="300" y="564" text-anchor="middle">memory_encoder  ·  TRT</text>
+
+  <!-- vertical edges full column -->
+  <path class="edge" marker-end="url(#a)" d="M300,150 L300,176"/>
+  <path class="edge" marker-end="url(#a)" d="M300,222 L300,248"/>
+  <path class="edge" marker-end="url(#a)" d="M300,294 L300,320"/>
+  <path class="edge" marker-end="url(#a)" d="M300,366 L300,392"/>
+  <path class="edge" marker-end="url(#a)" d="M300,438 L300,464"/>
+  <path class="edge" marker-end="url(#a)" d="M300,510 L300,536"/>
+
+  <!-- on-GPU memory ring -->
+  <rect class="ring" x="20" y="170" width="110" height="80" rx="7"/>
+  <text class="name" x="75" y="196" text-anchor="middle" font-size="12">memory</text>
+  <text class="name" x="75" y="212" text-anchor="middle" font-size="12">ring</text>
+  <text class="sub"  x="75" y="230" text-anchor="middle">7 maskmem</text>
+  <text class="sub"  x="75" y="243" text-anchor="middle">+ 16 obj-ptr</text>
+  <text class="sub"  x="75" y="158" text-anchor="middle">on GPU</text>
+  <!-- ring -> assemble -->
+  <path class="edge" marker-end="url(#a)" d="M130,200 L148,200"/>
+  <!-- memory_encoder -> ring (push) -->
+  <path class="edge" marker-end="url(#a)" d="M150,560 L75,560 L75,252"/>
+  <text class="lbl" x="20" y="300">push</text>
+  <text class="lbl" x="20" y="314">(D→D)</text>
+
+  <!-- max-kf fast column (center x=700) -->
+  <rect class="host" x="595" y="106" width="210" height="44" rx="7"/>
+  <text class="name" x="700" y="132" text-anchor="middle">secondary KF · predict()</text>
+  <rect class="host" x="600" y="466" width="200" height="44" rx="7"/>
+  <text class="name" x="700" y="492" text-anchor="middle">extrapolated box</text>
+  <path class="edge" stroke-dasharray="5 4" marker-end="url(#a)" d="M700,150 L700,464"/>
+  <text class="lbl" x="710" y="310">no engines run</text>
+
+  <!-- output -->
+  <rect class="io" x="250" y="612" width="380" height="46" rx="7"/>
+  <text class="name" x="440" y="632" text-anchor="middle">secondary KF · update → write GstNvmmTrackMeta</text>
+  <text class="sub"  x="440" y="649" text-anchor="middle">box · object score · valid flag</text>
+  <!-- converge -->
+  <path class="edge" marker-end="url(#a)" d="M300,582 L300,600 L420,600 L420,610"/>
+  <path class="edge" marker-end="url(#a)" d="M700,510 L700,600 L470,600 L455,610"/>
+
+  <!-- legend -->
+  <rect class="trt"  x="150" y="676" width="16" height="14" rx="3"/><text class="leg" x="172" y="688">TRT engine</text>
+  <rect class="cuda" x="270" y="676" width="16" height="14" rx="3"/><text class="leg" x="292" y="688">CUDA kernel</text>
+  <rect class="host" x="400" y="676" width="16" height="14" rx="3"/><text class="leg" x="422" y="688">host / scalar</text>
+  <rect class="ring" x="520" y="676" width="16" height="14" rx="3"/><text class="leg" x="542" y="688">GPU memory ring</text>
+</svg>
