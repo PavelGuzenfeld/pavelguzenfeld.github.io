@@ -48,7 +48,7 @@ aliases:
 
 ## Upstream Contributions
 
-**120 patches merged across 12 projects, 13 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of September 2026.
+**121 patches merged across 13 projects, 13 open for review.** Statuses below are refreshed from live GitHub/GitLab APIs as of September 2026.
 
 {{% details summary="Eigen — 23 merged, 3 open, 2 closed" %}}
 | MR | Type | Description | Date | Status |
@@ -276,6 +276,12 @@ aliases:
 | [#713](https://github.com/boost-ext/sml/pull/713) | ci | Add ASan and UBSan to CI | 2026-06-10 | merged |
 | [#714](https://github.com/boost-ext/sml/pull/714) | fix | Make `transition_sa` and `transition_sg` constructors constexpr | 2026-07-11 | merged |
 | [#716](https://github.com/boost-ext/sml/pull/716) | fix | Make `transitions<aux::true_type>::execute` constexpr | 2026-08-09 | merged |
+{{% /details %}}
+
+{{% details summary="ast-grep/langs — 1 merged" %}}
+| PR | Type | Description | Date | Status |
+|----|------|-------------|------|--------|
+| [#195](https://github.com/ast-grep/langs/pull/195) | feature | Add GDScript language package | 2026-09-10 | merged |
 {{% /details %}}
 
 {{% details summary="Fast-DDS-docs — 1 open" %}}
