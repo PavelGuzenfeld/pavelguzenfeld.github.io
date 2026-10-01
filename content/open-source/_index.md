@@ -17,7 +17,7 @@ aliases:
 | [l2-hybrid-protocol](https://github.com/PavelGuzenfeld/l2-hybrid-protocol) | Custom L2 network protocol — lower latency than raw UDP for real-time telemetry |
 | [gst-nvmm-cpp](https://github.com/PavelGuzenfeld/gst-nvmm-cpp) | GStreamer plugins for zero-copy NVMM video on NVIDIA Jetson (Xavier, Orin) — allocator, VIC transform, shared-memory IPC |
 | [immutable-data-embedder](https://github.com/PavelGuzenfeld/immutable-data-embedder) | Compile-time C++23 config parser — embed data as `constexpr` with zero runtime overhead |
-| [ucoro](https://github.com/PavelGuzenfeld/ucoro) | Minimal C++ coroutine abstraction for async task orchestration |
+| [ucoro](https://github.com/PavelGuzenfeld/ucoro) | Header-only C++23 stackful coroutines over minicoro ([docs](https://pavelguzenfeld.com/ucoro/)) |
 | [gst-metadata](https://github.com/PavelGuzenfeld/gst-metadata) | Composable GStreamer metadata — type-safe, independent metadata types via CRTP |
 | [safe-shm](https://github.com/PavelGuzenfeld/safe-shm) | Thread-safe shared memory with compile-time allocation |
 | [image-shm-dblbuf](https://github.com/PavelGuzenfeld/image-shm-dblbuf) | Double-buffered shared memory optimized for video frames |
