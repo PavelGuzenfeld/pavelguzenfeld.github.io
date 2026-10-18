@@ -1,0 +1,10 @@
+{{- $section := .Get "section" -}}
+{{- $docs := site.Data.docs | default dict -}}
+<table>
+<thead><tr><th>Project</th><th>What it does</th></tr></thead>
+<tbody>
+{{- range where site.Data.projects "section" $section }}
+<tr><td><a href="https://github.com/PavelGuzenfeld/{{ .repo }}">{{ .repo }}</a></td><td>{{ .description | markdownify }}{{ with index $docs .repo }} (<a href="{{ . }}">docs</a>){{ end }}</td></tr>
+{{- end }}
+</tbody>
+</table>

@@ -10,39 +10,15 @@ aliases:
 
 ## Systems & Libraries
 
-| Project | What it does |
-|---------|-------------|
-| [strong-types](https://github.com/PavelGuzenfeld/strong-types) | Type-safe C++ primitives with SI units, dimensional analysis, and fuzz testing — prevent unit/coordinate mix-ups at compile time |
-| [behavior-tree-lite](https://github.com/PavelGuzenfeld/behavior-tree-lite) | Header-only C++23 behavior tree with compile-time DSL and zero-overhead flattened execution |
-| [l2-hybrid-protocol](https://github.com/PavelGuzenfeld/l2-hybrid-protocol) | Custom L2 network protocol — lower latency than raw UDP for real-time telemetry |
-| [gst-nvmm-cpp](https://github.com/PavelGuzenfeld/gst-nvmm-cpp) | GStreamer plugins for zero-copy NVMM video on NVIDIA Jetson (Xavier, Orin) — allocator, VIC transform, shared-memory IPC |
-| [immutable-data-embedder](https://github.com/PavelGuzenfeld/immutable-data-embedder) | Compile-time C++23 config parser — embed data as `constexpr` with zero runtime overhead |
-| [ucoro](https://github.com/PavelGuzenfeld/ucoro) | Header-only C++23 stackful coroutines over minicoro ([docs](https://pavelguzenfeld.com/ucoro/)) |
-| [gst-metadata](https://github.com/PavelGuzenfeld/gst-metadata) | Composable GStreamer metadata — type-safe, independent metadata types via CRTP |
-| [safe-shm](https://github.com/PavelGuzenfeld/safe-shm) | Thread-safe shared memory with compile-time allocation |
-| [image-shm-dblbuf](https://github.com/PavelGuzenfeld/image-shm-dblbuf) | Double-buffered shared memory optimized for video frames |
-| [v4l2](https://github.com/PavelGuzenfeld/v4l2) | Video for Linux 2 based video source adapter in C++ |
+{{< projects section="Systems & Libraries" >}}
 
 ## Navigation & Robotics
 
-| Project | What it does |
-|---------|-------------|
-| [fiber-nav-sim](https://github.com/PavelGuzenfeld/fiber-nav-sim) | GPS-denied VTOL navigation — fiber optic + monocular vision fusion, PX4 + Gazebo + ROS 2 |
-| [linalg3d](https://github.com/PavelGuzenfeld/linalg3d) | 3D linear algebra for flight path and attitude calculations |
-| [image-to-body-math](https://github.com/PavelGuzenfeld/image-to-body-math) | Camera-to-body coordinate transforms — C++23 header-only + Python (nanobind, zero-copy NumPy) |
-| [ros2-gst-meta](https://github.com/PavelGuzenfeld/ros2-gst-meta) | ROS 2 ↔ GStreamer metadata bridge for vision pipelines |
-| [geoslice](https://github.com/PavelGuzenfeld/geoslice) | Geospatial terrain slicing utilities |
+{{< projects section="Navigation & Robotics" >}}
 
 ## DevOps & Tooling
 
-| Project | What it does |
-|---------|-------------|
-| [standard](https://github.com/PavelGuzenfeld/standard) | Reusable GitHub Actions for C++/Python — diff-aware linting, SAST, sanitizers, fuzzing |
-| [mcp-media-forge](https://github.com/PavelGuzenfeld/mcp-media-forge) | MCP server for generating presentations, diagrams, and charts from Markdown |
-| [gemini-mcp](https://github.com/PavelGuzenfeld/gemini-mcp) | MCP server exposing Google Gemini as tools for Claude Code |
-| [notebooklm-mcp](https://github.com/PavelGuzenfeld/notebooklm-mcp) | MCP server for Google NotebookLM — notebooks, sources, chat, artifacts, research |
-| [ros2-alpine](https://github.com/PavelGuzenfeld/ros2-alpine) | Minimal ROS 2 on Alpine Linux — lightweight container for edge deployment |
-| [ai-cpp-course](https://github.com/PavelGuzenfeld/ai-cpp-course) | C++ course intended for AI developers |
+{{< projects section="DevOps & Tooling" >}}
 
 ---
 

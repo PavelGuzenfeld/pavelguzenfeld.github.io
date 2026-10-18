@@ -1,0 +1,66 @@
+- repo: strong-types
+  section: "Systems & Libraries"
+  description: "Type-safe C++ primitives with SI units, dimensional analysis, and fuzz testing — prevent unit/coordinate mix-ups at compile time"
+- repo: behavior-tree-lite
+  section: "Systems & Libraries"
+  description: "Header-only C++23 behavior tree with compile-time DSL and zero-overhead flattened execution"
+- repo: l2-hybrid-protocol
+  section: "Systems & Libraries"
+  description: "Custom L2 network protocol — lower latency than raw UDP for real-time telemetry"
+- repo: gst-nvmm-cpp
+  section: "Systems & Libraries"
+  description: "GStreamer plugins for zero-copy NVMM video on NVIDIA Jetson (Xavier, Orin) — allocator, VIC transform, shared-memory IPC"
+- repo: immutable-data-embedder
+  section: "Systems & Libraries"
+  description: "Compile-time C++23 config parser — embed data as `constexpr` with zero runtime overhead"
+- repo: ucoro
+  section: "Systems & Libraries"
+  description: "Header-only C++23 stackful coroutines over minicoro"
+- repo: gst-metadata
+  section: "Systems & Libraries"
+  description: "Composable GStreamer metadata — type-safe, independent metadata types via CRTP"
+- repo: safe-shm
+  section: "Systems & Libraries"
+  description: "Thread-safe shared memory with compile-time allocation"
+- repo: image-shm-dblbuf
+  section: "Systems & Libraries"
+  description: "Double-buffered shared memory optimized for video frames"
+- repo: v4l2
+  section: "Systems & Libraries"
+  description: "Video for Linux 2 based video source adapter in C++"
+- repo: fiber-nav-sim
+  section: "Navigation & Robotics"
+  description: "GPS-denied VTOL navigation — fiber optic + monocular vision fusion, PX4 + Gazebo + ROS 2"
+- repo: linalg3d
+  section: "Navigation & Robotics"
+  description: "3D linear algebra for flight path and attitude calculations"
+- repo: image-to-body-math
+  section: "Navigation & Robotics"
+  description: "Camera-to-body coordinate transforms — C++23 header-only + Python (nanobind, zero-copy NumPy)"
+- repo: ros2-gst-meta
+  section: "Navigation & Robotics"
+  description: "ROS 2 ↔ GStreamer metadata bridge for vision pipelines"
+- repo: geoslice
+  section: "Navigation & Robotics"
+  description: "Geospatial terrain slicing utilities"
+- repo: standard
+  section: "DevOps & Tooling"
+  description: "Reusable GitHub Actions for C++/Python — diff-aware linting, SAST, sanitizers, fuzzing"
+- repo: mcp-media-forge
+  section: "DevOps & Tooling"
+  description: "MCP server for generating presentations, diagrams, and charts from Markdown"
+- repo: gemini-mcp
+  section: "DevOps & Tooling"
+  description: "MCP server exposing Google Gemini as tools for Claude Code"
+- repo: notebooklm-mcp
+  section: "DevOps & Tooling"
+  description: "MCP server for Google NotebookLM — notebooks, sources, chat, artifacts, research"
+- repo: ros2-alpine
+  section: "DevOps & Tooling"
+  description: "Minimal ROS 2 on Alpine Linux — lightweight container for edge deployment"
+- repo: ai-cpp-course
+  section: "DevOps & Tooling"
+  description: "C++ course intended for AI developers"
+- repo: agent-sdlc
+  section: "DevOps & Tooling"
+  description: "Agent rules, skills, and gates for AI-assisted software development"
