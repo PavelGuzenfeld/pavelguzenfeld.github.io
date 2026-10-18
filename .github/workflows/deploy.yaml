@@ -3,6 +3,8 @@ name: Deploy Hugo to GitHub Pages
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -33,6 +35,18 @@ jobs:
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
+
+      - name: Probe docs sites
+        run: |
+          echo '{}' > data/docs.json
+          for repo in $(yq '.[].repo' data/projects.yaml); do
+            url="https://pavelguzenfeld.com/${repo}/"
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$url" || true)
+            if [ "$code" = "200" ]; then
+              jq --arg repo "$repo" --arg url "$url" '. + {($repo): $url}' data/docs.json > data/docs.tmp
+              mv data/docs.tmp data/docs.json
+            fi
+          done
 
       - name: Build
         env:
