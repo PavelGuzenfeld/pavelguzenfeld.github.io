@@ -1,0 +1,5 @@
+{{- $id := .Get "id" -}}
+<div class="godbolt-embed">
+<iframe src="https://godbolt.org/z/{{ $id }}?embedded=true&amp;hideEditorToolbars=true" width="100%" height="{{ .Get "height" | default "520" }}" loading="lazy" style="border:1px solid var(--border);border-radius:6px" title="Compiler Explorer {{ $id }}"></iframe>
+<p><a href="https://godbolt.org/z/{{ $id }}">Open in Compiler Explorer: godbolt.org/z/{{ $id }}</a></p>
+</div>
