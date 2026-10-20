@@ -412,7 +412,7 @@ Zeroing is the odd one out. On x86 it cost 0.13 ns per object. On the Orin it co
 
 ## On the Jetson GPU
 
-The same question comes up on the Orin's GPU, in two places. A kernel can allocate per thread with device-side `malloc`, and the host can allocate per-frame buffers with `cudaMalloc`. I measured both with CUDA 12.6, `-O2 -arch=sm_87`, built natively on the Orin. The host thread was pinned to one core, and the GPU stayed at 1.173 GHz under the default governor. Every frame ends with `cudaStreamSynchronize`, so the numbers are what a frame loop waits for. Median of three runs, all within 0.5%.
+On the GPU there are two places to allocate. A kernel can call device-side `malloc` per thread, and the host can `cudaMalloc` buffers every frame. I measured both with CUDA 12.6, `-O2 -arch=sm_87`, built natively on the Orin. The host thread was pinned to one core, and the GPU stayed at 1.173 GHz under the default governor. Every frame ends with `cudaStreamSynchronize`, so the numbers are what a frame loop waits for. Median of three runs, all within 0.5%.
 
 Inside a kernel, 1000 threads each allocate one 32-byte `Detection`, write two fields, and then everything is freed. The arena is a `DeviceArena` in device memory, and `arena_push` is a single `atomicAdd` on its `used` offset. A one-thread kernel resets it.
 
@@ -434,7 +434,7 @@ From the host, each frame allocates the 8 SoA columns of 1000 elements, runs one
 | host bump over one `cudaMalloc` buffer | 15.1 |
 | host bump + `cudaMemsetAsync` of 32 KB (ZII) | 19.1 |
 
-With the fill kernel and sync subtracted, `cudaMalloc` and `cudaFree` cost about 6.3 µs per column. The stream-ordered pool behind `cudaMallocAsync` cuts that to about 1.1 µs. I set its release threshold to keep all memory, so it never hands memory back to the driver. That pool is CUDA's own arena-style allocator, and it is the right default when buffers really change size from frame to frame. A fixed buffer carved by pointer arithmetic is still cheapest, at only 0.5 µs above the floor. Zeroing on the GPU is an extra stream operation, and `cudaMemsetAsync` over 32 KB adds about 4 µs per frame. That is the cost of ZII here, so zero only the columns whose zero means something.
+With the fill kernel and sync subtracted, `cudaMalloc` and `cudaFree` cost about 6.3 µs per column. The stream-ordered pool behind `cudaMallocAsync` cuts that to about 1.1 µs. I set its release threshold to keep all memory, so it never hands memory back to the driver. If your buffer sizes really change from frame to frame, use that pool. If they don't, a fixed buffer cut up by pointer arithmetic is cheaper, 0.5 µs above the floor. Zeroing on the GPU is one more stream operation: `cudaMemsetAsync` over 32 KB adds about 4 µs per frame. So zero only the columns where zero means something.
 
 ![Jetson Orin GPU microseconds per frame: inside a kernel, device malloc 529.6 against 18.2 for the arena and a 14.6 floor; from the host, cudaMalloc 65.4, cudaMallocAsync 23.8, bump 15.1, bump plus memset 19.1](/images/posts/cpp-zii-arena-allocator-gpu.svg)
 
@@ -446,13 +446,13 @@ With the fill kernel and sync subtracted, `cudaMalloc` and `cudaFree` cost about
  thread 999-+    one-thread kernel afterwards: arena->used = 0
 ```
 
-Compiler Explorer can't run CUDA on a GPU, so there's no live session for this one. The full program is at the end.
+No Godbolt link for this one, it needs a GPU. The full program is at the end.
 
 ## Putting it all together: CPU + GPU + arenas + SoA
 
-What does it take to follow all of the advice above at once? Here is one frame of a detection pipeline on the Orin. The CPU produces 1000 detections. The GPU keeps the ones scoring at least 0.5, and the CPU reads the hits back. That is upload, filter, readback, every frame.
+One frame of a detection pipeline on the Orin, written twice. The CPU makes 1000 detections, the GPU keeps the ones scoring 0.5 or more, and the CPU reads the hits back.
 
-The usual first version allocates everything per frame: `malloc` for the host columns, `cudaMalloc` for every device buffer, pageable `cudaMemcpy` calls that each block, then `cudaFree` and `free`. The second version applies every rule in this post:
+The first version allocates everything per frame: `malloc` for the host columns, `cudaMalloc` for each device buffer, blocking `cudaMemcpy` from pageable memory, then `cudaFree` and `free`. The second one does what this post says:
 
 ```
  RAII boundary, made once:   Stream      DeviceBytes block        PinnedBytes block
@@ -469,10 +469,10 @@ The usual first version allocates everything per frame: `malloc` for the host co
 
 - **RAII at the boundary.** The stream, one device block and one pinned host block are `unique_ptr`s with empty deleters (`cudaStreamDestroy`, `cudaFree`, `cudaFreeHost`), made once in `Pipeline`. Nothing is allocated in the loop.
 - **Bump arenas inside them.** `device_frame` hands out the device input columns and `pinned_frame` the host staging and readback buffers. Both reset with one store at the end of the frame.
-- **SoA where the loop is per field.** The CPU writes `score`, `x` and `y` as three columns, and the kernel reads `score` alone to decide. The output stays AoS: a `Hit` is consumed whole, so one record per hit is the right shape there.
+- **SoA where the loop is per field.** The CPU writes `score`, `x` and `y` as three columns, and the kernel reads `score` alone to decide. The output stays AoS, because whoever reads a `Hit` reads all of it.
 - **A device arena for variable output.** The kernel doesn't know how many hits there will be. Each passing thread takes its slot with one `atomicAdd` on the output arena's `used`.
 - **ZII for the reset.** An arena whose `used` is zero is empty, so resetting the device arena is `cudaMemsetAsync` of 8 bytes on the stream. There's no kernel and no host round trip.
-- **Pinned memory, one stream, one sync.** The copies come from page-locked memory, so they are truly async and the CPU waits once per frame.
+- **Pinned memory, one stream, one sync.** Copies from page-locked memory don't block, so the CPU waits once per frame.
 
 Same machine and method as before: CUDA 12.6, sm_87, host thread pinned to one core, median of three runs. Both versions return the same 500 hits per frame, and `compute-sanitizer --tool memcheck` reports 0 errors.
 
@@ -481,7 +481,7 @@ Same machine and method as before: CUDA 12.6, sm_87, host thread pinned to one c
 | allocate per frame (`malloc`, `cudaMalloc`, pageable copies) | 126.6 |
 | RAII owners + arenas + SoA (pinned, one stream, one sync) | 37.9 |
 
-That is 3.3x for changing how memory is owned, with the kernel left exactly the same. This is every change at once, so the table doesn't say how much each rule contributes. From the host-side table above, `cudaMalloc` and `cudaFree` cost about 6.3 µs per buffer. That puts the five device buffers here at roughly 30 µs of the 89 µs gap. I didn't measure how the rest splits between the pageable copies, the extra syncs and the host `malloc`s.
+3.3x, and the kernel didn't change. It's all the changes at once, so this doesn't tell you which one matters most. From the host-side table above, `cudaMalloc` and `cudaFree` cost about 6.3 µs per buffer. That puts the five device buffers here at roughly 30 µs of the 89 µs gap. I didn't measure how the rest splits between the pageable copies, the extra syncs and the host `malloc`s.
 
 The full program:
 
@@ -711,14 +711,14 @@ int main() {
 }
 ```
 
-Built with `nvcc -O2 -std=c++17 -arch=sm_87 -I. gpu_together.cu`, with `nanobench.h` next to it. Compiler Explorer cannot run it on a GPU.
+Built with `nvcc -O2 -std=c++17 -arch=sm_87 -I. gpu_together.cu`, with `nanobench.h` next to it.
 
 ## References
 
-- [Systems Languages Should Support Zero Is Initialization](https://blog.xoria.org/zii/): the case for ZII, and why fresh OS pages come zeroed for free.
-- [Untangling Lifetimes: The Arena Allocator](https://www.dgtlgrove.com/p/untangling-lifetimes-the-arena-allocator), Ryan Fleury: the long-form argument for grouping lifetimes into arenas.
-- [Handmade Hero](https://handmadehero.org/): the series and community behind much of this style.
-- [CppCon 2014: Data-Oriented Design and C++](https://isocpp.org/blog/2015/01/cppcon-2014-data-oriented-design-and-c-mike-acton), Mike Acton: the data-first view behind the struct-of-arrays section.
+- [Systems Languages Should Support Zero Is Initialization](https://blog.xoria.org/zii/): ZII, and why fresh OS pages come zeroed.
+- [Untangling Lifetimes: The Arena Allocator](https://www.dgtlgrove.com/p/untangling-lifetimes-the-arena-allocator), Ryan Fleury, on arenas.
+- [Handmade Hero](https://handmadehero.org/).
+- [CppCon 2014: Data-Oriented Design and C++](https://isocpp.org/blog/2015/01/cppcon-2014-data-oriented-design-and-c-mike-acton), Mike Acton.
 - [RAII on cppreference](https://en.cppreference.com/w/cpp/language/raii).
 - [`std::pmr::monotonic_buffer_resource` on cppreference](https://en.cppreference.com/w/cpp/memory/monotonic_buffer_resource): `release()` and the initial-buffer rules.
 - [glibc MallocInternals](https://sourceware.org/glibc/wiki/MallocInternals): chunks, bins and the per-thread cache that `malloc` uses here.
