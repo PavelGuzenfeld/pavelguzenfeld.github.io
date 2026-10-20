@@ -56,7 +56,7 @@ audio:
     Godbolt: god bolt
     POD: P O D
     DeepStream: Deep Stream
-    0xCD: hex C D
+    '0xCD': hex C D
     cudaMallocAsync: CUDA malloc async
     cudaFreeAsync: CUDA free async
     cudaMemsetAsync: CUDA memset async
@@ -68,6 +68,24 @@ audio:
     nvcc: N V C C
     µs/frame: microseconds per frame
     µs: microseconds
+    'nvcc -O2 -std=c++17 -arch=sm_87 -I. gpu_bench.cu': N V C C at O2, C plus plus 17, for S M 87
+    null_memory_resource(): null memory resource
+    get_default_resource(): get default resource
+    monotonic_buffer_resource::do_allocate: the monotonic buffer resource allocate function
+    do_allocate: do allocate
+    std::align: S T D align
+    glibc.malloc.tcache_max: the glibc tcache max setting
+    '[[noinline]]': marked no inline
+    __restrict: restrict
+    -fopt-info-vec-all: the vectorizer report flag
+    '::operator new / ::operator delete': operator new and operator delete
+    '::operator new': operator new
+    class_id: class I D
+    bad_alloc: bad alloc
+    -static-libstdc++: static lib S T D C plus plus
+    malloc(0): M alloc of zero
+    nanobench.h: the nanobench header
+    libstdc++: lib S T D C plus plus
 ---
 
 **ZII ("Zero Is Initialization")** is a design convention, popularized by Casey Muratori and the Handmade community, where you design every type so that **all-bytes-zero is a valid, meaningful default state**. **RAII** is C++'s convention of tying resource lifetime to object lifetime through constructors and destructors. They answer different questions. RAII is about *who cleans up and when*. ZII is about *what a freshly obtained object means before anyone touches it*.
@@ -124,6 +142,22 @@ The ZII view says: *most objects don't own anything individually. Per-object acq
 
 In practice the strongest C++ designs often use both: **RAII at the boundary, ZII inside.** The arena itself, the GPU context, and the file handle are RAII objects. The data structures allocated inside the arena are zero-initializable PODs with no destructors.
 
+```
++--------------------------------------------------------------+
+| RAII boundary: constructors acquire, destructors release     |
+|                                                              |
+|   GpuContext   Pipeline   File / Socket   Arena (owns block) |
+|                                             |                |
+|  +------------------------------------------v-------------+  |
+|  | ZII inside: zeroed PODs, no destructors                |  |
+|  |                                                        |  |
+|  |   Track tracks[MAX_TRACKS] = {};   persistent arena    |  |
+|  |   detections, gating, temps        scratch arena,      |  |
+|  |                                    reset every frame   |  |
+|  +--------------------------------------------------------+  |
++--------------------------------------------------------------+
+```
+
 This mix fits a hard-real-time loop like a 50 Hz tracker especially well. You can use a per-cycle scratch arena that resets every 20 ms, keep fixed-size zero-initialized state tables, and do no heap allocation on the hot path. The setup and teardown of Jetson/DeepStream resources stay RAII, while the per-frame track and measurement data are pure ZII.
 
 ## What an arena is
@@ -158,6 +192,20 @@ T* push_zeroed(Arena* a, size_t count = 1) {
 
 That's the entire allocator. Allocation is a few instructions: align, add, and compare. Freeing is one store.
 
+```
+base                                    used                    capacity
+ |                                        |                          |
+ v                                        v                          v
+ +--------+--+-----------+--------+-------+--------------------------+
+ | Track  |pd| Detection | float[]| ...   |        free space        |
+ +--------+--+-----------+--------+-------+--------------------------+
+            ^
+            alignment padding
+
+ arena_push(size):  start = align_up(used); used = start + size
+ arena_reset():     used = 0     (every allocation is "freed" at once)
+```
+
 ### Why it works
 
 Most allocations in a program aren't independent. They share a lifetime with a whole group of other allocations: everything for this frame, this request, this parse, or this level. A general-purpose `malloc`/`new` pays to track each object individually (headers, free lists, fragmentation handling, thread locking) and then makes you release each one. An arena accepts that the group lives and dies together, so it tracks nothing per object.
@@ -173,6 +221,13 @@ Most allocations in a program aren't independent. They share a lifetime with a w
 ### The common lifetime patterns
 
 **Scratch / per-frame arena.** You reset it at the end of every cycle. In a 50 Hz loop, all per-frame temporaries (detections, gating candidates, association matrices, intermediate buffers) come from it, and `arena_reset` runs once at the end of the 20 ms tick. The steady state is zero heap traffic.
+
+```
+ tick n                      tick n+1                    tick n+2
+ |<------- 20 ms ------->|   |<------- 20 ms ------->|   |
+ push push push ... reset    push push push ... reset    push ...
+ scratch.used: 0 -> peak -> 0   0 -> peak -> 0             0 -> ...
+```
 
 **Persistent arena.** This one holds things that live for the whole run, such as configuration, lookup tables, and the track table. You allocate them at startup and never reset it.
 
@@ -256,7 +311,16 @@ operator delete(void*)            _ZdlPv
     jmp free@plt
 ```
 
-The allocator underneath is the same glibc `malloc`. `new` adds a call, a trip through the PLT, a size check and a null check on the way in. Sized `delete` adds two PLT jumps on the way out. That comes to about 1.7 ns per object on x86, 22% of `malloc / free`, and about 3.1 ns on the Orin, 9%. I didn't disassemble the aarch64 libstdc++.
+The allocator underneath is the same glibc `malloc`. `new` adds a call, a trip through the PLT, a size check and a null check on the way in. Sized `delete` adds two PLT jumps on the way out. That comes to about 1.7 ns per object on x86, 22% of `malloc / free`, and about 3.1 ns on the Orin, 9%.
+
+The wrapper is there because the standard asks `operator new` for things `malloc` doesn't promise. Each extra instruction pays for one:
+
+- **Size 0 becomes 1.** `new` of zero bytes must return a unique non-null pointer. `malloc(0)` may return null.
+- **The null check and the handler loop.** On failure `new` must call the installed new-handler, which may free memory, and retry. With no handler it throws `std::bad_alloc`. `malloc` just returns null.
+- **The call into `libstdc++.so`.** The global `operator new` and `operator delete` are replaceable. Any program can define its own and it has to win at link time, so the compiler can't fold the call into `malloc`.
+- **Sized `delete` forwarding.** Since C++14, `delete` passes the object size so an allocator can skip looking it up. glibc's `free` doesn't take it, so libstdc++ drops the size and forwards: two jumps for nothing on this stack. jemalloc, tcmalloc and mimalloc do use it.
+
+The trade-off: you get an exception instead of a null you might forget to check, an out-of-memory policy hook, and a global allocator you can swap without touching call sites. You pay a couple of nanoseconds per pair, and that only matters on a path that allocates thousands of tiny objects per frame. That is the path where an arena removes both `malloc` and the wrapper. If you need the wrapper itself cheaper, you can define `operator new` and `operator delete` in your own binary, link with `-static-libstdc++`, or use an allocator that takes the size from sized `delete`. I didn't measure any of these. I didn't disassemble the aarch64 libstdc++.
 
 ## Struct of arrays instead of array of structs
 
@@ -273,6 +337,18 @@ struct Detections {
     uint32_t* track_id;
     uint32_t* flags;
 };
+```
+
+```
+AoS: 1000 allocations, each 32 bytes
+ [box box box box score cls trk flg] [box box box box score cls trk flg] ...
+
+SoA: 8 allocations, each 4000 bytes
+ box_x0:   [x0 x0 x0 x0 x0 x0 ... 1000]
+ box_y0:   [y0 y0 y0 y0 y0 y0 ... 1000]
+ ...
+ score:    [s  s  s  s  s  s  ... 1000]   <- the loop touches only these two
+ class_id: [c  c  c  c  c  c  ... 1000]
 ```
 
 Each variant allocates the 8 columns of 1000 elements, writes `score` and `class_id`, then frees them. Same machine, median of three runs:
@@ -315,6 +391,8 @@ I ran the same two programs on a Jetson Orin (Cortex-A78AE, aarch64). The compil
 | SoA, `push_zeroed` per column | 1,757 |
 | SoA, pmr per column | 1,382 |
 
+![Speedup over malloc and free on x86-64 and Cortex-A78AE: arena_push 9.6x and 7.0x, push_zeroed 8.2x and 4.5x, pmr 3.8x and 5.1x, calloc 0.8x and 0.9x, new 0.8x and 0.9x](/images/posts/cpp-zii-arena-allocator-speedup.svg)
+
 The ordering holds. The arena is 7x faster than `malloc` here instead of about 10x, and `pmr` is much closer to the hand-rolled arena: 1.36x slower, against 2.5x on x86.
 
 Zeroing is the odd one out. On x86 it cost 0.13 ns per object. On the Orin it costs 1.5 to 2.7 ns, and `push_zeroed` jumps between two values from run to run (6,377 and about 7,600). GCC inlines the zeroing as two `stp xzr, xzr` stores per object, with no `memset` call, so it isn't the call. I didn't find the cause.
@@ -345,7 +423,33 @@ From the host, each frame allocates the 8 SoA columns of 1000 elements, runs one
 
 With the fill kernel and sync subtracted, `cudaMalloc` and `cudaFree` cost about 6.3 µs per column. The stream-ordered pool behind `cudaMallocAsync` cuts that to about 1.1 µs. I set its release threshold to keep all memory, so it never hands memory back to the driver. That pool is CUDA's own arena-style allocator, and it is the right default when buffers really change size from frame to frame. A fixed buffer carved by pointer arithmetic is still cheapest, at only 0.5 µs above the floor. Zeroing on the GPU is an extra stream operation, and `cudaMemsetAsync` over 32 KB adds about 4 µs per frame. That is the cost of ZII here, so zero only the columns whose zero means something.
 
+![Jetson Orin GPU microseconds per frame: inside a kernel, device malloc 529.6 against 18.2 for the arena and a 14.6 floor; from the host, cudaMalloc 65.4, cudaMallocAsync 23.8, bump 15.1, bump plus memset 19.1](/images/posts/cpp-zii-arena-allocator-gpu.svg)
+
+```
+ device arena, one atomicAdd per thread
+ thread 0 --+
+ thread 1 --+--> atomicAdd(&arena->used, 32) --> base + old_used
+ ...        |
+ thread 999-+    one-thread kernel afterwards: arena->used = 0
+```
+
 Compiler Explorer can't run CUDA on a GPU, so there's no live session for this one. The full program is at the end.
+
+## References
+
+- [Systems Languages Should Support Zero Is Initialization](https://blog.xoria.org/zii/): the case for ZII, and why fresh OS pages come zeroed for free.
+- [Untangling Lifetimes: The Arena Allocator](https://www.dgtlgrove.com/p/untangling-lifetimes-the-arena-allocator), Ryan Fleury: the long-form argument for grouping lifetimes into arenas.
+- [Handmade Hero](https://handmadehero.org/): the series and community behind much of this style.
+- [CppCon 2014: Data-Oriented Design and C++](https://isocpp.org/blog/2015/01/cppcon-2014-data-oriented-design-and-c-mike-acton), Mike Acton: the data-first view behind the struct-of-arrays section.
+- [RAII on cppreference](https://en.cppreference.com/w/cpp/language/raii).
+- [`std::pmr::monotonic_buffer_resource` on cppreference](https://en.cppreference.com/w/cpp/memory/monotonic_buffer_resource): `release()` and the initial-buffer rules.
+- [glibc MallocInternals](https://sourceware.org/glibc/wiki/MallocInternals): chunks, bins and the per-thread cache that `malloc` uses here.
+- [glibc memory allocation tunables](https://sourceware.org/glibc/manual/latest/html_node/Memory-Allocation-Tunables.html): `glibc.malloc.tcache_max`.
+- [libstdc++ `new_op.cc`](https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/libsupc%2B%2B/new_op.cc): the source of `operator new` disassembled above.
+- [GCC optimize options](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html): `-fdevirtualize-speculatively`, which produced the guarded inline `do_allocate`.
+- [CUDA 12.6 programming guide: dynamic global memory allocation](https://docs.nvidia.com/cuda/archive/12.6.0/cuda-c-programming-guide/index.html#dynamic-global-memory-allocation-and-operations): device-side `malloc` and `free`.
+- [CUDA programming guide: stream-ordered memory allocation](https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/stream-ordered-memory-allocation.html) and [Using the NVIDIA CUDA Stream-Ordered Memory Allocator](https://developer.nvidia.com/blog/using-cuda-stream-ordered-memory-allocator-part-1/): `cudaMallocAsync` and pool release thresholds.
+- [nanobench](https://github.com/martinus/nanobench), the benchmark harness, and [Compiler Explorer](https://godbolt.org/) for the live sessions.
 
 ## The full program
 
