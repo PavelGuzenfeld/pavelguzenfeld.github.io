@@ -29,7 +29,7 @@ summary: 'ZII designs every type so all-zero bytes is a valid default, and pairs
   arenas that free a whole group at once. RAII ties cleanup to each object. Here is how
   the two differ, where ZII falls short, a 20-line arena, and a nanobench run of
   1000 allocations per frame: arena, std::pmr, malloc, calloc and new, with a live
-  Godbolt session.'
+  Godbolt session. Plus the same frame as a struct of arrays.'
 ShowToc: true
 audio:
   pronunciation:
@@ -216,6 +216,42 @@ The same program on Compiler Explorer:
 {{< godbolt id="3MKc8zKvh" height="640" >}}
 
 Godbolt runs on shared machines, so its numbers are slower and noisier than the table. On one run there, the arena was about 4x faster than `malloc` and `pmr` about 2.5x. The ordering is the same.
+
+## Struct of arrays instead of array of structs
+
+One allocation per object is the worst case for the heap. If the frame keeps its detections as a struct of arrays, one column per field, it needs 8 allocations instead of 1000:
+
+```cpp
+struct Detections {
+    float*    box_x0;
+    float*    box_y0;
+    float*    box_x1;
+    float*    box_y1;
+    float*    score;
+    uint32_t* class_id;
+    uint32_t* track_id;
+    uint32_t* flags;
+};
+```
+
+Each variant allocates the 8 columns of 1000 elements, writes `score` and `class_id`, then frees them. Same machine, median of three runs:
+
+| layout and allocator | allocations per frame | ns/frame |
+|---|---:|---:|
+| AoS, `malloc` per object | 1000 | 7,787 |
+| AoS, one `malloc` per frame | 1 | 344 |
+| SoA, `malloc` per column | 8 | 621 |
+| SoA, `arena_push` per column | 8 | 443 |
+| SoA, `push_zeroed` per column | 8 | 613 |
+| SoA, pmr per column | 8 | 462 |
+
+Cutting the number of allocations matters more than the allocator. With 8 calls, `malloc` and `free` add about 180 ns per frame over the arena, and the arena's lead drops from about 10x to about 1.4x. Each call does cost more: a 4000-byte `malloc`/`free` pair comes to about 22 ns, against about 8 ns at 32 bytes. I didn't find out why. Raising `glibc.malloc.tcache_max` to 4096 changed nothing.
+
+Zeroing costs more here: `push_zeroed` clears all 32 KB of columns, about 170 ns, even though the loop writes only two of them. With SoA you can zero only the columns whose zero means something.
+
+One caveat about the fill loop. It is `[[gnu::noinline]]` in this benchmark so every variant runs the same code. When I let it inline, GCC vectorized the copy in the `malloc` variant and not the copies in the arena and pmr variants (`-fopt-info-vec-all` says so). SoA with `malloc` then came out at about 300 ns, ahead of the arena. I didn't find the reason, and `__restrict` locals and a 32-bit loop counter didn't change it. SoA is supposed to pay off through vectorization, so check the vectorizer report instead of assuming you got it.
+
+{{< godbolt id="7daeoeq5h" height="640" >}}
 
 ## The full program
 
