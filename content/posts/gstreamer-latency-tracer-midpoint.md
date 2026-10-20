@@ -1,7 +1,10 @@
 ---
 title: 'GStreamer Latency to a Midpoint, Not Just the Sink'
 date: 2026-10-20
-draft: true
+draft: false
+cover:
+  image: /images/posts/gstreamer-latency-tracer-midpoint.png
+  alt: 'Measuring GStreamer latency to an intermediate checkpoint with the latency tracer and a decoupled tee tap'
 tags:
 - GStreamer
 - video-processing

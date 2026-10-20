@@ -1,7 +1,10 @@
 ---
 title: Mounting a Google Drive Folder on Linux with rclone and a systemd User Service
 date: 2026-10-20
-draft: true
+draft: false
+cover:
+  image: /images/posts/rclone-google-drive-systemd-mount.png
+  alt: 'Mounting a Google Drive folder on Linux with rclone mount and a systemd user service'
 tags:
 - Linux
 - systemd

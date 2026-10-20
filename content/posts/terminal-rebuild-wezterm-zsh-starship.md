@@ -1,7 +1,10 @@
 ---
 title: Rebuilding My Terminal From Scratch — wezterm, zsh, starship, fzf, zoxide
 date: 2026-10-20
-draft: true
+draft: false
+cover:
+  image: /images/posts/terminal-rebuild-wezterm-zsh-starship.png
+  alt: 'Terminal stack rebuilt from scratch: wezterm, zsh, starship prompt, fzf and zoxide'
 tags:
 - Linux
 - DevOps

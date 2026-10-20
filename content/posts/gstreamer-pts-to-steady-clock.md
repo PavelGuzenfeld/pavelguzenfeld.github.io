@@ -1,7 +1,10 @@
 ---
 title: 'From GStreamer PTS to std::chrono::steady_clock'
 date: 2026-10-20
-draft: true
+draft: false
+cover:
+  image: /images/posts/gstreamer-pts-to-steady-clock.png
+  alt: 'Converting a GStreamer buffer PTS plus base_time into a std::chrono::steady_clock time point'
 tags:
 - GStreamer
 - C++

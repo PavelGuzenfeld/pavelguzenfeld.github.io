@@ -1,7 +1,10 @@
 ---
 title: 'A unique_ptr With a Custom Deleter That Costs Zero Bytes'
 date: 2026-10-20
-draft: true
+draft: false
+cover:
+  image: /images/posts/cpp-empty-deleter-unique-ptr.png
+  alt: 'unique_ptr with an empty lambda deleter stays 8 bytes; a function-pointer deleter doubles it to 16'
 tags:
 - C++
 - compilers

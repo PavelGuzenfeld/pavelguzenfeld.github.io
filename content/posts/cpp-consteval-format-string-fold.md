@@ -1,7 +1,10 @@
 ---
 title: 'Building a "{}{}{}" Format String at Compile Time, Three Ways'
 date: 2026-10-20
-draft: true
+draft: false
+cover:
+  image: /images/posts/cpp-consteval-format-string-fold.png
+  alt: 'Building a {}{}{} format string at compile time with a loop, ranges, and an index_sequence fold'
 tags:
 - C++
 - compilers

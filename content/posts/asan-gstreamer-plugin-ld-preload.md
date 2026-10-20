@@ -1,7 +1,10 @@
 ---
 title: 'ASan on a GStreamer Plugin When the Host Binary Has No ASan'
 date: 2026-10-20
-draft: true
+draft: false
+cover:
+  image: /images/posts/asan-gstreamer-plugin-ld-preload.png
+  alt: 'Running AddressSanitizer on a dlopened GStreamer plugin with LD_PRELOAD of libasan'
 tags:
 - ASan
 - GStreamer
