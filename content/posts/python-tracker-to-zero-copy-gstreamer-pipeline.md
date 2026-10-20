@@ -85,7 +85,7 @@ I wanted the same tracker running in real time, in a production video pipeline, 
 
 The example throughout is deliberately generic: **track a single object — say a person or a vehicle — in a 1080p clip.** The techniques don't care what the object is.
 
-Everything sits on top of [**`gst-nvmm-cpp`**](https://github.com/PavelGuzenfeld/gst-nvmm-cpp), an open-source set of zero-copy, NVMM-native GStreamer elements for Jetson (no DeepStream). The tracker becomes two new elements in that family — `nvmmsamurai` (the tracker) and `nvmmfusekf` (a fusion filter) — plus the tooling to build the engine assets, all documented in the repo's [Building the engines](https://pavelguzenfeld.com/gst-nvmm-cpp/building-engines/) guide.
+Everything sits on top of [**`gst-nvmm-cpp`**](https://github.com/PavelGuzenfeld/gst-nvmm-cpp), an open-source set of zero-copy, NVMM-native GStreamer elements for Jetson (no DeepStream). The tracker becomes two new elements in that family — `nvmmsamurai` (the tracker) and `nvmmfusekf` (a fusion filter) — plus the tooling to build the engine assets, all documented in the repo's "Building the engines" guide.
 
 ## The shape of the problem
 
@@ -396,7 +396,7 @@ gst-launch-1.0 -e \
   rtph264pay config-interval=1 pt=96 ! udpsink host=127.0.0.1 port=5600
 ```
 
-The engine assets aren't shipped — they're version-locked and weight-derived. Instead the repo carries the **export and build tooling** and a [step-by-step guide](https://pavelguzenfeld.com/gst-nvmm-cpp/building-engines/) to reproduce them from the SAM 2.1 checkpoint and an Ultralytics YOLO detector, entirely in Docker. (The whole chain — public weights → ONNX → engines → loaded in the element — is what I validated end-to-end on the Orin.)
+The engine assets aren't shipped — they're version-locked and weight-derived. Instead the repo carries the **export and build tooling** and a step-by-step guide to reproduce them from the SAM 2.1 checkpoint and an Ultralytics YOLO detector, entirely in Docker. (The whole chain — public weights → ONNX → engines → loaded in the element — is what I validated end-to-end on the Orin.)
 
 ## The end result: architecture and data flow
 
