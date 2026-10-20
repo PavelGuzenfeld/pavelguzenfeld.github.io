@@ -253,6 +253,31 @@ One caveat about the fill loop. It is `[[gnu::noinline]]` in this benchmark so e
 
 {{< godbolt id="7daeoeq5h" height="640" >}}
 
+## On ARM
+
+I ran the same two programs on a Jetson Orin (Cortex-A78AE, aarch64). The compiler and C library are the same `gcc:14` image as the x86 run, so GCC 14.4, glibc 2.41, `-O2 -std=c++23`, pinned to one core. The core ran at its steady 1.5 GHz after a 60-second warmup. Median of three runs:
+
+| variant | ns/frame | vs malloc |
+|---|---:|---:|
+| `new / delete` | 37,730 | 0.90x |
+| `malloc / free` | 33,841 | 1.0x |
+| `calloc / free` | 36,875 | 0.92x |
+| `arena_push / arena_reset` | 4,846 | 7.0x |
+| `push_zeroed / arena_reset` | 6,377 to 7,600 | 4.5x to 5.3x |
+| `pmr::monotonic_buffer_resource / release` | 6,577 | 5.1x |
+
+| struct of arrays | ns/frame |
+|---|---:|
+| AoS, one `malloc` per frame | 1,744 |
+| SoA, `malloc` per column | 2,060 |
+| SoA, `arena_push` per column | 1,349 |
+| SoA, `push_zeroed` per column | 1,757 |
+| SoA, pmr per column | 1,382 |
+
+The ordering holds. The arena is 7x faster than `malloc` here instead of about 10x, and `pmr` is much closer to the hand-rolled arena: 1.36x slower, against 2.5x on x86.
+
+Zeroing is the odd one out. On x86 it cost 0.13 ns per object. On the Orin it costs 1.5 to 2.7 ns, and `push_zeroed` jumps between two values from run to run (6,377 and about 7,600). GCC inlines the zeroing as two `stp xzr, xzr` stores per object, with no `memset` call, so it isn't the call. I didn't find the cause.
+
 ## The full program
 
 ```cpp
