@@ -1,5 +1,8 @@
 {{- $id := .Get "id" -}}
+{{- $state := index site.Data.godbolt $id -}}
 <div class="godbolt-embed">
-<iframe src="https://godbolt.org/z/{{ $id }}?embedded=true&amp;hideEditorToolbars=true" width="100%" height="{{ .Get "height" | default "520" }}" loading="lazy" style="border:1px solid var(--border);border-radius:6px" title="Compiler Explorer {{ $id }}"></iframe>
+{{- with $state }}
+<iframe src="{{ printf "https://godbolt.org/e#%s" . | safeURL }}" width="100%" height="{{ $.Get "height" | default "520" }}" loading="lazy" style="border:1px solid var(--border);border-radius:6px" title="Compiler Explorer {{ $id }}"></iframe>
+{{- end }}
 <p><a href="https://godbolt.org/z/{{ $id }}">Open in Compiler Explorer: godbolt.org/z/{{ $id }}</a></p>
 </div>
