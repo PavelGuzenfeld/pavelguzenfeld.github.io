@@ -229,6 +229,35 @@ The same program on Compiler Explorer:
 
 Godbolt runs on shared machines, so its numbers are slower and noisier than the table. On one run there, the arena was about 4x faster than `malloc` and `pmr` about 2.5x. The ordering is the same.
 
+### Why `new` is slower than `malloc`
+
+`new / delete` came out about 2 ns per object slower than `malloc / free`. My first guess was the zeroing from `new Detection{}`. It isn't. Same frame, split up, median of three runs:
+
+| variant | x86 ns/frame | Cortex-A78AE ns/frame |
+|---|---:|---:|
+| `malloc / free` | 7,792 | 34,318 |
+| raw `::operator new / ::operator delete` | 9,529 | 37,416 |
+| `new Detection / delete` | 9,564 | 37,487 |
+| `new Detection{} / delete` | 9,653 | 38,027 |
+| `calloc / free` | 8,736 | 37,475 |
+
+Raw `::operator new`, which zeroes nothing, already has the whole gap. Zeroing adds about 0.1 ns per object on x86. The rest is the wrapper. This is libstdc++ 14 on x86-64:
+
+```
+operator new(size_t)              _Znwm
+    test %rdi,%rdi; cmovne        new(0) must return a unique pointer, so 0 becomes 1
+    call malloc@plt
+    test %rax,%rax; je ...        on null: get_new_handler(), call it, retry or throw
+    ret
+
+operator delete(void*, size_t)    _ZdlPvm
+    jmp operator delete(void*)@plt
+operator delete(void*)            _ZdlPv
+    jmp free@plt
+```
+
+The allocator underneath is the same glibc `malloc`. `new` adds a call, a trip through the PLT, a size check and a null check on the way in. Sized `delete` adds two PLT jumps on the way out. That comes to about 1.7 ns per object on x86, 22% of `malloc / free`, and about 3.1 ns on the Orin, 9%. I didn't disassemble the aarch64 libstdc++.
+
 ## Struct of arrays instead of array of structs
 
 One allocation per object is the worst case for the heap. If the frame keeps its detections as a struct of arrays, one column per field, it needs 8 allocations instead of 1000:
