@@ -30,7 +30,7 @@ summary: 'ZII designs every type so all-zero bytes is a valid default, and pairs
   the two differ, where ZII falls short, a 20-line arena, and a nanobench run of
   1000 allocations per frame: arena, std::pmr, malloc, calloc and new, with a live
   Godbolt session. Plus a struct-of-arrays layout, a Cortex-A78AE run, and the
-  Jetson Orin GPU: device malloc, cudaMalloc and cudaMallocAsync against an arena.'
+  Jetson Orin GPU, then one CPU+GPU frame that uses all of it: 3.3x faster per frame.'
 ShowToc: true
 audio:
   pronunciation:
@@ -82,6 +82,19 @@ audio:
     '::operator new': operator new
     class_id: class I D
     bad_alloc: bad alloc
+    new_op.cc: new op dot C C
+    cudaMallocHost: CUDA malloc host
+    cudaFreeHost: CUDA free host
+    cudaStreamDestroy: CUDA stream destroy
+    cudaMemcpy: CUDA memcpy
+    compute-sanitizer --tool memcheck: compute sanitizer memcheck
+    select_hits: select hits
+    device_frame: device frame
+    pinned_frame: pinned frame
+    DeviceArena: device arena
+    DeviceBytes: device bytes
+    PinnedBytes: pinned bytes
+    'nvcc -O2 -std=c++17 -arch=sm_87 -I. gpu_together.cu': N V C C at O2, C plus plus 17, for S M 87
     -static-libstdc++: static lib S T D C plus plus
     malloc(0): M alloc of zero
     nanobench.h: the nanobench header
@@ -434,6 +447,271 @@ With the fill kernel and sync subtracted, `cudaMalloc` and `cudaFree` cost about
 ```
 
 Compiler Explorer can't run CUDA on a GPU, so there's no live session for this one. The full program is at the end.
+
+## Putting it all together: CPU + GPU + arenas + SoA
+
+What does it take to follow all of the advice above at once? Here is one frame of a detection pipeline on the Orin. The CPU produces 1000 detections. The GPU keeps the ones scoring at least 0.5, and the CPU reads the hits back. That is upload, filter, readback, every frame.
+
+The usual first version allocates everything per frame: `malloc` for the host columns, `cudaMalloc` for every device buffer, pageable `cudaMemcpy` calls that each block, then `cudaFree` and `free`. The second version applies every rule in this post:
+
+```
+ RAII boundary, made once:   Stream      DeviceBytes block        PinnedBytes block
+                                |              |                        |
+ arenas inside, per frame:      |   +----------+-----------+   +--------+---------+
+                                |   | DeviceArena header   |   | score[] x[] y[]  |  CPU writes SoA
+                                |   | hits[] (kernel bump) |   | readback header  |
+                                |   | score[] x[] y[]      |   | hits[]           |
+                                |   +----------------------+   +------------------+
+                                v
+ one stream:  H2D x3 -> memset(header.used = 0) -> select_hits -> D2H x2 -> one sync
+ end of frame: arena_reset(device_frame), arena_reset(pinned_frame)
+```
+
+- **RAII at the boundary.** The stream, one device block and one pinned host block are `unique_ptr`s with empty deleters (`cudaStreamDestroy`, `cudaFree`, `cudaFreeHost`), made once in `Pipeline`. Nothing is allocated in the loop.
+- **Bump arenas inside them.** `device_frame` hands out the device input columns and `pinned_frame` the host staging and readback buffers. Both reset with one store at the end of the frame.
+- **SoA where the loop is per field.** The CPU writes `score`, `x` and `y` as three columns, and the kernel reads `score` alone to decide. The output stays AoS: a `Hit` is consumed whole, so one record per hit is the right shape there.
+- **A device arena for variable output.** The kernel doesn't know how many hits there will be. Each passing thread takes its slot with one `atomicAdd` on the output arena's `used`.
+- **ZII for the reset.** An arena whose `used` is zero is empty, so resetting the device arena is `cudaMemsetAsync` of 8 bytes on the stream. There's no kernel and no host round trip.
+- **Pinned memory, one stream, one sync.** The copies come from page-locked memory, so they are truly async and the CPU waits once per frame.
+
+Same machine and method as before: CUDA 12.6, sm_87, host thread pinned to one core, median of three runs. Both versions return the same 500 hits per frame, and `compute-sanitizer --tool memcheck` reports 0 errors.
+
+| one frame | µs/frame |
+|---|---:|
+| allocate per frame (`malloc`, `cudaMalloc`, pageable copies) | 126.6 |
+| RAII owners + arenas + SoA (pinned, one stream, one sync) | 37.9 |
+
+That is 3.3x for changing how memory is owned, with the kernel left exactly the same. This is every change at once, so the table doesn't say how much each rule contributes. From the host-side table above, `cudaMalloc` and `cudaFree` cost about 6.3 µs per buffer. That puts the five device buffers here at roughly 30 µs of the 89 µs gap. I didn't measure how the rest splits between the pageable copies, the extra syncs and the host `malloc`s.
+
+The full program:
+
+```cpp
+#define ANKERL_NANOBENCH_IMPLEMENT
+#include <nanobench.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
+#include <new>
+
+#include <cuda_runtime.h>
+
+static void check(cudaError_t status, const char* what) {
+    if (status != cudaSuccess) {
+        std::fprintf(stderr, "%s: %s\n", what, cudaGetErrorString(status));
+        std::exit(1);
+    }
+}
+
+struct DeviceFree {
+    void operator()(void* p) const noexcept { cudaFree(p); }
+};
+struct PinnedFree {
+    void operator()(void* p) const noexcept { cudaFreeHost(p); }
+};
+struct StreamDestroy {
+    void operator()(cudaStream_t s) const noexcept { cudaStreamDestroy(s); }
+};
+
+using DeviceBytes = std::unique_ptr<uint8_t, DeviceFree>;
+using PinnedBytes = std::unique_ptr<uint8_t, PinnedFree>;
+using Stream = std::unique_ptr<CUstream_st, StreamDestroy>;
+
+DeviceBytes device_bytes(size_t size) {
+    void* p = nullptr;
+    check(cudaMalloc(&p, size), "cudaMalloc");
+    return DeviceBytes{static_cast<uint8_t*>(p)};
+}
+
+PinnedBytes pinned_bytes(size_t size) {
+    void* p = nullptr;
+    check(cudaMallocHost(&p, size), "cudaMallocHost");
+    return PinnedBytes{static_cast<uint8_t*>(p)};
+}
+
+Stream make_stream() {
+    cudaStream_t s = nullptr;
+    check(cudaStreamCreate(&s), "cudaStreamCreate");
+    return Stream{s};
+}
+
+struct Arena {
+    uint8_t* base;
+    size_t   capacity;
+    size_t   used;
+};
+
+void* arena_push(Arena* a, size_t size, size_t align) {
+    size_t start = (a->used + (align - 1)) & ~(align - 1);
+    if (start + size > a->capacity) throw std::bad_alloc{};
+    a->used = start + size;
+    return a->base + start;
+}
+
+template <typename T>
+T* push(Arena* a, size_t count) {
+    return static_cast<T*>(arena_push(a, sizeof(T) * count, alignof(T)));
+}
+
+void arena_reset(Arena* a) { a->used = 0; }
+
+struct DeviceArena {
+    uint8_t*           base;
+    unsigned long long capacity;
+    unsigned long long used;
+};
+
+struct Hit {
+    float    x;
+    float    y;
+    float    score;
+    uint32_t index;
+};
+
+struct Columns {
+    float* score;
+    float* x;
+    float* y;
+};
+
+constexpr unsigned detections_per_frame = 1000;
+constexpr unsigned threads_per_block = 256;
+constexpr unsigned blocks = (detections_per_frame + threads_per_block - 1) / threads_per_block;
+constexpr float threshold = 0.5f;
+constexpr size_t hit_bytes = sizeof(Hit) * detections_per_frame;
+constexpr size_t column_bytes = sizeof(float) * detections_per_frame;
+
+__global__ void select_hits(Columns in, unsigned n, float min_score, DeviceArena* out) {
+    unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= n || in.score[i] < min_score) return;
+    unsigned long long at = atomicAdd(&out->used, sizeof(Hit));
+    if (at + sizeof(Hit) > out->capacity) return;
+    *reinterpret_cast<Hit*>(out->base + at) = Hit{in.x[i], in.y[i], in.score[i], i};
+}
+
+static void make_detections(Columns host, uint32_t frame) {
+    for (unsigned i = 0; i < detections_per_frame; ++i) {
+        host.score[i] = static_cast<float>((i * 37 + frame * 11) % 100) / 100.0f;
+        host.x[i] = static_cast<float>(i);
+        host.y[i] = static_cast<float>(frame);
+    }
+}
+
+static Columns push_columns(Arena* a) {
+    return {push<float>(a, detections_per_frame), push<float>(a, detections_per_frame),
+            push<float>(a, detections_per_frame)};
+}
+
+static void upload(Columns device, Columns host, cudaStream_t stream) {
+    check(cudaMemcpyAsync(device.score, host.score, column_bytes, cudaMemcpyHostToDevice, stream), "h2d");
+    check(cudaMemcpyAsync(device.x, host.x, column_bytes, cudaMemcpyHostToDevice, stream), "h2d");
+    check(cudaMemcpyAsync(device.y, host.y, column_bytes, cudaMemcpyHostToDevice, stream), "h2d");
+}
+
+struct Pipeline {
+    Stream      stream = make_stream();
+    DeviceBytes device_block = device_bytes(sizeof(DeviceArena) + hit_bytes + 4 * column_bytes);
+    PinnedBytes pinned_block = pinned_bytes(sizeof(DeviceArena) + hit_bytes + 4 * column_bytes);
+    DeviceArena* hits_header = reinterpret_cast<DeviceArena*>(device_block.get());
+    Arena device_frame{device_block.get() + sizeof(DeviceArena) + hit_bytes, 4 * column_bytes, 0};
+    Arena pinned_frame{pinned_block.get(), sizeof(DeviceArena) + hit_bytes + 4 * column_bytes, 0};
+
+    Pipeline() {
+        DeviceArena header{device_block.get() + sizeof(DeviceArena), hit_bytes, 0};
+        check(cudaMemcpy(hits_header, &header, sizeof header, cudaMemcpyHostToDevice), "header");
+    }
+
+    unsigned long long run_frame(uint32_t frame) {
+        cudaStream_t s = stream.get();
+        Columns host = push_columns(&pinned_frame);
+        make_detections(host, frame);
+        Columns device = push_columns(&device_frame);
+        upload(device, host, s);
+
+        check(cudaMemsetAsync(&hits_header->used, 0, sizeof hits_header->used, s), "reset hits");
+        select_hits<<<blocks, threads_per_block, 0, s>>>(device, detections_per_frame, threshold, hits_header);
+
+        auto* readback = push<DeviceArena>(&pinned_frame, 1);
+        auto* hits = push<Hit>(&pinned_frame, detections_per_frame);
+        check(cudaMemcpyAsync(readback, hits_header, sizeof(DeviceArena), cudaMemcpyDeviceToHost, s), "d2h");
+        check(cudaMemcpyAsync(hits, hits_header + 1, hit_bytes, cudaMemcpyDeviceToHost, s), "d2h");
+        check(cudaStreamSynchronize(s), "sync");
+
+        unsigned long long count = readback->used / sizeof(Hit);
+        ankerl::nanobench::doNotOptimizeAway(hits[0]);
+        arena_reset(&device_frame);
+        arena_reset(&pinned_frame);
+        return count;
+    }
+};
+
+static unsigned long long run_frame_allocating(uint32_t frame) {
+    Columns host{static_cast<float*>(std::malloc(column_bytes)), static_cast<float*>(std::malloc(column_bytes)),
+                 static_cast<float*>(std::malloc(column_bytes))};
+    make_detections(host, frame);
+
+    Columns device{};
+    check(cudaMalloc(&device.score, column_bytes), "cudaMalloc");
+    check(cudaMalloc(&device.x, column_bytes), "cudaMalloc");
+    check(cudaMalloc(&device.y, column_bytes), "cudaMalloc");
+    uint8_t* hit_storage = nullptr;
+    DeviceArena* header = nullptr;
+    check(cudaMalloc(&hit_storage, hit_bytes), "cudaMalloc");
+    check(cudaMalloc(&header, sizeof(DeviceArena)), "cudaMalloc");
+
+    check(cudaMemcpy(device.score, host.score, column_bytes, cudaMemcpyHostToDevice), "h2d");
+    check(cudaMemcpy(device.x, host.x, column_bytes, cudaMemcpyHostToDevice), "h2d");
+    check(cudaMemcpy(device.y, host.y, column_bytes, cudaMemcpyHostToDevice), "h2d");
+    DeviceArena fresh{hit_storage, hit_bytes, 0};
+    check(cudaMemcpy(header, &fresh, sizeof fresh, cudaMemcpyHostToDevice), "header");
+
+    select_hits<<<blocks, threads_per_block>>>(device, detections_per_frame, threshold, header);
+
+    DeviceArena readback{};
+    auto* hits = static_cast<Hit*>(std::malloc(hit_bytes));
+    check(cudaMemcpy(&readback, header, sizeof readback, cudaMemcpyDeviceToHost), "d2h");
+    check(cudaMemcpy(hits, hit_storage, hit_bytes, cudaMemcpyDeviceToHost), "d2h");
+    ankerl::nanobench::doNotOptimizeAway(hits[0]);
+
+    std::free(hits);
+    check(cudaFree(header), "cudaFree");
+    check(cudaFree(hit_storage), "cudaFree");
+    check(cudaFree(device.y), "cudaFree");
+    check(cudaFree(device.x), "cudaFree");
+    check(cudaFree(device.score), "cudaFree");
+    std::free(host.y);
+    std::free(host.x);
+    std::free(host.score);
+    return readback.used / sizeof(Hit);
+}
+
+int main() {
+    Pipeline pipeline;
+
+    for (uint32_t frame = 0; frame < 3; ++frame)
+        std::printf("frame %u: %llu hits (allocating), %llu hits (arenas)\n", frame, run_frame_allocating(frame),
+                    pipeline.run_frame(frame));
+
+    ankerl::nanobench::Bench bench;
+    bench.title("one CPU+GPU frame: 1000 detections, threshold, readback")
+        .unit("frame")
+        .relative(true)
+        .minEpochIterations(300)
+        .warmup(50);
+
+    uint32_t frame = 0;
+    bench.run("allocate per frame (malloc, cudaMalloc, pageable copies)", [&] {
+        ankerl::nanobench::doNotOptimizeAway(run_frame_allocating(frame++));
+    });
+    bench.run("RAII owners + arenas (pinned, one stream, one sync)", [&] {
+        ankerl::nanobench::doNotOptimizeAway(pipeline.run_frame(frame++));
+    });
+}
+```
+
+Built with `nvcc -O2 -std=c++17 -arch=sm_87 -I. gpu_together.cu`, with `nanobench.h` next to it. Compiler Explorer cannot run it on a GPU.
 
 ## References
 
