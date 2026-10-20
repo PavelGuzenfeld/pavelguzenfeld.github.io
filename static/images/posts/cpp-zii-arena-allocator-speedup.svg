@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 440">
+<rect width="880" height="440" fill="#fcfcfb"/>
+<text x="24" y="34" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="17" fill="#0b0b0b" text-anchor="start" font-weight="600">Speedup over malloc / free, 1000 x 32-byte allocations per frame</text>
+<text x="24" y="56" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#52514e" text-anchor="start" font-weight="normal">Higher is faster. Median of three runs, GCC 14.4 -O2, one pinned core.</text>
+<rect x="250" y="70" width="12" height="12" rx="2" fill="#2a78d6"/>
+<text x="268" y="81" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#52514e" text-anchor="start" font-weight="normal">x86-64, i7-12700H</text>
+<rect x="420" y="70" width="12" height="12" rx="2" fill="#eb6834"/>
+<text x="438" y="81" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#52514e" text-anchor="start" font-weight="normal">aarch64, Cortex-A78AE (Jetson Orin)</text>
+<line x1="250.0" y1="90" x2="250.0" y2="384" stroke="#e4e3df" stroke-width="1"/>
+<text x="250.0" y="402" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="middle" font-weight="normal">0x</text>
+<line x1="358.0" y1="90" x2="358.0" y2="384" stroke="#e4e3df" stroke-width="1"/>
+<text x="358.0" y="402" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="middle" font-weight="normal">2x</text>
+<line x1="466.0" y1="90" x2="466.0" y2="384" stroke="#e4e3df" stroke-width="1"/>
+<text x="466.0" y="402" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="middle" font-weight="normal">4x</text>
+<line x1="574.0" y1="90" x2="574.0" y2="384" stroke="#e4e3df" stroke-width="1"/>
+<text x="574.0" y="402" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="middle" font-weight="normal">6x</text>
+<line x1="682.0" y1="90" x2="682.0" y2="384" stroke="#e4e3df" stroke-width="1"/>
+<text x="682.0" y="402" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="middle" font-weight="normal">8x</text>
+<line x1="790.0" y1="90" x2="790.0" y2="384" stroke="#e4e3df" stroke-width="1"/>
+<text x="790.0" y="402" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="middle" font-weight="normal">10x</text>
+<line x1="304.0" y1="90" x2="304.0" y2="384" stroke="#52514e" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="238" y="115" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#0b0b0b" text-anchor="end" font-weight="normal">new / delete</text>
+<path d="M250,96 h38.26519337016572 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-38.26519337016572 z" fill="#2a78d6"/>
+<text x="298.2651933701657" y="108" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">0.8x</text>
+<path d="M250,112 h44.43397826663136 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-44.43397826663136 z" fill="#eb6834"/>
+<text x="304.43397826663136" y="124" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">0.9x</text>
+<text x="238" y="163" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#0b0b0b" text-anchor="end" font-weight="normal">calloc / free</text>
+<path d="M250,144 h40.9657124197235 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-40.9657124197235 z" fill="#2a78d6"/>
+<text x="300.9657124197235" y="156" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">0.8x</text>
+<path d="M250,160 h45.556989830508485 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-45.556989830508485 z" fill="#eb6834"/>
+<text x="305.5569898305085" y="172" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">0.9x</text>
+<text x="238" y="211" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#0b0b0b" text-anchor="end" font-weight="normal">malloc / free</text>
+<path d="M250,192 h50.0 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-50.0 z" fill="#2a78d6"/>
+<text x="310.0" y="204" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">1.0x</text>
+<path d="M250,208 h50.0 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-50.0 z" fill="#eb6834"/>
+<text x="310.0" y="220" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">1.0x</text>
+<text x="238" y="259" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#0b0b0b" text-anchor="end" font-weight="normal">pmr monotonic_buffer_resource</text>
+<path d="M250,240 h202.24063904143782 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-202.24063904143782 z" fill="#2a78d6"/>
+<text x="462.2406390414378" y="252" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">3.8x</text>
+<path d="M250,256 h273.84917135472097 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-273.84917135472097 z" fill="#eb6834"/>
+<text x="533.849171354721" y="268" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">5.1x</text>
+<text x="238" y="307" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#0b0b0b" text-anchor="end" font-weight="normal">push_zeroed / arena_reset</text>
+<path d="M250,288 h441.1508620689656 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-441.1508620689656 z" fill="#2a78d6"/>
+<text x="701.1508620689656" y="300" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">8.2x</text>
+<path d="M250,304 h236.6391888332895 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-236.6391888332895 z" fill="#eb6834"/>
+<text x="496.6391888332895" y="316" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">4.5x</text>
+<text x="238" y="355" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#0b0b0b" text-anchor="end" font-weight="normal">arena_push / arena_reset</text>
+<path d="M250,336 h514.3186951066499 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-514.3186951066499 z" fill="#2a78d6"/>
+<text x="774.3186951066499" y="348" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">9.6x</text>
+<path d="M250,352 h373.09739991745766 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-373.09739991745766 z" fill="#eb6834"/>
+<text x="633.0973999174577" y="364" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">7.0x</text>
+<text x="24" y="426" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#52514e" text-anchor="start" font-weight="normal">Dashed line: malloc / free = 1.0x.</text>
+</svg>
