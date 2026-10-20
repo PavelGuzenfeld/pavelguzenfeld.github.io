@@ -26,18 +26,24 @@ Available for [consulting and contract work](https://pavelguzenfeld.com/consulti
 - [How GCC's std::fill_n Silently Regressed Eigen's AutoDiffScalar](https://pavelguzenfeld.com/posts/eigen-autodiff-fill-regression/)
 - [Fixing GCC False-Positive Warnings in Eigen](https://pavelguzenfeld.com/posts/fixing-gcc-false-positives-in-eigen/)
 - [Debugging Doxygen: How .inc Files Break C++ Documentation](https://pavelguzenfeld.com/posts/debugging-doxygen-inc-extension-mapping-eigen/)
+- [A unique_ptr With a Custom Deleter That Costs Zero Bytes](https://pavelguzenfeld.com/posts/cpp-empty-deleter-unique-ptr/)
+- [Building a "{}{}{}" Format String at Compile Time, Three Ways](https://pavelguzenfeld.com/posts/cpp-consteval-format-string-fold/)
 
 ### ROS 2 & DDS
 
 - [Contributing to ROS 2 -- A Practical Guide from Four Accepted PRs](https://pavelguzenfeld.com/posts/contributing-to-ros2-a-practical-guide/)
 - [Fixing O(N squared) Entity Addition in ROS 2's CallbackGroup](https://pavelguzenfeld.com/posts/fixing-quadratic-callback-group-rclcpp/)
 - [Why DDS Content Filter Parameters Silently Fail for Strings in ROS 2](https://pavelguzenfeld.com/posts/dds-content-filter-string-params-ros2/)
+- [ROS 2 Shared Memory, Measured: Fast DDS SHM and Data-Sharing vs Cyclone DDS + iceoryx](https://pavelguzenfeld.com/posts/ros2-shared-memory-fastdds-vs-cyclone-iceoryx/)
 
 ### GStreamer & Video
 
 - [Anatomy of Four GStreamer Shared Memory Bugs](https://pavelguzenfeld.com/posts/anatomy-of-gstreamer-shm-bugs/)
 - [Fixing a GStreamer Bug: Why shmsink Always Exits with Code 1](https://pavelguzenfeld.com/posts/fixing-gstreamer-shmsink-exit-code-bug/)
 - [Zero-Copy Video on Jetson: Building gst-nvmm-cpp](https://pavelguzenfeld.com/posts/gst-nvmm-cpp-zero-copy-video-jetson/)
+- [GStreamer Latency to a Midpoint, Not Just the Sink](https://pavelguzenfeld.com/posts/gstreamer-latency-tracer-midpoint/)
+- [From GStreamer PTS to std::chrono::steady_clock](https://pavelguzenfeld.com/posts/gstreamer-pts-to-steady-clock/)
+- [ASan on a GStreamer Plugin When the Host Binary Has No ASan](https://pavelguzenfeld.com/posts/asan-gstreamer-plugin-ld-preload/)
 
 ### PX4 & Drone Simulation
 
@@ -60,6 +66,8 @@ Available for [consulting and contract work](https://pavelguzenfeld.com/consulti
 - [Fixing a CI Pipeline on Jetson Xavier -- 15 Failures to Green](https://pavelguzenfeld.com/posts/fixing-ci-pipeline-arm-jetson-docker/)
 - [Persistent SMB Shares on Linux](https://pavelguzenfeld.com/posts/persistent-smb-mount-linux/)
 - [Linux Multi-Monitor Setup with xrandr](https://pavelguzenfeld.com/posts/linux-multi-monitor-screen-configuration/)
+- [Mounting a Google Drive Folder on Linux with rclone and a systemd User Service](https://pavelguzenfeld.com/posts/rclone-google-drive-systemd-mount/)
+- [Rebuilding My Terminal From Scratch: wezterm, zsh, starship, fzf, zoxide](https://pavelguzenfeld.com/posts/terminal-rebuild-wezterm-zsh-starship/)
 
 ---
 
