@@ -29,7 +29,8 @@ summary: 'ZII designs every type so all-zero bytes is a valid default, and pairs
   arenas that free a whole group at once. RAII ties cleanup to each object. Here is how
   the two differ, where ZII falls short, a 20-line arena, and a nanobench run of
   1000 allocations per frame: arena, std::pmr, malloc, calloc and new, with a live
-  Godbolt session. Plus the same frame as a struct of arrays.'
+  Godbolt session. Plus a struct-of-arrays layout, a Cortex-A78AE run, and the
+  Jetson Orin GPU: device malloc, cudaMalloc and cudaMallocAsync against an arena.'
 ShowToc: true
 audio:
   pronunciation:
@@ -56,6 +57,17 @@ audio:
     POD: P O D
     DeepStream: Deep Stream
     0xCD: hex C D
+    cudaMallocAsync: CUDA malloc async
+    cudaFreeAsync: CUDA free async
+    cudaMemsetAsync: CUDA memset async
+    cudaStreamSynchronize: CUDA stream synchronize
+    cudaMalloc: CUDA malloc
+    cudaFree: CUDA free
+    atomicAdd: atomic add
+    sm_87: S M 87
+    nvcc: N V C C
+    µs/frame: microseconds per frame
+    µs: microseconds
 ---
 
 **ZII ("Zero Is Initialization")** is a design convention, popularized by Casey Muratori and the Handmade community, where you design every type so that **all-bytes-zero is a valid, meaningful default state**. **RAII** is C++'s convention of tying resource lifetime to object lifetime through constructors and destructors. They answer different questions. RAII is about *who cleans up and when*. ZII is about *what a freshly obtained object means before anyone touches it*.
@@ -278,6 +290,34 @@ The ordering holds. The arena is 7x faster than `malloc` here instead of about 1
 
 Zeroing is the odd one out. On x86 it cost 0.13 ns per object. On the Orin it costs 1.5 to 2.7 ns, and `push_zeroed` jumps between two values from run to run (6,377 and about 7,600). GCC inlines the zeroing as two `stp xzr, xzr` stores per object, with no `memset` call, so it isn't the call. I didn't find the cause.
 
+## On the Jetson GPU
+
+The same question comes up on the Orin's GPU, in two places. A kernel can allocate per thread with device-side `malloc`, and the host can allocate per-frame buffers with `cudaMalloc`. I measured both with CUDA 12.6, `-O2 -arch=sm_87`, built natively on the Orin. The host thread was pinned to one core, and the GPU stayed at 1.173 GHz under the default governor. Every frame ends with `cudaStreamSynchronize`, so the numbers are what a frame loop waits for. Median of three runs, all within 0.5%.
+
+Inside a kernel, 1000 threads each allocate one 32-byte `Detection`, write two fields, and then everything is freed. The arena is a `DeviceArena` in device memory, and `arena_push` is a single `atomicAdd` on its `used` offset. A one-thread kernel resets it.
+
+| variant | µs/frame |
+|---|---:|
+| empty kernel + sync (floor) | 14.6 |
+| device `malloc` / `free` | 529.6 |
+| device `arena_push` / reset | 18.2 |
+| device `push_zeroed` / reset | 18.2 |
+
+Device `malloc` costs about half a millisecond for 1000 allocations, 29x the arena. The arena row is two launches and sits about 3.6 µs above the one-launch floor. At a 20 ms frame budget, device `malloc` alone eats 2.6% of the frame before any real work. Zeroing 32 bytes per thread doesn't show up at all.
+
+From the host, each frame allocates the 8 SoA columns of 1000 elements, runs one kernel that fills two of them, and frees them. The arena variants carve the columns out of one `cudaMalloc` buffer made at startup.
+
+| variant | µs/frame |
+|---|---:|
+| `cudaMalloc` / `cudaFree` per column | 65.4 |
+| `cudaMallocAsync` / `cudaFreeAsync` per column | 23.8 |
+| host bump over one `cudaMalloc` buffer | 15.1 |
+| host bump + `cudaMemsetAsync` of 32 KB (ZII) | 19.1 |
+
+With the fill kernel and sync subtracted, `cudaMalloc` and `cudaFree` cost about 6.3 µs per column. The stream-ordered pool behind `cudaMallocAsync` cuts that to about 1.1 µs. I set its release threshold to keep all memory, so it never hands memory back to the driver. That pool is CUDA's own arena-style allocator, and it is the right default when buffers really change size from frame to frame. A fixed buffer carved by pointer arithmetic is still cheapest, at only 0.5 µs above the floor. Zeroing on the GPU is an extra stream operation, and `cudaMemsetAsync` over 32 KB adds about 4 µs per frame. That is the cost of ZII here, so zero only the columns whose zero means something.
+
+Compiler Explorer can't run CUDA on a GPU, so there's no live session for this one. The full program is at the end.
+
 ## The full program
 
 ```cpp
@@ -395,5 +435,187 @@ int main() {
         }
         pmr.release();
     });
+}
+```
+
+## The GPU program
+
+Built with `nvcc -O2 -std=c++17 -arch=sm_87 -I. gpu_bench.cu`, with `nanobench.h` next to it.
+
+```cpp
+#define ANKERL_NANOBENCH_IMPLEMENT
+#include <nanobench.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+
+#include <cuda_runtime.h>
+
+static void check(cudaError_t status, const char* what) {
+    if (status != cudaSuccess) {
+        std::fprintf(stderr, "%s: %s\n", what, cudaGetErrorString(status));
+        std::exit(1);
+    }
+}
+
+struct Detection {
+    float    box[4];
+    float    score;
+    uint32_t class_id;
+    uint32_t track_id;
+    uint32_t flags;
+};
+
+struct DeviceArena {
+    uint8_t*           base;
+    unsigned long long capacity;
+    unsigned long long used;
+};
+
+constexpr unsigned detections_per_frame = 1000;
+constexpr unsigned threads_per_block = 256;
+constexpr unsigned blocks = (detections_per_frame + threads_per_block - 1) / threads_per_block;
+constexpr size_t arena_bytes = 64 * 1024;
+constexpr int columns = 8;
+constexpr size_t column_bytes = sizeof(float) * detections_per_frame;
+
+__device__ void touch(Detection* d, unsigned i) {
+    d->score = static_cast<float>(i);
+    d->class_id = i;
+}
+
+__global__ void empty_kernel() {}
+
+__global__ void device_malloc_kernel(Detection** frame) {
+    unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= detections_per_frame) return;
+    auto* d = static_cast<Detection*>(malloc(sizeof(Detection)));
+    if (d) touch(d, i);
+    frame[i] = d;
+}
+
+__global__ void device_free_kernel(Detection** frame) {
+    unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= detections_per_frame) return;
+    free(frame[i]);
+}
+
+__device__ void* arena_push(DeviceArena* a, unsigned long long size) {
+    unsigned long long start = atomicAdd(&a->used, size);
+    if (start + size > a->capacity) return nullptr;
+    return a->base + start;
+}
+
+template <bool Zeroed>
+__global__ void device_arena_kernel(DeviceArena* arena, Detection** frame) {
+    unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= detections_per_frame) return;
+    auto* d = static_cast<Detection*>(arena_push(arena, sizeof(Detection)));
+    if (d) {
+        if constexpr (Zeroed) *d = Detection{};
+        touch(d, i);
+    }
+    frame[i] = d;
+}
+
+__global__ void arena_reset_kernel(DeviceArena* arena) { arena->used = 0; }
+
+__global__ void fill_columns_kernel(float* score, uint32_t* class_id) {
+    unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= detections_per_frame) return;
+    score[i] = static_cast<float>(i);
+    class_id[i] = i;
+}
+
+static void fill_columns(void** cols, cudaStream_t stream) {
+    fill_columns_kernel<<<blocks, threads_per_block, 0, stream>>>(static_cast<float*>(cols[4]),
+                                                                  static_cast<uint32_t*>(cols[5]));
+}
+
+int main() {
+    cudaStream_t stream;
+    check(cudaStreamCreate(&stream), "cudaStreamCreate");
+
+    Detection** frame;
+    check(cudaMalloc(&frame, sizeof(Detection*) * detections_per_frame), "cudaMalloc frame");
+
+    uint8_t* arena_storage;
+    check(cudaMalloc(&arena_storage, arena_bytes), "cudaMalloc arena");
+    DeviceArena host_arena{arena_storage, arena_bytes, 0};
+    DeviceArena* arena;
+    check(cudaMalloc(&arena, sizeof(DeviceArena)), "cudaMalloc arena header");
+    check(cudaMemcpy(arena, &host_arena, sizeof(DeviceArena), cudaMemcpyHostToDevice), "cudaMemcpy arena");
+
+    cudaMemPool_t pool;
+    check(cudaDeviceGetDefaultMemPool(&pool, 0), "cudaDeviceGetDefaultMemPool");
+    unsigned long long keep_all = ~0ull;
+    check(cudaMemPoolSetAttribute(pool, cudaMemPoolAttrReleaseThreshold, &keep_all), "cudaMemPoolSetAttribute");
+
+    ankerl::nanobench::Bench bench;
+    bench.unit("frame").relative(true).minEpochIterations(500).warmup(50);
+
+    bench.title("1000 x 32-byte allocations inside a kernel, then free all");
+
+    bench.run("empty kernel + sync (floor)", [&] {
+        empty_kernel<<<blocks, threads_per_block, 0, stream>>>();
+        check(cudaStreamSynchronize(stream), "sync");
+    });
+
+    bench.run("device malloc / free", [&] {
+        device_malloc_kernel<<<blocks, threads_per_block, 0, stream>>>(frame);
+        device_free_kernel<<<blocks, threads_per_block, 0, stream>>>(frame);
+        check(cudaStreamSynchronize(stream), "sync");
+    });
+
+    bench.run("device arena_push / reset", [&] {
+        device_arena_kernel<false><<<blocks, threads_per_block, 0, stream>>>(arena, frame);
+        arena_reset_kernel<<<1, 1, 0, stream>>>(arena);
+        check(cudaStreamSynchronize(stream), "sync");
+    });
+
+    bench.run("device push_zeroed / reset", [&] {
+        device_arena_kernel<true><<<blocks, threads_per_block, 0, stream>>>(arena, frame);
+        arena_reset_kernel<<<1, 1, 0, stream>>>(arena);
+        check(cudaStreamSynchronize(stream), "sync");
+    });
+
+    bench.title("8 SoA columns of 1000 per frame, allocated from the host");
+
+    bench.run("cudaMalloc / cudaFree per column", [&] {
+        void* cols[columns];
+        for (auto& c : cols) check(cudaMalloc(&c, column_bytes), "cudaMalloc");
+        fill_columns(cols, stream);
+        check(cudaStreamSynchronize(stream), "sync");
+        for (auto* c : cols) check(cudaFree(c), "cudaFree");
+    });
+
+    bench.run("cudaMallocAsync / cudaFreeAsync per column", [&] {
+        void* cols[columns];
+        for (auto& c : cols) check(cudaMallocAsync(&c, column_bytes, stream), "cudaMallocAsync");
+        fill_columns(cols, stream);
+        for (auto* c : cols) check(cudaFreeAsync(c, stream), "cudaFreeAsync");
+        check(cudaStreamSynchronize(stream), "sync");
+    });
+
+    bench.run("host bump over one cudaMalloc buffer", [&] {
+        void* cols[columns];
+        for (int c = 0; c < columns; ++c) cols[c] = arena_storage + c * column_bytes;
+        fill_columns(cols, stream);
+        check(cudaStreamSynchronize(stream), "sync");
+    });
+
+    bench.run("host bump + cudaMemsetAsync (ZII)", [&] {
+        void* cols[columns];
+        for (int c = 0; c < columns; ++c) cols[c] = arena_storage + c * column_bytes;
+        check(cudaMemsetAsync(arena_storage, 0, columns * column_bytes, stream), "cudaMemsetAsync");
+        fill_columns(cols, stream);
+        check(cudaStreamSynchronize(stream), "sync");
+    });
+
+    check(cudaMemcpy(&host_arena, arena, sizeof(DeviceArena), cudaMemcpyDeviceToHost), "cudaMemcpy back");
+    std::printf("device arena used after last reset: %llu\n", host_arena.used);
+    check(cudaGetLastError(), "kernel launch");
 }
 ```
