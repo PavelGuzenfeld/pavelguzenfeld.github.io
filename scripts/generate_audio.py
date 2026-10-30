@@ -67,6 +67,7 @@ PRON_SHORTCODE_RE = re.compile(
     r'\{\{<\s*pron\s+"(?P<shown>[^"]+)"\s+"(?P<narrated>[^"]+)"\s*>\}\}'
 )
 PRON_BRACKETS_RE = re.compile(r"\[\[(?P<shown>[^\]|]+)\|(?P<narrated>[^\]]+)\]\]")
+SHORTCODE_RE = re.compile(r"\{\{[<%].*?[>%]\}\}")
 
 
 # ---------- Layer 1: built-in global pronunciation rules ---------------------
@@ -247,6 +248,7 @@ def clean_markdown(md: str) -> str:
 
     # Layer 3 first — these are intentional, the writer asked for them.
     body = apply_inline_overrides(body)
+    body = SHORTCODE_RE.sub("", body)
 
     # Drop code blocks and tables outright — the narrator just skips them.
     body = FENCED_CODE_RE.sub("\n", body)

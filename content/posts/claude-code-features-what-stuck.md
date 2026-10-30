@@ -40,6 +40,8 @@ audio:
 
 Gui Ferreira gave a talk at NDC Oslo 2026, [What Claude Code Can Do That You Haven't Tried](https://www.youtube.com/watch?v=P3TCZ2xrvbo). His claim is that most people use 10 to 20 percent of the tool. He then walks through about 40 features in four groups: one-time setup, daily workflow, the platform layer, and non-coding use.
 
+{{< youtube P3TCZ2xrvbo >}}
+
 I use Claude Code every day, so I wanted to know which group I'm in. Instead of guessing, I measured. Claude Code keeps every prompt you type in `~/.claude/history.jsonl`. Mine goes back to March 2026 and has 18,312 entries. I counted how often each feature from the talk shows up, ran the ones that work headless in a scratch directory, and tried some of the interactive ones by hand.
 
 Everything here is Claude Code 2.1.314.
