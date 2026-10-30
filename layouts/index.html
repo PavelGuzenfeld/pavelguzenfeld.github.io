@@ -1,16 +1,4 @@
 {{- define "main" }}
-{{- with index (where site.RegularPages "Section" "posts") 0 }}
-<article class="post-entry">
-  <header class="entry-header">
-    <h2>{{ .Title }}</h2>
-  </header>
-  <div class="entry-content">
-    <p>{{ .Summary | plainify | truncate 200 }}</p>
-  </div>
-  <footer class="entry-footer">Latest post · {{ .Date.Format "January 2, 2006" }}</footer>
-  <a class="entry-link" aria-label="latest post: {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
-</article>
-{{- end }}
 <article class="post-single">
   {{- if .Content }}
   <div class="post-content">
