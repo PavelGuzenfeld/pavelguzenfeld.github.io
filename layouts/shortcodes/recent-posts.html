@@ -1,0 +1,5 @@
+<ul>
+{{- range first (.Get 0 | int) (after 1 (where site.RegularPages "Section" "posts")) }}
+<li><a href="{{ .RelPermalink }}">{{ .Title }}</a> · {{ .Date.Format "January 2, 2006" }}</li>
+{{- end }}
+</ul>
