@@ -35,10 +35,6 @@ A DDS subscriber quietly receiving nothing because a content filter stringified 
 - [**Running PX4 SIH on real hardware**](/posts/px4-sih-on-hardware-custom-firmware-unity/) — custom firmware, fan-out MAVLink, Unity for visualization.
 - [**Fixing a CI pipeline on a Jetson Xavier**](/posts/fixing-ci-pipeline-arm-jetson-docker/) — the slow slog to a green ARM-in-Docker build.
 
-## Recent posts
-
-{{< recent-posts 5 >}}
-
 [Everything I've written →](/posts/)
 
 ## Working together
