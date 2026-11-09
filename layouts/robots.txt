@@ -1,0 +1,10 @@
+User-agent: *
+{{- if hugo.IsProduction | or (eq site.Params.env "production") }}
+Disallow:
+{{- else }}
+Disallow: /
+{{- end }}
+Sitemap: {{ "sitemap.xml" | absURL }}
+{{- range $repo, $url := site.Data.docs }}
+Sitemap: {{ $url }}sitemap.xml
+{{- end }}
